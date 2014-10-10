@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title>Settings - Astropyp: Astronomy Pypeline and Fitsviewer</title>
+        <script src="static/jquery-2.1.0.min.js" type="text/javascript"></script>
+        <script src="static/jquery-ui-1.11.0/jquery-ui.js" type="text/javascript"></script>
+        <script src="static/astropyp.js" type="text/javascript"></script>
+        <script src="static/settings.js" type="text/javascript"></script>
+        <link href="static/jquery-ui-themes-1.11.0/themes/redmond/jquery-ui.css" type="text/css" rel="stylesheet"/>
+        <link href="static/astropyp.css" type="text/css" rel="stylesheet"/>
+    </head>
+    <body>
+        <div id='tabs'>
+            <ul id='tab-links'>
+                <li><a href='#account-settings'>Account Settings</a></li>
+                <li><a href='#pypelines'>Pypelines</a></li>
+                <li><a href='#job-queue'>Job Queue</a></li>
+            </ul>
+            <div id='account-settings'>
+                <div id='account-settings-div'></div>
+                <button id='submit-account-settings'>Submit</button>
+            </div>
+            <div id='job-queue'>Job Queue has not yet been added to Astropyp</div>
+            <div id='pypelines'>
+                <p>Eventually this will show all pypelines loaded on the server</p>
+                <a href='/fitsviewer'>Fitsviewer</a>
+            </div>
+        </div>
+        <div id='dialogs'></div>
+        <script>
+        var account_settings;
+        var admin_settings;
+        var websocket;
+        var change_pwd;
+        var new_user;
+        function rxMsg(result){
+            console.log('rx message:', result);
+            if(result.id == 'user settings'){
+                var account_info = {
+                    userId: websocket.userId,
+                    change_pwd: change_pwd
+                };
+                
+                var my_params = Astropyp.Settings.getAccountSettings(account_info);
+                account_settings = Astropyp.Utils.initParamList(
+                    {
+                        type:'div',
+                        params: Astropyp.Settings.getAccountSettings(account_info)
+                    },
+                    options = {
+                        $parent: $('#account-settings-div'),
+                        default: result.account_settings
+                    }
+                );
+                
+                if(result.hasOwnProperty('admin_settings')){
+                    var $admin_div = $('<div/>')
+                        .prop('id','admin-settings');
+                    result.admin_settings.new_user = new_user;
+                    result.admin_settings.websocket = websocket;
+                    admin_settings = Astropyp.Utils.initParamList(
+                        {
+                            type:'div',
+                            params: Astropyp.Settings.getAdminSettings(result.admin_settings)
+                        },
+                        options = {
+                            $parent: $admin_div
+                        }
+                    );
+                    
+                    $("#tab-links").append(
+                        "<li><a href='#admin-settings'>Admin Settings</a></li>"
+                    );
+                    $("#tabs").append($admin_div);
+                    $("#tabs").tabs("refresh");
+                };
+            }else if(result.id == 'change pwd'){
+                alert('Password saved correctly');
+            }else if(result.id == 'update account settings'){
+                alert('Settings saved correctly');
+            }else if(result.id == 'new user'){
+                alert('New user created');
+            };
+        };
+        
+        function initChangePassword(){
+            var $div = $('<div/>');
+            $('#dialogs').append($div);
+            
+            change_pwd = Astropyp.Utils.initParamList(
+                {
+                    type: 'div',
+                    params: {
+                        current_pwd: {
+                            lbl: 'current password',
+                            prop: {
+                                type: 'password'
+                            }
+                        },
+                        new_pwd: {
+                            lbl: 'new password',
+                            prop: {
+                                type: 'password'
+                            }
+                        },
+                        confirm_pwd: {
+                            lbl: 'confirm new password',
+                            prop: {
+                                type: 'password'
+                            }
+                        }
+                    }
+                },
+                options = {
+                    $parent: $div
+                }
+            );
+            console.log('change-pwd:',change_pwd);
+            change_pwd.params.$div.dialog({
+                resizable:true,
+                draggable:true,
+                width:300,
+                autoOpen:false,
+                modal:true,
+                buttons:{
+                    'Change':function(){
+                        websocket.sendTask({
+                            module: 'web_utils',
+                            task: 'change_pwd',
+                            parameters: {
+                                current_pwd: change_pwd.params.params.current_pwd.$input.val(),
+                                new_pwd: change_pwd.params.params.new_pwd.$input.val(),
+                                confirm_pwd: change_pwd.params.params.confirm_pwd.$input.val(),
+                            }
+                        });
+                        $(this).dialog('close');
+                    },
+                    'Cancel':function(){
+                        $(this).dialog('close');
+                    }
+                },
+            }).css("font-size", "12px");;
+        };
+        
+        function initNewUser(){
+            var $div = $('<div/>');
+            $('#dialogs').append($div);
+            
+            new_user = Astropyp.Utils.initParamList(
+                {
+                    type: 'div',
+                    params: {
+                        userId: {
+                            lbl: 'new user name',
+                        }
+                    }
+                },
+                options = {
+                    $parent: $div
+                }
+            );
+            
+            new_user.params.$div.dialog({
+                resizable:true,
+                draggable:true,
+                width:300,
+                autoOpen:false,
+                modal:true,
+                buttons:{
+                    'Add':function(){
+                        websocket.sendTask({
+                            module: 'web_utils',
+                            task: 'add_new_user',
+                            parameters: {
+                                userId: new_user.params.params.userId.$input.val(),
+                            }
+                        });
+                        $(this).dialog('close');
+                    },
+                    'Cancel':function(){
+                        $(this).dialog('close');
+                    }
+                },
+            }).css("font-size", "12px");;
+        };
+        
+        window.onload=function(){
+            $("#tabs").tabs();
+            initChangePassword();
+            initNewUser();
+            $('#submit-account-settings').click(function(){
+                var params = account_settings.getParams(account_settings.params);
+                
+                // remove non-account settings objects
+                delete params['account']
+                delete params['logout']
+                delete params['change_pwd_btn']
+                
+                websocket.sendTask({
+                    module: 'web_utils',
+                    task: 'update_account_settings',
+                    parameters: params
+                });
+                console.log('Parameters:',params);
+            });
+            
+            websocket=Astropyp.Core.jobsocketInit({
+                receiveAction: rxMsg,
+                onopen: function(){
+                    websocket.sendTask({
+                        module: 'web_utils',
+                        task: 'load_user_settings',
+                        parameters: {}
+                    });
+                }
+            })
+        };
+        </script>
+    </body>
+</html>
