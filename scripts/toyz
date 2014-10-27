@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import division,print_function
+""" Start the toyz web server """
+
+print('Loading dependencies, please wait...')
+from toyz.web.web_app import init_web_app
+
+init_web_app()

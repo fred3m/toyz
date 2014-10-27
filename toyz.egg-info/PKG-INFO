@@ -1,0 +1,14 @@
+Metadata-Version: 1.1
+Name: toyz
+Version: 0.0.dev
+Summary: Interface to run python plots and scripts from a web browser
+Home-page: http://www.pas.rochester.edu/~fmooleka/
+Author: Fred Moolekamp
+Author-email: fred3public@gmail.com
+License: GPLv3
+Description: Interface to run python plots and scripts from a web browser
+Platform: UNKNOWN
+Requires: passlib
+Requires: tornado
+Requires: numpy
+Requires: scipy
