@@ -19,11 +19,13 @@ import tornado.escape
 from tornado.options import options
 
 # Imports from Toyz package
-from ..utils import core
-from ..config import default_config
-import web_utils
+from toyz.utils import core
+from toyz.utils import file_access
+from toyz import utils.web
+from toyz.config import default_config
+from toyz.errors import ToyzError
 
-class AuthLoginHandler(web_utils.BaseHandler):
+class AuthLoginHandler(utils.web.BaseHandler):
     def initialize(self):
         """
         When the handler is initialized, set the path to the template that needs to be rendered
@@ -93,13 +95,12 @@ class AuthLogoutHandler(tornado.web.RequestHandler):
         self.clear_cookie("user")
         self.redirect(self.get_argument("next", "/"))
 
-class JobSocketHandler(tornado.websocket.WebSocketHandler):
+class WebSocketHandler(tornado.websocket.WebSocketHandler):
     """
-    JobSocketHandler
+    WebSocketHandler
     
     Websocket that handles jobs sent to the server from clients
     """
-    # All websockets have a built-in set of event handlers: open(), close(), on_message(message)
     
     def open(self, *args):
         """
@@ -184,57 +185,15 @@ class JobSocketHandler(tornado.websocket.WebSocketHandler):
         
         process_job(decoded)
 
-class AppSettings:
-    def __init__():
-        settings = get_settings
-        self.web_settings = settings['web_settings']
-        
-    
-    def save_settings(settings, file_path):
-        """
-        Saves the default settings to the specified path. If the user does not have write access
-        to the directory, an error is raised
-    
-        Parameters
-        ----------
-        settings: dict
-            - Web Application settings
-        file_path: string
-            - Filename and path for saved settings
-    
-        Returns
-        -------
-        None
-        """
-        try:
-            pickle.dump(settings, open(file_path, 'wb'))
-        except IOError as e:
-            if e.errno == 13:
-                raise core.ToyzError('You must be logged in as an administrator to save setting in this directory')
-        return settings
+class MainHandler(utils.web.BaseHandler):
+    """
+    Main Handler when user connects to `localhost:8888/`
+    """
+    pass
 
-    def get_settings():
-        """
-        Check to see if a settings file exists in the config directory. If not, this must be the first time
-        setup, so load and save the default settings.
-    
-        Parameters
-        ----------
-        None
-    
-        Returns
-        -------
-        None
-        """
-        file_path = os.path.join(core.ROOT_DIR, 'config', 'settings.p')
-        if os.path.isfile(file_path):
-            settings = pickle.load(open(file_path, 'rb'))
-        else:
-            settings = first_time_setup()
-        return settings
 class Application(tornado.web.Application):
-    def __init__(self):
-        self.config = get_settings()
+    def __init__(self, app_settings):
+        self.app_settings = app_settings
         
         handlers = [
             (r"/", MainHandler, {
@@ -243,129 +202,196 @@ class Application(tornado.web.Application):
             }),
             (r"/auth/login/", AuthLoginHandler),
             (r"/auth/logout/", AuthLogoutHandler),
-            (r"/static/(.*)", tornado.web.StaticFileHandler,{
-                'path': web_settings['static_path']
+            (r"/static/(.*)", utils.web.AuthStaticFileHandler, {
+                'path': self.app_settings['static_path']
             }),
-            (r"/jobsocket", JobSocketHandler),
-            (r"/scrollTable", web_utils.BaseHandler, {
+            (r"/users/(.*)", UserHandler),
+            (r"/toyz/(*.)", ToyzHandler),
+            (r"/job", WebSocketHandler),
+            # TODO: Remove the next two handlers and load them with global toyz
+            (r"/scrollTable", utils.web.BaseHandler, {
                 'template_name': 'scrollTable.html',
                 'template_path': web_settings['template_path']
             }),
-            (r"/viewer", web_utils.BaseHandler, {
+            (r"/viewer", utils.web.BaseHandler, {
                 'template_name': 'image-viewer.html',
-                'template_path': web_settings['template_path']
+                'template_path': self.app_settings['template_path']
             }),
         ]
         
         settings={
-            'static_path': web_settings['static_path'],
-            'cookie_secret': web_settings['cookie_secret'],
+            'static_path': self.app_settings['static_path'],
+            'cookie_secret': self.app_settings['cookie_secret'],
             'login_url':'/auth/login/'
         }
         tornado.web.Application.__init__(self, handlers, **settings)
 
-    def add_handler(toy_config):
-        """
-        Add static and template handlers for a given toy
-    
-        Parameters
-        ----------
-        toy_config: python module
-            - Configuration file that contains (at a minimum) the following parameters:
-                * static_paths: dict
-                    Dict with the format:
-                        toy_name: path to static files
-                * handlers: list of Tornado RequestHandler tuples
-    
-        Returns
-        -------
-        new_handlers: list of Tornado RequestHandler tuples
-            - New handlers to be added to the web application
-        """
-        new_handlers = []
-    
-        # Add static file handlers
-        for toy_name in toy_config.static_paths:
-            static_url = '/'+toy_name+'/static/(.*)'
-            new_handlers.append((
-                static_url,
-                tornado.web.StaticFileHandler,
-                {'path': toy_config.static_paths[toy_name]}
-            ))
-    
-        # Add template file handlers
-        for handler in toy_config.handlers:
-            new_handlers.append(handler)
-        return new_handlers
-
-    def add_toyz(web_app, toys=[], paths=[]):
-        """
-        Add a toyz from a list of packages and/or a list of paths on the server
-    
-        Parameters
-        ----------
-        web_app: tornado.web.Application
-            - Web application running on the server
-        toys: list of packages
-            - packages built on the toyz framework
-        paths: list of strings
-            - Paths to modules that have not been packaged but fit the toyz framework
-    
-        Returns
-        -------
-        None
-        """
-        new_handlers = []
-    
-        for toy in toys:
-            module = importlib.import_module(toy)
-            add_handler(module.toy_config)
-        
-        for path in paths:
-            contents = os.listdir()
-            if 'toy_config.py' in contents:
-                sys.path.insert(0, path)
-                # Load the config file for the current package
-                try:
-                    reload(toy_config)
-                except NameError:
-                    import toy_config
-                new_handlers += add_handlers(toy_config)
-    
-        web_app.add_handlers('', new_handlers)
-    
-    def find_port(port):
-        open_port = port
-        try:
-            self.listen(port)
-        except: socket.error:
-            open_port = find_port(port+1)
-        return open_port
-    def init_app():
-        tornado.options.define("port", default=settings['port'], help="run on the given port", type=int)
-        tornado.options.define(
-            "user_id", default=settings['default_user'],
-            help="run on the given port", type=int
-        )
-        tornado.options.parse_command_line()
-        return find_port(options.port)
-
-class MainHandler(web_utils.BaseHandler):
+def first_time_setup(config_path):
     """
-    Main Handler when user connects to `localhost:8888/`
+    Initial setup of the Toyz application and creation of files the first time it is run.
+    
+    Parameters
+    ----------
+    None
+    
+    Returns
+    -------
+    app_settings: dict
+        - Dictionary with settings for the Toyz application
     """
-    pass
+    import getpass
+    
+    app_settings = default_config.app_settings
+    
+    # Create users
+    admin_pwd = 'admin'
+    if core.get_bool(
+            "The default admin password is 'admin'. It is recommended that you change this "
+            "if multiple users will be accessing the web application.\n\n"
+            "change password? "):
+        admin_pwd = getpass.getpass("new password: ")
+    
+    users = {
+        'admin':{
+            utils.web.ToyzUser(
+                web_settings=app_settings['web'], 
+                user_id='admin', 
+                pwd=admin_pwd, 
+                groups=['admin'])}}
+    save_users(users)
+    
+    # Create a database and folder permissions table
+    app_settings['db']['name'] = os.path.basename(app_settings['db']['path'])
+    db_module = importlib.import_module(app_settings['db']['interface_name'])
+    db_module.create_database(app_settings['db'])
+    db_module.create_table(
+        db_settings=app_settings['db'],
+        user=users['admin'],
+        table_name='tbl_permissions',
+        columns=OrderedDict([
+            ('table_name', ['VARCHAR']),
+            ('permissions', ['VARCHAR'])
+        ]),
+        indices={'tbl_idx':('table_name')},
+        users={'*','', 'admin':'frw'}
+    )
+    db_module.create_table(
+        db_settings=app_settings['db'],
+        user=users['admin'],
+        table_name='paths',
+        columns=OrderedDict([
+            ('path_id', ['PRIMARY','KEY','AUTOINCREMENT']),
+            ('path', ['VARCHAR']),
+            ('owner', ['VARCHAR']),
+        ]),
+        indices={'path_idx':('path')},
+        users={'*','frw', 'admin':'frw'}
+    )
+    db_module.create_table(
+        db_settings=app_settings['db'],
+        user=users['admin'],
+        table_name='user_paths',
+        columns=OrderedDict([
+            ('user_id', ['VARCHAR']),
+            ('path_id', ['INTEGER']),
+            ('permissions', ['VARCHAR']),
+        ]),
+        indices={'user_idx':('user_id')},
+        users={'*','frw', 'admin':'frw'}
+    )
+    db_module.create_table(
+        db_settings=app_settings['db'],
+        user=users['admin'],
+        table_name='group_paths',
+        columns=OrderedDict([
+            ('group_id', ['VARCHAR']),
+            ('path_id', ['INTEGER']),
+            ('permissions', ['VARCHAR']),
+        ]),
+        indices={'path_idx':('path')},
+        users={'*','frw', 'admin':'frw'}
+    )
+    
+    file_access.update_file_permissions(db_settings, users['admin'], {
+        core.ROOT_DIR: {
+            'users': {
+                '*': ''
+            }
+        }
+    })
+    
+    save_settings(app_settings)
+    return app_settings
 
-def init_web_app():
+def web_app_login(user_id, pwd, app_settings):
+    pwd_context = CryptContext(app_settings.pwd_context)
+    if user_id not in app_settings.users:
+        # Dummy verify to prevent a timing attack (https://crackstation.net/hashing-security.htm)
+        pwd_context.verify('dummy pwd', 'dummy pwd')
+        raise errors.ToyzWebError("Invalid username/password")
+    if not pwd_context.verify(pwd, users['users'][user_id]['pwd']):
+        raise errors.ToyzWebError("Invalid username/password")
+    
+    return users[user_id]
+
+def find_open_port(port):
+    open_port = port
+    try:
+        self.listen(port)
+    except: socket.error:
+        open_port = find_port(port+1)
+    return open_port
+
+def init():
     """
     Run the web application on the server
     """
     print("Server root directory:", core.ROOT_DIR)
-    toyz_app = Application()
+    
+    # Check the current working directory and its 'config' subdirectory for a config file
+    # This allows users to have a custom Toyz directory with their own configuration
+    # separate from the master install in the python directory
+    config_name = default_config.app_settings['web']['config_name']
+    config_path = default_config.app_settings['web']['config_path']
+    if os.path.isfile(os.path.join(os.getcwd(), config_name)):
+        config_path = os.isfile(os.path.join(os.getcwd(), config_name))
+    elif os.path.isfile(os.path.join(os.getcwd(), 'config', config_name)):
+        config_path = os.isfile(os.path.join(os.getcwd(), 'config', config_name))
+    else:
+        if not os.path.isfile(config_path):
+            first_time_setup(config_path)
+    
+    app_settings = pickle.load(open(config_path, 'rb'))
+    
+    # Decrypt the config file if it is encrypted
+    if core.str_2_bool(app_settings['config_encrypted']):
+        import getpass
+        from toyz.utils.security import decrypt_config
+        decrypt_config(app_settings, getpass.getpass('key: '))
+    
+    tornado.options.define("port", default=default_config['port'], help="run on the given port", type=int)
+    tornado.options.define("new_path", default=None, help="create a new directory structure in the current path")
+    tornado.options.parse_command_line()
+    
+    # Create a new file structure if the user wants to create a new working directory
+    if options.new_path is not None:
+        if os.path.isdir(options.new_path):
+            new_path = options.new_path
+        elif (core.str_2_bool(raw_input(
+            "Create a new toyz instance in '{0}'? ".format(os.getcwd())))
+        ):
+            new_path = os.getcwd()
+        create_new_instance(new_path, app_settings)
+    
+    # Apply settings entered at the command line
+    app_settings['port'] = options.port
+    
+    # Initialize the tornado web application
+    toyz_app = Application(app_settings)
     
     # Continuous loop to wait for incomming connections
     print("Server is running on port", toyz_app.port)
-    tornado.ioloop.IOLoop.instance().start()
+    #tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == "__main__":
     init_web_app()

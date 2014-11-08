@@ -26,19 +26,22 @@ scripts = [fname for fname in glob.glob(os.path.join('scripts', '*'))
 packages = find_packages()
 
 setup(name=PACKAGE_NAME,
-      version=VERSION,
-      description=DESCRIPTION,
-      packages=packages,
-      scripts=scripts,
-      requires=['passlib', 'tornado', 'numpy', 'scipy', 'sqlalchemy', 'pycrypto'],
-      #install_requires=[],
-      #provides=[PACKAGE_NAME],
-      author=AUTHOR,
-      author_email=AUTHOR_EMAIL,
-      license=LICENSE,
-      url=URL,
-      long_description=LONG_DESC,
-      zip_safe=False,
-      use_2to3=True,
-      include_package_data=True
+    version=VERSION,
+    description=DESCRIPTION,
+    packages=packages,
+    scripts=scripts,
+    requires=[
+        'tornado', # Web server and web application framework
+        'passlib', # Password encryption and authentication
+    ],
+    #install_requires=[],
+    #provides=[PACKAGE_NAME],
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    license=LICENSE,
+    url=URL,
+    long_description=LONG_DESC,
+    zip_safe=False,
+    use_2to3=True,
+    include_package_data=True
 )

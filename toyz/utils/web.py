@@ -5,54 +5,55 @@ import os
 import copy
 import cPickle as pickle
 import importlib
+from passlib.context import CryptContext
+from collections import OrderedDict
 
-# toyzmodules
-from ..config import default_config
-from ..utils import core
-from . import manage
+# toyz modules
+from toyz.utils import core
+from toyz.utils import file_access
+from toyz.utils.errors import ToyzWebError
 
-default_static_path = os.path.join(core.ROOT_DIR, 'web', 'static')
-default_template_path = os.path.join(core.ROOT_DIR, 'web', 'templates')
-default_config_path = os.path.join(core.ROOT_DIR, 'config')
-
-class WebUser:
+class ToyzUser:
     """
     User logged into the Toyz web application
     """
-    def __init__(self, userId, web_settings, user_settings, open_sessions={}, **kwargs):
-        self.userId=userId
-        for key,value in kwargs.items():
-            setattr(self,key,value)
+    def __init__(self, app=None, **user_settings):
+        """
+        Initialize a Toyz User
         
-        if 'stored_dirs' is not in user_settings:
-            user_dir=os.path.join(web_settings['static_path'],'users',userId)
-            self.stored_dirs = {
-                'project': os.path.join(user_dir,'projects'),
-                'temp': os.path.join(user_dir,'temp'),
-                'backup': os.path.join(user_dir,'backup')
-            }
-        else:
-            self.stored_dirs = user_settings.stored_dirs
-        if 'groups' not in kwargs:
-            self.groups = []
-        self.update_account_settings(user_settings)
-        if 'session' not in self.stored_dirs:
-            self.stored_dirs['session']={}
-        web_utils.create_dirs([path for key, path in self.stored_dirs.items() if not key.startswith('session')])
+        Parameters
+        ----------
+        app: tornado.web.application, optional
+            - Web app running on the server. This parameter is only given if the user is being added
+            to a web app.
         
-        if 'account_settings' in user_settings:
-            self.account_settings = user_settings['account_settings']
-        else:
-            stored_dirs = []
-            for key in self.stored_dirs:
-                if key != 'session':
-                    stored_dirs.append({
-                        'path_name': key,
-                        'path':self.stored_dirs[key]
-                    })
-            self.account_settings = {
-                'stored_dirs': stored_dirs
-            }
+        user_settings: key word arguments
+            - Parameters passed to the function specific to the given user. The only required field is
+            the user_id, all other fields are optional and will be set to the default values specified
+            in the code.
+        """
+        check4keys(user_settings, ['user_id'])
+        self.__dict__.update(user_settings)
+        
+        # Set default values for missing attributes
+        defaults = {
+            'groups': [],
+            'open_sessions': {},
+            'workspaces': {},
+            'toyz': {},
+            'paths': {},
+            'pwd': self.user_id
+        }
+        for setting, val in defaults.items():
+            if not hasattr(self, setting):
+                setattr(self, setting, val)
+        
+        # Ensure that required directories exist
+        if 'user' not in self.paths:
+            self.paths['user'] = os.path.join(core.ROOT_DIR, 'users', self.user_id)
+        if 'temp' not in self.paths:
+            self.paths['temp'] = os.path.join(self.paths['user'], 'temp')
+        core.create_paths([path for key, path in self.paths.items()])
     
     def get_session_id(self, websocket):
         for sessionId in self.openSessions:
@@ -60,34 +61,24 @@ class WebUser:
                 return sessionId
         return None
     
-    def add_session(self, websocket, sessionId=None):
-        if sessionId is None:
-            sessionId = str(datetime.datetime.now()).replace(' ','__').replace('.','_').replace(':','-')
-        self.openSessions[sessionId] = websocket
-        self.stored_dirs['session'][sessionId] = os.path.join(self.stored_dirs['temp'], sessionId)
-        web_utils.create_dir(id={}, params={'path': self.stored_dirs['session'][sessionId]})
+    def add_session(self, websocket, session_id=None):
+        if session_id is None:
+            session_id = str(datetime.datetime.now()).replace(' ','__').replace('.','-').replace(':','_')
+        self.open_sessions[session_id] = websocket
+        core.create_paths(websocket.path)
+        websocket.session = {
+            'user_id': self.user_id,
+            'session_id': session_id,
+            'path': os.path.join(self.paths['temp'], session_id)
+        }
         websocket.write_message({
             'id': 'initialize',
-            'userId': self.userId,
-            'sessionId': sessionId
+            'user_id': self.user_id,
+            'session_id': session_id
         })
-        websocket.session = {
-            'userId': self.userId,
-            'sessionId': sessionId
-        }
     
-    def update_account_settings(self, account_settings):
-        if 'stored_dirs' in account_settings:
-            if 'session' in self.stored_dirs:
-                self.stored_dirs = {
-                    'session': self.stored_dirs['session']
-                }
-            else:
-                self.stored_dirs = {}
-            for stored_dir in account_settings['stored_dirs']:
-                self.stored_dirs[stored_dir['path_name']] = stored_dir['path']
-        if 'groups' in account_settings:
-            self.groups = account_settings.groups
+    def get_settings(self):
+        return self.__dict__
     
     def __str__(self):
         """
@@ -141,6 +132,90 @@ class BaseHandler(tornado.web.RequestHandler):
         Load the name of the current user
         """
         return self.get_secure_cookie("user")
+
+class AuthStaticFileHandler(tornado.web.StaticFileHandler):
+    @tornado.web.authenticated
+    def get(self, path):
+        """
+        StaticFileHandler.get with an authenticated decorator added
+        """
+        tornado.web.StaticFileHandler.get(self,path)
+    
+    def get_current_user(self):
+        """
+        Load the name of the current user
+        """
+        return self.get_secure_cookie("user")
+
+def add_handler(toy_config):
+    """
+    Add static and template handlers for a given toy
+
+    Parameters
+    ----------
+    toy_config: python module
+        - Configuration file that contains (at a minimum) the following parameters:
+            * static_paths: dict
+                Dict with the format:
+                    toy_name: path to static files
+            * handlers: list of Tornado RequestHandler tuples
+
+    Returns
+    -------
+    new_handlers: list of Tornado RequestHandler tuples
+        - New handlers to be added to the web application
+    """
+    new_handlers = []
+
+    # Add static file handlers
+    for toy_name in toy_config.static_paths:
+        static_url = '/'+toy_name+'/static/(.*)'
+        new_handlers.append((
+            static_url,
+            tornado.web.StaticFileHandler,
+            {'path': toy_config.static_paths[toy_name]}
+        ))
+
+    # Add template file handlers
+    for handler in toy_config.handlers:
+        new_handlers.append(handler)
+    return new_handlers
+
+def add_toyz(web_app, toys=[], paths=[]):
+    """
+    Add a toyz from a list of packages and/or a list of paths on the server
+
+    Parameters
+    ----------
+    web_app: tornado.web.Application
+        - Web application running on the server
+    toys: list of packages
+        - packages built on the toyz framework
+    paths: list of strings
+        - Paths to modules that have not been packaged but fit the toyz framework
+
+    Returns
+    -------
+    None
+    """
+    new_handlers = []
+
+    for toy in toys:
+        module = importlib.import_module(toy)
+        add_handler(module.toy_config)
+    
+    for path in paths:
+        contents = os.listdir()
+        if 'toy_config.py' in contents:
+            sys.path.insert(0, path)
+            # Load the config file for the current package
+            try:
+                reload(toy_config)
+            except NameError:
+                import toy_config
+            new_handlers += add_handlers(toy_config)
+
+    web_app.add_handlers('', new_handlers)
 
 def update_users(userId, websocket):
     """

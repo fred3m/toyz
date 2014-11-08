@@ -1,3 +1,7 @@
+"""
+Error types used in Toyz
+"""
+
 class Error(Exception):
     """
     Error

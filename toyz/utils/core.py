@@ -15,9 +15,26 @@ from .errors import ToyzError, ToyzDbError, ToyzWebError, ToyzJobError, ToyzWarn
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),os.pardir))
 default_config_path = os.path.join(core.ROOT_DIR, 'config')
-db_config = os.path.join(default_config_path, 'db.p')
 
 active_users = {}
+
+def str_2_bool(bool_str):
+    lower_str = bool_str.lower()
+    if 'true'.startswith(lower_str) or 'yes'.startswith(lower_str):
+        return True
+    elif 'false'.startswith(lower_str) or 'no'.startswith(lower_str):
+        return False
+    else:
+        raise ToyzError(
+            "'{0}' did not match a boolean expression (true/false, yes/no, t/f, y/n)".format(bool_str))
+
+def get_bool(prompt):
+    try:
+        bool_str = core.str_2_bool(raw_input(prompt))
+    except ToyzError:
+        print("'{0}' did not match a boolean expression (true/false, yes/no, t/f, y/n)".format(bool_str))
+        return get_bool(prompt)
+    return bool_str
 
 def check_instance(obj, instances):
     """
@@ -78,6 +95,11 @@ def dict_2_obj(entries, check_recursive=True, check_sequences=(tuple, list, set,
         other objects like collections.OrderedDict can also be used
     sequences: list of sequence types, optional
         - Sequences to search for loops. See the collections module for other available sequences
+    
+    Returns
+    -------
+    top: object
+        - Object created from the dictionary
     """
     if not isinstance(entries, dicts):
         raise ToyzError("Class must be initialized from a dictionary")
@@ -117,90 +139,7 @@ def export_class_externals(obj):
     return {key: getattr(obj, key) for key in dir(obj) if key[0]!='_'}
 
 def job_worker():
-    pass
-
-def first_time_setup():
-    """
-    Initial setup of the Toyz application and creation of files the first time it is run.
-    
-    Parameters
-    ----------
-    None
-    
-    Returns
-    -------
-    settings: dict
-        - Dictionary with settings for the Toyz application
-    """
-    web_settings = default_config.web_settings
-    web_settings['static_path'] = default_static_path
-    web_settings['template_path'] = default_template_path
-    
-    # Create a database
-    db_settings = default_config.db_settings
-    db_settings['path'] = os.path.join(ROOT_DIR, 'config', db_settings['name'])
-    db_file = open(db_config, 'wb')
-    db = pickle.dump(db_settings)
-    db_file.close()
-    db_module = importlib.import_module(db['interface_name'])
-    db_module.create_database(db_settings):
-    db_module.create_table(
-        db_settings, 
-        table_name='users',
-        columns = {
-            'id': 'text',
-            'settings': 'text'
-        },
-        keys=['id']
-    )
-    db_module.create_table(
-        db_settings, 
-        table_name='groups',
-        columns = {
-            'id'
-        },
-        keys=[]
-    )
-    db_module.create_table(
-        db_settings, 
-        table_name='web_settings',
-        columns = {
-            
-        },
-        keys=[]
-    )
-    
-    settings = {
-        'web_settings': web_settings,
-        'db_settings': db_settings
-    }
-    save_settings(settings, file_path)
-    return settings
-
-def init_database():
-    """
-    Import and initialize the database used by the web application and job queue. The default is sqlite,
-    which is package with Python for Python v2.5+
-    
-    Parameters
-    ----------
-    None
-    
-    Returns
-    -------
-    db: dict
-        - Settings for the database that is currently used
-    """
-    if os.path.isfile(db_config):
-        db_file = open(dbconfig, 'rb')
-        db = pickle.load(db_file)
-        db_file.close()
-        db_module = importlib.import_module(db['interface_name'])
-        db_module.init()
-    else:
-        settings = first_time_setup()
-        db = settings['db_settings']
-    return db
+    pass    
 
 def run_job(job):
     """
@@ -336,7 +275,7 @@ def progress_log(text,id):
     log = {'id':"progress log",'log':text}
     respond(id, log)
 
-def check4key(myDict,keys):
+def check4keys(myDict,keys):
     """
     check4key
     
@@ -370,10 +309,8 @@ def respond(id,response):
     websocket = user.openSessions[id['sessionId']]
     websocket.write_message(response)
 
-def create_dirs(paths):
+def create_paths(paths):
     """                                                                         
-    createDirs                                                                  
-                                                                                
     Search for paths on the server. If a path does not exist, create the necessary directories.                                                                
     For example, if paths=['~/Documents/images/2014-6-5_data/'] and only the path                                                                     
     '~/Documents' exists, both '~/Documents/images/' and '~/Documents/images/2014-6-5_data/'                                                 

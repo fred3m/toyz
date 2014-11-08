@@ -19,6 +19,7 @@ def check_chars(err_flag, *lists):
     lists: lists
         - Each list in lists must be a list of strings, each one a keyword to verify if it is alpha-numeric
     """
+    
     import itertools
     keys = list(itertools.chain.from_iterable(lists))
     if not all(re.match(VALID_CHARS, key) for key in keys):
