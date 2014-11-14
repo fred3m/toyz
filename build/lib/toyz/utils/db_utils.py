@@ -1,11 +1,15 @@
+"""
+Utilities that may be necessary for all database interfaces
+Copyright 2014 by Fred Moolekamp
+License: MIT
+"""
 from __future__ import print_function, division
 import re
 
 from toyz.utils.core import ToyzDbError
 
+# Regex for all letters, numbers, and underscore
 VALID_CHARS = '^[a-zA-z0-9_]+$'
-
-USER_SETTINGS = ['pwd', 'stored_dirs']
 
 def check_chars(err_flag, *lists):
     """

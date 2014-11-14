@@ -212,13 +212,13 @@ class ToyzSettings:
         Load settings. If toyz_settings.security.encrypt_config is `True`, 
         the settings file will be decrypted (this requires a securiity key).
         """
-        if security_key is None:
-            security_key = getpass.getpass('security key: ')
         toyz_settings = pickle.load(open(config_path, 'rb'))
         if hasattr(toyz_settings, 'encrypted_settings'):
             # Decrypt the config file if it is encrypted
-            import getpass
             from toyz.utils.security import decrypt_pickle
+            if security_key is None:
+                import getpass
+                security_key = getpass.getpass('security key: ')
             toyz_settings = decrypt_pickle(toyz_settings, security_key)
         self.__dict__ = toyz_settings.__dict__
     

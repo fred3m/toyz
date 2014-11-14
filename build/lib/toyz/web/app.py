@@ -1,8 +1,7 @@
 """
-web_app.py
 Runs the webserver for Toyz
 Copyright 2014 by Fred Moolekamp
-License: GPLv3
+License: MIT
 """
 
 from __future__ import division,print_function
@@ -310,7 +309,7 @@ class ToyzWebApp(tornado.web.Application):
         if tornado.options.options.port is not None:
             self.toyz_settings.web.port = tornado.options.options.port
         
-        if self.toyz_settings.web.authenticate:
+        if self.toyz_settings.security.user_login:
             main_handler = AuthMainHandler
             static_handler = AuthOtherStaticFileHandler
             toyz_static_handler = AuthToyzStaticFileHandler

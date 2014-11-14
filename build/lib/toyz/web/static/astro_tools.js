@@ -1,3 +1,7 @@
+// Utilities useful for astronomy applications
+// Copyright 2014 by Fred Moolekamp
+// License: MIT
+
 // convert degrees to sexagesimal
 Toyz.Astro.deg2sex=function(x){
     var y=Math.abs(x);

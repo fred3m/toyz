@@ -1,3 +1,8 @@
+"""
+Interface to sqlite
+Copyright 2014 by Fred Moolekamp
+License: MIT
+"""
 from __future__ import print_function, division
 
 import os
@@ -16,13 +21,6 @@ def init():
     """
     pass
 
-def check_admin(db_settings, user, **kwargs):
-    """
-    If the user is acting as an administrator, verify the admin password
-    """
-    # TODO: make check work
-    pass
-
 def create_database(db_settings, user, **kwargs):
     """
     Creates a new database. SQLite does not password protect its databases, so if you want
@@ -34,9 +32,9 @@ def create_database(db_settings, user, **kwargs):
     ----------
     db_settings: object
         - Database settings
-    user: object
-        - Toyz user. These have no function in the SQLite framework, but other databases
-        may need this information
+    user: ToyzUser
+        - These have no function in the SQLite framework to create a database, but other databases
+        need this information to check permissions
     kwargs: optional
         - In case other db's need additional parameters, this ensures the function will run
         properly
@@ -49,13 +47,15 @@ def create_database(db_settings, user, **kwargs):
 def check_tbl_permissions(db_settings, user, table_name, permissions):
     """
     Check whether or not a user has permission to find (search), read, or write to a table.
+    This prevents users from 
     
     Parameters
     ----------
     db_settings: object
         - Database settings
-    user: object
-        - Toyz user
+    user: ToyzUser
+    table_name: sting
+        - Name of the table whose permissions are being checked
     permissions: string
         - Permissions to check
     
@@ -65,7 +65,7 @@ def check_tbl_permissions(db_settings, user, table_name, permissions):
         - True, if the user has all of the given permissions for the table, False otherwise
     """
     # This statement ensures that the `tbl_permisions` table can be created
-    if table_name=='tbl_permissions' and user.user_id=='admin':
+    if user.user_id=='admin':
         return True
     try:
         db = sqlite3.connect(db_settings.path)
@@ -101,8 +101,8 @@ def get_table_names(db_settings, user, **kwargs):
     ----------
     db_settings: object
         - Database settings
-    user: object
-        - Toyz user, used to check which tables the user has permission to find
+    user: ToyzUser
+        - Used to check which tables the user has permission to find
     kwargs: optional
         - In case other db's need additional parameters, this ensures the function will run
         properly
@@ -131,8 +131,7 @@ def create_index(db_settings, user, table_name, idx_name, columns, **kwargs):
     ----------
     db_settings: object
         - Database settings
-    user: object
-        - Toyz user
+    user: ToyzUser
     table_name: string
         - name of table to be created
     columns: list of strings
@@ -156,8 +155,7 @@ def insert_rows(db_settings, user, table_name, columns, rows, **kwargs):
     ----------
     db_settings: object
         - Database settings
-    user: object
-        - Toyz user (to ensure that the user has write access to the table)
+    user: ToyzUser
     table_name: string
         - Name of the table
     columns: list of strings
@@ -200,8 +198,7 @@ def create_table(db_settings, user, table_name, columns, keys=[], indices={},
     ----------
     db_settings: object
         - Database settings
-    user: object
-        - Toyz user
+    user: ToyzUser
     table_name: string
         - name of table to be created
     column_prop: dict of lists
@@ -292,8 +289,7 @@ def get_path_ids(db_settings, user, paths):
     ----------
     db_settings: object
         - Database settings
-    user: object
-        - Toyz user
+    user: ToyzUser
     paths: dict of path names
         
     Returns
@@ -313,20 +309,63 @@ def get_path_ids(db_settings, user, paths):
 def update_path_info(db_settings, user, paths):
     """
     Update user and group permissions for a path.
+    
+    Parameters
+    ----------
+    db_settings: object
+        - Database settings
+    user: ToyzUser
+    paths: dict of dicts
+        - The keys of the top level dictionary are the paths
+        - Each path has a dictionary with 1 mandatory and two optional keys:
+            * users: dict
+                - permissions for the folder
+                - Each key is a user, with values for that users permisions
+                -Notes:
+                    * '*' represents all users, and defaults to '' (no permissions)
+                    * The admin account has 'frwx' permissions for all paths unless explicitely forbidden
+            * groups: dict
+                - Same as users but contains group permissions
+            * owner: string, optional
+                - owner of the folder
+                - defaults to the user supplied above
+            * recursive: boolean, optional
+                - whether or not the children of the folder will inherit permissions
+                - defaults to True
+        - Example:
+            paths = {
+                '~/toyz/folder1': {
+                    'users': {
+                        '*': 'fr',          # all unspecified users can find and read files from the path 
+                        'usr1': 'frwx       # usr1 has full access to the path
+                    },
+                    'recursive': True       # all sub-directories will be set to the same permissions
+                },
+                '~/toyz/folder1/secret.txt': {
+                    'users': {
+                        '*': '',            # all unspecified users have no access to the file
+                        'admin': ''         # even the admin user has no access to this file
+                    },
+                    'groups': {
+                        'trusted': 'fr'     # all members of this group can find and read the file
+                    }
+                    'owner': 'usr2'         # usr2 will automatically have full access
+                }
+            }
     """
     db = sqlite3.connect(db_settings.path)
     path_ids = get_path_ids(db_module, user, paths)
     
-    for path in paths:
+    for path, permissions in paths.items():
         for user_id in path['users']:
             db.execute(
-                "update user_paths set path_id=?, user_id=?, permissions=? where path=?",
-                (path_ids[path], user_id, path['users'][user_id]))
+                "update user_paths set permissions=? where path_id=? and user_id=?;",
+                (path['users'][user_id], path_ids[path], user_id))
         if 'groups' in path:
             for group in path['groups']:
                 db.execute(
-                    "update group_paths set path_id=?, group=?, permissions=? where path=?",
-                    (path_ids[path], group, path['groups'][group]))
+                    "update group_paths set permissions=? where path_id=? and group_id=?;",
+                    (path, path_ids[path], group, path['groups'][group]))
             
     db.commit()
     db.close()
@@ -339,8 +378,7 @@ def get_path_info(db_settings, user, path):
     ----------
     db_settings: object
         - Database settings
-    user: object
-        - Toyz user
+    user: ToyzUser
     path: string
         - Inquired path
     

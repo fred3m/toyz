@@ -1,3 +1,8 @@
+"""
+Utilities to access path and file permissions for the server
+Copyright 2014 by Fred Moolekamp
+License: MIT
+"""
 from __future__ import print_function, division
 import os
 import importlib
@@ -8,7 +13,7 @@ import core
 
 def split_path(path_in):
     """
-    Split a path into its folders
+    Split a path into a list of its folders
     """
     path = core.normalize_path(path_in)
     drive, path = os.path.splitdrive(path)
@@ -56,6 +61,17 @@ def get_roots(db_module, user):
     pass
 
 def get_file_permissions(db_settings, user, path):
+    """
+    Get all of the permissions for a given path
+    
+    Parameters
+    ----------
+    db_settings: object
+        - Database settings
+    user: ToyzUser
+    path: string
+        - Path to check for permissions
+    """
     db_module = importlib.import_module(db_settings.interface_name)
     path_info = db_module.get_path_info(db_settings, user, path)
     permissions = None
@@ -76,8 +92,7 @@ def find_parent_permissions(db_settings, user, path):
     ----------
     db_settings: object
         - Database settings
-    user: object
-        - Toyz user making request
+    user: ToyzUser
     path: string
         - Path to begin search for permissions
     """
@@ -91,6 +106,24 @@ def find_parent_permissions(db_settings, user, path):
     return None
 
 def format_path(path_info, user):
+    """
+    When saving permissions for a path, creating and modify any required entries.
+    
+    Parameters
+    ----------
+    path_info: dict
+        - Permissions for a path
+        - Every path should have an `owner`, a dictionary of `users`, and a recursive flag.
+        - If `recursive` is set to True, all child directories will be given the
+        same permissions
+        - Each users dict should have a '*' entry, which represents all users.
+    user: ToyzUser
+    
+    Returns
+    -------
+    path_info: dict
+        - Modified path_info with default included for any missing fields
+    """
     if 'owner' not in path_info:
         path_info['owner'] = user.user_id
     if 'users' not in path_info:
@@ -188,7 +221,12 @@ def update_file_permissions(db_settings, user, paths):
                 new_paths.update(tree)
             else:
                 if 'x' in permissions:
-                    update_paths.update(tree)
+                    for tpath in tree:
+                        for user in tpath:
+                            if get_file_permissions(db_settings, user, path) is None:
+                                new_paths.update(tree)
+                            else:
+                                update_paths.update(tree)
                 else:
                     invalid_paths[path] = paths[path]
     

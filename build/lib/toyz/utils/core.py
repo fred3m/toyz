@@ -1,8 +1,7 @@
 """
-core.py
 Core classes and functions for Toyz
 Copyright 2014 by Fred Moolekamp
-License: GPLv3
+License: MIT
 """
 from __future__ import division,print_function
 import os
@@ -16,8 +15,10 @@ from multiprocessing import Process, Queue, current_process
 
 from .errors import ToyzError, ToyzDbError, ToyzWebError, ToyzJobError, ToyzWarning
 
+# Path that toyz has been installed in
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),os.pardir))
 
+# Default settings for a new toyz instance (these can be modified later through the web app)
 default_settings = {
     'config': {
         'root_path': os.path.join(ROOT_DIR),
@@ -54,11 +55,16 @@ default_settings = {
 }
 
 def normalize_path(path):
-    path = os.path.expanduser(path) # in case the path has a tilde in it
-    path = os.path.abspath(path) # shorten the path into its simplest form
-    return path
+    """
+    Format bash symbols like `~`, `.`, `..` into a full absolute path
+    """
+    return os.path.abspath(os.path.expanduser(path))
 
 def str_2_bool(bool_str):
+    """
+    Case independent function to convert a string representation of a 
+    boolean (true/false, yes/no) into a bool.
+    """
     lower_str = bool_str.lower()
     if 'true'.startswith(lower_str) or 'yes'.startswith(lower_str):
         return True
@@ -69,6 +75,10 @@ def str_2_bool(bool_str):
             "'{0}' did not match a boolean expression (true/false, yes/no, t/f, y/n)".format(bool_str))
 
 def get_bool(prompt):
+    """
+    prompt a user for a boolean expression and repeat until a valid boolean
+    has been entered.
+    """
     try:
         bool_str = str_2_bool(raw_input(prompt))
     except ToyzError:
@@ -78,7 +88,19 @@ def get_bool(prompt):
 
 def check_instance(obj, instances):
     """
-    Check if an object has alr
+    Check if an object is an instance of another object
+    
+    Parameters
+    ----------
+    obj: object
+        - Object to check
+    instances: list
+        - List of objects to crosscheck with obj
+    
+    Return
+    ------
+    is_instance: bool
+        - True if the obj is an instances of one of the objects in the list, false otherwise
     """
     for i in instances:
         if obj is i:
@@ -86,12 +108,29 @@ def check_instance(obj, instances):
     return True
 
 def save_users(toyz_settings, users):
+    """
+    Save all users to the users file (updates any changes since the last save).
+    If the `toyz_settings.security.encrypt_config` flag has been set, the 
+    class will be encrypted before it is saved.
+    
+    Parameters
+    ----------
+    toyz_settings: ToyzSettings
+        - Settings for a toyz instance
+    users: dict of ToyzUsers
+        - Keys are the id's of the toyz users, values are ToyzUsers
+    """
     if toyz_settings.security.encrypt_config:
         from toyz.utils import security
         users = security.encrypt_pickle(users, toyz_settings.security.key)
     pickle.dump(users, open(toyz_settings.users.path, 'wb'))
 
 def load_users(toyz_settings):
+    """
+    Load all users. 
+    If the file has been encrypted, the `toyz.utils.security` module is used 
+    to decrypt them. 
+    """
     users = pickle.load(open(toyz_settings.users.path, 'rb'))
     # Decrypt the users file if it is encrypted
     if 'encrypted_users' in users:
@@ -100,22 +139,48 @@ def load_users(toyz_settings):
     return users
 
 def check_pwd(app, user_id, pwd):
+    """
+    Check to see if a users password matches the one on file.
+    
+    Parameters
+    ----------
+    app: toyz.web.Application or toyz.JobApp
+        - Web or Job application containing the user
+    user_id: string
+        - Id of the user logging in
+    pwd: string
+        - password the user has entered
+    
+    Returns
+    -------
+    valid_login: bool
+        - Return is True if the user name and password 
+    """
     from passlib.context import CryptContext
+    pwd_context = CryptContext(app.toyz_settings.pwd_context)
     if user_id not in app.users:
+        # Dummy check to prevent a timing attack to guess user names
+        pwd_context.verify('foo', 'bar')
         return False
     user_hash = app.users[user_id].pwd
-    pwd_context = CryptContext(app.toyz_settings.pwd_context)
     return pwd_context.verify(pwd, user_hash)
 
 class ToyzClass:
+    """
+    I often prefer to work with classes rather than dictionaries. To allow
+    these objects to be pickled they must be as a defined class, so this is 
+    simply a class that converts a dictionary into a class.
+    """
     def __init__(self, dict_in):
         self.__dict__ = dict_in
 
 class ToyzSettings:
     def __init__(self, config_root_path=None):
-        # Check the current working directory for a config directory with a config.p file.
-        # This allows users to have a custom Toyz directory with their own configuration
-        # separate from the master install in the python directory
+        """
+        Check the current working directory for a config directory with a config.p file.
+        This allows users to have a custom Toyz directory with their own configuration
+        separate from the master install in the python directory.
+        """
         config_filename = default_settings['config']['rel_path']
         if config_root_path is None:
             if os.path.isfile(os.path.join(os.getcwd(), config_filename)):
@@ -130,6 +195,10 @@ class ToyzSettings:
             self.load_settings(config_path)
     
     def save_settings(self, security_key=None):
+        """
+        Save the toyz settings to disk. If toyz_settings.security.encrypt_config is `True`, 
+        the settings file will be encrypted (this requires a security key).
+        """
         toyz_settings = self
         if self.security.encrypt_config:
             import getpass
@@ -138,18 +207,24 @@ class ToyzSettings:
             toyz_settings = encrypt_pickle(self.__dict__, security_key)
         pickle.dump(toyz_settings, open(self.config.path, 'wb'))
     
-    def load_settings(self, config_path):
+    def load_settings(self, config_path, security_key=None):
+        """
+        Load settings. If toyz_settings.security.encrypt_config is `True`, 
+        the settings file will be decrypted (this requires a securiity key).
+        """
         toyz_settings = pickle.load(open(config_path, 'rb'))
         if hasattr(toyz_settings, 'encrypted_settings'):
             # Decrypt the config file if it is encrypted
-            import getpass
             from toyz.utils.security import decrypt_pickle
-            toyz_settings = decrypt_pickle(toyz_settings, getpass.getpass('security key: '))
+            if security_key is None:
+                import getpass
+                security_key = getpass.getpass('security key: ')
+            toyz_settings = decrypt_pickle(toyz_settings, security_key)
         self.__dict__ = toyz_settings.__dict__
     
     def first_time_setup(self, config_root_path):
         """
-        Initial setup of the Toyz application and creation of files the first time it is run.
+        Initial setup of the Toyz application and creation of files the first time it's run.
     
         Parameters
         ----------
@@ -268,13 +343,11 @@ class ToyzUser:
         
         Parameters
         ----------
-        app: tornado.web.application, optional
-            - Web app running on the server. This parameter is only given if the user 
-            is being added to a web app.
-        
+        toyz_settings: toyz.core.ToyzSettings
+            - settings for the toyz web and job applications
         user_settings: key word arguments
             - Parameters passed to the function specific to the given user. The only 
-            required field is the user_id, all other fields are optional and will be set 
+            required field is the `user_id`, all other fields are optional and will be set 
             to the default values specified in the code.
         """
         check4keys(user_settings, ['user_id'])
@@ -392,6 +465,9 @@ class ToyzUser:
         return myStr
 
 class Toy:
+    """
+    A toy built on the toyz framework.
+    """
     def __init__(self, toy, module=None, path=None, config=None, key=None):
         self.name = toy
         self.module = module

@@ -1,11 +1,11 @@
 // settings.js
-// Settings for Astropyp
+// Settings for Toyz
 // Copyright 2014 by Fred Moolekamp
 // License: GPLv3
 
-Astropyp.namespace('Astropyp.Settings');
+Toyz.namespace('Toyz.Console.Settings');
 
-Astropyp.Settings.getAdminSettings = function(params){
+Toyz.Console.Settings.getAdminSettings = function(params){
     var user_names = {};
     var group_opts = {};
     for(var user_name in params.users){
@@ -90,7 +90,7 @@ Astropyp.Settings.getAdminSettings = function(params){
     return admin_settings;
 };
 
-Astropyp.Settings.getAccountSettings = function(params){
+Toyz.Console.Settings.getAccountSettings = function(params){
     var account_settings = {
         account: {
             type: 'label',
@@ -154,7 +154,7 @@ Astropyp.Settings.getAccountSettings = function(params){
     return account_settings;
 }
 
-Astropyp.Settings.getImgViewerSettings = function(options){
+Toyz.Console.Settings.getImgViewerSettings = function(options){
     var params = {
         directory: {
             file_dialog: options.file_dialog

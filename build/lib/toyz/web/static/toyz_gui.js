@@ -1,5 +1,28 @@
+// Graphical user interface tools
+// Copyright 2014 by Fred Moolekamp
+// License: MIT
+
+Toyz.namespace('Toyz.Gui');
+
+// For some odd reason the value of a checkbox is not true/false as one would expect. 
+// This returns the 'correct' value of an element, even if it is a checkbox. 
+// This also returns a number instead of a string if the input type='number'
+Toyz.Gui.val=function($e){
+    if(!($e instanceof jQuery)){
+        $e=$($e);
+    };
+    
+    if($e.prop('type')=='checkbox'){
+        return $e.prop('checked');
+    }else if($e.prop('type')=='number'){
+        return Number($e.val());
+    }else{
+        return $e.val();
+    }
+};
+
 // Two dimensional slider
-Toyz.Core.initSlider2d=function(options){
+Toyz.Gui.initSlider2d=function(options){
     var slider2d=$.extend(true,{
         xmin:0,
         xmax:10,
@@ -95,7 +118,7 @@ Toyz.Core.initSlider2d=function(options){
 // After a file is selected the function "clickOpen" is called. By default this
 // function does nothing, so initiate or declare this later on to tell the
 // application what to do with the file. 
-Toyz.Core.initFileDialog=function(options){
+Toyz.Gui.initFileDialog=function(options){
     if(!options.hasOwnProperty('element') || !options.hasOwnProperty('websocket')){
         alert("An html element and websocket must be specified to open a file dialog!");
         return {};
@@ -264,7 +287,7 @@ Toyz.Core.initFileDialog=function(options){
     return fileDialog;
 };
 
-Toyz.Core.buildParamDiv = function(param, $div, key){
+Toyz.Gui.buildParamDiv = function(param, $div, key){
     var $input=$('<'+param.type+'/>');
     var $paramDiv=$('<div/>');
     if(param.hasOwnProperty('divClass')){
@@ -358,9 +381,7 @@ Toyz.Core.buildParamDiv = function(param, $div, key){
     return param;
 }
 
-Toyz.Core.initParams=function(param, $parent, key){
-    var utils = Toyz.Core;
-    
+Toyz.Gui.initParams=function(param, $parent, key){
     if(!param.hasOwnProperty('type')){
         param.type = 'input';
     };
@@ -409,14 +430,13 @@ Toyz.Core.initParams=function(param, $parent, key){
                 condition.type = 'input';
             };
         
-            condition = utils.buildParamDiv(condition,$div,pKey);
-            pVal = utils.val(condition.$input);
+            condition = Toyz.Gui.buildParamDiv(condition,$div,pKey);
+            pVal = Toyz.Gui.val(condition.$input);
             condition.old_val = pVal;
             condition.$input.change(function(condition,param){
                 return function(){
-                    var utils = Toyz.Core;
                     var old_set = param.paramSets[condition.old_val];
-                    var pVal = utils.val(condition.$input);
+                    var pVal = Toyz.Gui.val(condition.$input);
                     var new_set = param.paramSets[pVal];
                     old_set.old_display = old_set.$div.css('display');
                     old_set.$div.css('display','none');
@@ -429,19 +449,19 @@ Toyz.Core.initParams=function(param, $parent, key){
                 //console.log(key,paramSet);
                 var newSet = param.paramSets[pSet];
                 newSet.$div = $('<div/>');
-                newSet = Toyz.Core.initParams(newSet, $div, pSet);
+                newSet = Toyz.Gui.initParams(newSet, $div, pSet);
                 // TODO: The next line may not be necessary
                 //$div.append(newSet.$div);
                 newSet.old_display = newSet.$div.css('display');
                 newSet.$div.css('display','none');
             };
         
-            var keyVal = utils.val(condition.$input);
+            var keyVal = Toyz.Gui.val(condition.$input);
             var selected = param.paramSets[keyVal];
             selected.$div.css('display', selected.$div.css('display', selected.old_display));
         }else{
             for(var key in param.params){
-                param.params[key] = utils.initParams(param.params[key], $div, key);
+                param.params[key] = Toyz.Gui.initParams(param.params[key], $div, key);
             };
         };
         
@@ -512,7 +532,7 @@ Toyz.Core.initParams=function(param, $parent, key){
                                 $li.prop('id', new_key);
                                 var new_item = $.extend(true, {}, param.newItem);
                                 //new_item.$div = $('<div/>');
-                                new_item = utils.initParams(new_item, $li, new_key);
+                                new_item = Toyz.Gui.initParams(new_item, $li, new_key);
                                 new_item.$div.prepend($radio);
                                 $li.append(new_item.$div);
                                 new_item.$radio = $radio;
@@ -559,21 +579,20 @@ Toyz.Core.initParams=function(param, $parent, key){
             }
         };
         for(var button in param.buttons){
-            param.buttons[button]=utils.buildParamDiv(param.buttons[button],$button_div,button);
+            param.buttons[button]=Toyz.Gui.buildParamDiv(param.buttons[button],$button_div,button);
         };
         $parent.append(param.$div);
     }else{
-        param=utils.buildParamDiv(param, $parent,key);
+        param=Toyz.Gui.buildParamDiv(param, $parent,key);
     };
 
     return param;
 };
 
-Toyz.Core.initParamList=function(pList,options){
+Toyz.Gui.initParamList=function(pList,options){
     options=$.extend(true,{},options);
-    var utils=Toyz.Core;
     var param_list=$.extend(true,{
-        params:utils.initParams(pList, options.$parent, 'param-list'),
+        params:Toyz.Gui.initParams(pList, options.$parent, 'param-list'),
         parseParam:function(params, param_name, param){
             if(param.type == 'custom'){
                 if(param.hasOwnProperty('val')){
@@ -592,7 +611,7 @@ Toyz.Core.initParamList=function(pList,options){
                     params[param_name].push(item_values);
                 };
             }else{
-                var val=utils.val(param.$input);
+                var val=Toyz.Gui.val(param.$input);
                 if(param.hasOwnProperty('units')){
                     if(param.units.length>1){
                         val=[val,param.$units.val()];
@@ -612,7 +631,7 @@ Toyz.Core.initParamList=function(pList,options){
                         pKey = param;
                     };
                 };
-                var subset = param_list.getParams(paramDiv.paramSets[utils.val(paramDiv.params[pKey].$input)]);
+                var subset = param_list.getParams(paramDiv.paramSets[Toyz.Gui.val(paramDiv.params[pKey].$input)]);
                 for(var subParam in subset){
                     params[subParam] = subset[subParam];
                 };
@@ -701,7 +720,7 @@ Toyz.Core.initParamList=function(pList,options){
     return param_list;
 };
 
-Toyz.Core.buildContextMenu = function(menu){
+Toyz.Gui.buildContextMenu = function(menu){
     var ctx_menu = {
         type: 'list',
         items: {
@@ -716,7 +735,7 @@ Toyz.Core.buildContextMenu = function(menu){
     }
 };
 
-Toyz.Core.initContextMenu = function(params){
+Toyz.Gui.initContextMenu = function(params){
     var ctx_menu = $.extend(true,{
         
     }, params.options);

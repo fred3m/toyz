@@ -1,7 +1,6 @@
-// toyz_core.js
 // Core for Toyz
 // Copyright 2014 by Fred Moolekamp
-// License: GPLv3
+// License: MIT
 
 // Global Namespace for Toyz scripts
 var Toyz=Toyz||{};
@@ -19,6 +18,10 @@ Toyz.namespace=function(namespace){
     };
     return parent;
 };
+
+// Define the core objects that all Toyz modules will require
+Toyz.namespace('Toyz.Core');
+
 // Returns the object at the end of a namespace
 // example: Toyz.Core.getNamespace('Mainviewer.loadFitsFile',window) returns the function loadFitsFile
 // in the fitsviewer
@@ -30,9 +33,6 @@ Toyz.Core.getNamespace=function(functionName, context) {
     return context;
 };
 
-// Define the core objects that all Toyz modules will require
-Toyz.namespace('Toyz.Core');
-
 // Maximum requestId of a request sent to the server during a single session 
 // before looping back to zero
 Toyz.Core.MAX_ID=Math.pow(2,40);
@@ -43,9 +43,9 @@ Toyz.Core.jobsocketInit=function(options){
         sendTask:function(task,callback,passParams){
             if(jobsocket.ws.readyState==1 && jobsocket.sessionId!=-1){
                 task.id={
-                    userId:jobsocket.userId,
-                    sessionId:jobsocket.sessionId,
-                    requestId:jobsocket.currentRequest++
+                    user_id:jobsocket.userId,
+                    session_id:jobsocket.sessionId,
+                    request_id:jobsocket.currentRequest++
                 };
                 // In case there are multiple requestId increments before reaching this line
                 // we make sure to reset the counter with enough space to avoid duplicate id's

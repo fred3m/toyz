@@ -1,3 +1,8 @@
+"""
+Security Functions for Toyz
+Copyright 2014 by Fred Moolekamp
+License: MIT
+"""
 def encrypt_pickle(app_settings):
     """
     Encrypt the app settings using a config file. Not yet supported

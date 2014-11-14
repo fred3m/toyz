@@ -1,3 +1,9 @@
+// Visualization tools for Toyz applications
+// Copyright 2014 by Fred Moolekamp
+// License: MIT
+
+Toyz.namespace('Toyz.Gui');
+
 // Canvas with multiple layers
 Toyz.Visual.initMultiCanvas=function(div,options){
     var $div;
@@ -337,25 +343,6 @@ Toyz.Visual.initPlotWindow=function(options){
     },options.sliderOpts);
     $('#'+plotWindow.sliderName).slider(sliderOptions);
     return plotWindow;
-};
-
-/* 
-For some odd reason the value of a checkbox is not true/false as one would expect. This returns the
-'correct' value of an element, even if it is a checkbox. This also returns a number instead of a
-string if the input type='number'
-*/
-Toyz.Visual.val=function($e){
-    if(!($e instanceof jQuery)){
-        $e=$($e);
-    };
-    
-    if($e.prop('type')=='checkbox'){
-        return $e.prop('checked');
-    }else if($e.prop('type')=='number'){
-        return Number($e.val());
-    }else{
-        return $e.val();
-    }
 };
 
 console.log('toyz_visual.js loaded');
