@@ -1,3 +1,4 @@
+
 import os
 import sys
 import glob
@@ -7,11 +8,11 @@ from setuptools import find_packages
 
 # Package info
 PACKAGE_NAME = "toyz"
-DESCRIPTION = "Interface to run python plots and scripts from a web browser"
+DESCRIPTION = "Data reduction and analysis software"
 LONG_DESC = "Interface to run python plots and scripts from a web browser"
 AUTHOR = "Fred Moolekamp"
 AUTHOR_EMAIL = "fred3public@gmail.com"
-LICENSE = "GPLv3"
+LICENSE = "MIT"
 URL = "http://www.pas.rochester.edu/~fmooleka/"
 
 # VERSION should be PEP386 compatible (http://www.python.org/dev/peps/pep-0386)
@@ -32,7 +33,6 @@ setup(name=PACKAGE_NAME,
     scripts=scripts,
     requires=[
         'tornado', # Web server and web application framework
-        'passlib', # Password encryption and authentication
     ],
     #install_requires=[],
     #provides=[PACKAGE_NAME],

@@ -1,31 +1,126 @@
 """
-web_app.py
 Runs the webserver for Toyz
 Copyright 2014 by Fred Moolekamp
-License: GPLv3
+License: MIT
 """
 
 from __future__ import division,print_function
 import sys
+import platform
 import os.path
 import shutil
-import cPickle as pickle
+import importlib
+import socket
 
 import tornado.ioloop
 import tornado.options
 import tornado.web
 import tornado.websocket
 import tornado.escape
-from tornado.options import options
 
 # Imports from Toyz package
 from toyz.utils import core
 from toyz.utils import file_access
-from toyz import utils.web
-from toyz.config import default_config
-from toyz.errors import ToyzError
+from toyz.utils.errors import ToyzError, ToyzWebError
 
-class AuthLoginHandler(utils.web.BaseHandler):
+tornado.options.define("port", default=None, help="run on the given port", type=int)
+tornado.options.define("root_path", default=None, 
+    help="Use root_path as the root directory for a Toyz instance")
+tornado.options.parse_command_line()
+
+class ToyzHandler(tornado.web.RequestHandler):
+    def get_toyz_path(self, path):
+        """
+        Given a toyz path, return the root path for the 
+        """
+        toyz_info = path.split('/')
+        toy_name = toyz_info[0]
+        rel_path = '/'.join(toyz_info[1:])
+        user = self.app.users[self.get_user_id()]
+    
+        if toy_name in user.toyz:
+            root, rel_path = os.path.split(user.toyz[toy].full_path)
+        else:
+            raise tornado.web.HTTPError(404)
+            
+        full_path = os.path.join(root, path)
+        permissions = find_parent_permissions(self.application.db_settings, user, full_path)
+        if 'r' in permissions or 'x' in permissions:
+            return root, rel_path
+        else:
+            raise tornado.web.HTTPError(404)
+    
+    def get_current_user(self):
+        """
+        Load the name of the current user
+        """
+        return self.get_secure_cookie("user")
+    
+    def get_user_id():
+        user_id = self.get_current_user().strip('"')
+        return user_id
+
+class AuthHandler:
+    def get_current_user(self):
+        """
+        Load the name of the current user
+        """
+        return self.get_secure_cookie("user")
+
+class ToyzTemplateHandler(ToyzHandler, tornado.web.RequestHandler):
+    def initialize(self, **options):
+        """
+        Initialize handler
+        """
+        self.options=options
+    
+    @tornado.web.asynchronous
+    def get(self, path):
+        self.template_path, rel_path= self.get_toyz_path(path)
+        self.render(rel_path)
+    
+    def get_template_path():
+        return self.template_path
+
+class AuthToyzTemplateHandler(AuthHandler, ToyzTemplateHandler):
+    @tornado.web.authenticated
+    def get(self, path):
+        ToyzTemplateHandler.get(self, path)
+    
+
+class ToyzStaticFileHandler(ToyzHandler, tornado.web.StaticFileHandler):
+    """
+    Secure handler for all toyz added to the application. This handles security, such as making sure
+    the user has a registered cookie and that the user has acces to the requested files.
+    """
+    @tornado.web.asynchronous
+    def get(self, path):
+        self.root, rel_path = self.get_toyz_path(path)
+        tornado.web.StaticFileHandler.get(self,rel_path)
+
+class AuthToyzStaticFileHandler(AuthHandler, ToyzStaticFileHandler):
+    @tornado.web.authenticated
+    def get(self, path):
+        ToyzStaticFileHandler.get(self, path)
+
+class AuthStaticFileHandler(AuthHandler, tornado.web.StaticFileHandler):
+    @tornado.web.authenticated
+    def get(self, path):
+        tornado.web.StaticFileHandler.get(self, path)
+    
+    def validate_absolute_path(self, root, full_path):
+        print('root:{0}, full_path:{1}'.format(root, full_path))
+        user = self.application.users[self.get_current_user()]
+        permissions = find_parent_permissions(self.application.db_settings, user, full_path)
+        if 'r' in permissions or 'x' in permissions:
+            absolute_path = tornado.web.StaticFileHandler.validate_absolute_path(
+                    self, root, full_path)
+        else:
+            absolute_path = None
+        print('Absoulte path:', absolute_path)
+        return absolute_path
+
+class AuthLoginHandler(AuthHandler, tornado.web.RequestHandler):
     def initialize(self):
         """
         When the handler is initialized, set the path to the template that needs to be rendered
@@ -43,7 +138,7 @@ class AuthLoginHandler(utils.web.BaseHandler):
         self.application.settings['template_path'] = self.template_path
         self.render('login.html', err_msg=err_msg, next=self.get_argument('next'))
     
-    def set_current_user(self,userId):
+    def set_current_user(self,user_id):
         """
         Send a secure cookie to the client to keep the user logged into the system
         
@@ -56,8 +151,8 @@ class AuthLoginHandler(utils.web.BaseHandler):
         -------
         None
         """
-        if userId:
-            self.set_secure_cookie('user',tornado.escape.json_encode(userId))
+        if user_id:
+            self.set_secure_cookie('user',tornado.escape.json_encode(user_id))
         else:
             self.clear_cookie('user')
     
@@ -65,21 +160,16 @@ class AuthLoginHandler(utils.web.BaseHandler):
         """
         Load the userId and password passed to the server from the client and check authentication
         """
-        userId = self.get_argument('userId',default='')
+        user_id = self.get_argument('user_id',default='')
         pwd = self.get_argument('pwd',default='')
-        if web_utils.check_pwd(userId,pwd):
-            if userId not in core.active_users:
-                try:
-                    user_settings = web_utils.load_all_users_settings()[userId]
-                except KeyError:
-                    web_utils.save_user_settings(userId,{})
-                    user_settings = {}
-                core.active_users[userId] = WebUser(userId, user_settings)
+        if core.check_pwd(self.application, user_id, pwd):
+            if user_id not in self.application.active_users:
+                self.application.active_users[user_id] = self.application.users[user_id]
                 print('Users logged in:')
-                for user_name, user in core.active_users.iteritems():
-                    print(user.userId)
-            self.set_current_user(userId)
-            self.redirect( self.get_argument('next',u'/'))
+                for user_name, user in self.application.active_users.items():
+                    print(user.user_id)
+            self.set_current_user(user_id)
+            self.redirect(self.get_argument('next',u'/'))
         else:
             redirect = u'/auth/login/?error='
             redirect += tornado.escape.url_escape('Invalid username or password')
@@ -115,8 +205,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         -------
         None
         """
-        userId=self.get_secure_cookie('user').strip('"')
-        web_utils.update_users(userId, websocket=self)
+        user_id=self.get_secure_cookie('user').strip('"')
+        self.user = self.application.new_session(user_id, websocket=self)
         #self.user = core.active_users[userId]
         #core.active_users[userId].add_session(websocket=self)
 
@@ -185,213 +275,106 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         
         process_job(decoded)
 
-class MainHandler(utils.web.BaseHandler):
+class MainHandler(ToyzHandler):
     """
     Main Handler when user connects to `localhost:8888/`
     """
-    pass
+    def initialize(self, template_name, template_path):
+        """
+        Initialize handler
+        """
+        self.template_name = template_name
+        self.template_path = template_path
+    
+    @tornado.web.asynchronous
+    def get(self):
+        self.render(self.template_name)
+    
+    def get_template_path(self):
+        return self.template_path
 
-class Application(tornado.web.Application):
-    def __init__(self, app_settings):
-        self.app_settings = app_settings
+class AuthMainHandler(MainHandler):
+    @tornado.web.authenticated
+    def get(self):
+        MainHandler.get(self)
+
+class ToyzWebApp(tornado.web.Application):
+    def __init__(self):
+        if tornado.options.options.root_path is not None:
+            root_path = core.normalize_path(tornado.options.options.root_path)
+        else:
+            root_path = tornado.options.options.root_path
+        
+        self.toyz_settings = core.ToyzSettings(root_path)
+        if tornado.options.options.port is not None:
+            self.toyz_settings.web.port = tornado.options.options.port
+        
+        if self.toyz_settings.web.authenticate:
+            main_handler = AuthMainHandler
+            static_handler = AuthOtherStaticFileHandler
+            toyz_static_handler = AuthToyzStaticFileHandler
+            toyz_template_handler = AuthToyzTemplateHandler
+        else:
+            main_handler = MainHandler
+            static_handler = tornado.web.StaticFileHandler
+            toyz_static_handler = ToyzStaticFileHandler
+            toyz_template_handler = ToyzTemplateHandler
+        
+        self.users = core.load_users(self.toyz_settings)
+        self.active_users = {}
+        
+        if platform.system() == 'Windows':
+            file_path = os.path.splitdrive(core.ROOT_DIR)
+        else:
+            file_path = '/'
         
         handlers = [
-            (r"/", MainHandler, {
+            (r"/", main_handler, {
                 'template_name': 'home.html',
-                'template_path': [core.ROOT_DIR, 'web', 'templates']
+                'template_path': os.path.join(core.ROOT_DIR, 'web', 'templates')
             }),
             (r"/auth/login/", AuthLoginHandler),
             (r"/auth/logout/", AuthLogoutHandler),
-            (r"/static/(.*)", utils.web.AuthStaticFileHandler, {
-                'path': self.app_settings['static_path']
-            }),
-            (r"/users/(.*)", UserHandler),
-            (r"/toyz/(*.)", ToyzHandler),
+            #(r"/static/(.*)", static_handler, {'path': self.toyz_settings.config.root_path}),
+            (r"/file/(.*)", static_handler, {'path': file_path}),
+            (r"/toyz/static/(.*)", toyz_static_handler),
+            (r"/toyz/template/(.*)", toyz_template_handler),
             (r"/job", WebSocketHandler),
-            # TODO: Remove the next two handlers and load them with global toyz
-            (r"/scrollTable", utils.web.BaseHandler, {
-                'template_name': 'scrollTable.html',
-                'template_path': web_settings['template_path']
-            }),
-            (r"/viewer", utils.web.BaseHandler, {
-                'template_name': 'image-viewer.html',
-                'template_path': self.app_settings['template_path']
-            }),
         ]
         
         settings={
-            'static_path': self.app_settings['static_path'],
-            'cookie_secret': self.app_settings['cookie_secret'],
+            'static_path': core.ROOT_DIR,
+            'cookie_secret': self.toyz_settings.web.cookie_secret,
             'login_url':'/auth/login/'
         }
         tornado.web.Application.__init__(self, handlers, **settings)
+        
+        self.toyz_settings.web.port = self.find_open_port(self.toyz_settings.web.port)
+    
+    def find_open_port(self, port):
+        """
+        Begin at `port` and search for an open port on the server
+        """
+        open_port = port
+        try:
+            self.listen(port)
+        except socket.error:
+            open_port = self.find_open_port(port+1)
+        return open_port
 
-def first_time_setup(config_path):
-    """
-    Initial setup of the Toyz application and creation of files the first time it is run.
-    
-    Parameters
-    ----------
-    None
-    
-    Returns
-    -------
-    app_settings: dict
-        - Dictionary with settings for the Toyz application
-    """
-    import getpass
-    
-    app_settings = default_config.app_settings
-    
-    # Create users
-    admin_pwd = 'admin'
-    if core.get_bool(
-            "The default admin password is 'admin'. It is recommended that you change this "
-            "if multiple users will be accessing the web application.\n\n"
-            "change password? "):
-        admin_pwd = getpass.getpass("new password: ")
-    
-    users = {
-        'admin':{
-            utils.web.ToyzUser(
-                web_settings=app_settings['web'], 
-                user_id='admin', 
-                pwd=admin_pwd, 
-                groups=['admin'])}}
-    save_users(users)
-    
-    # Create a database and folder permissions table
-    app_settings['db']['name'] = os.path.basename(app_settings['db']['path'])
-    db_module = importlib.import_module(app_settings['db']['interface_name'])
-    db_module.create_database(app_settings['db'])
-    db_module.create_table(
-        db_settings=app_settings['db'],
-        user=users['admin'],
-        table_name='tbl_permissions',
-        columns=OrderedDict([
-            ('table_name', ['VARCHAR']),
-            ('permissions', ['VARCHAR'])
-        ]),
-        indices={'tbl_idx':('table_name')},
-        users={'*','', 'admin':'frw'}
-    )
-    db_module.create_table(
-        db_settings=app_settings['db'],
-        user=users['admin'],
-        table_name='paths',
-        columns=OrderedDict([
-            ('path_id', ['PRIMARY','KEY','AUTOINCREMENT']),
-            ('path', ['VARCHAR']),
-            ('owner', ['VARCHAR']),
-        ]),
-        indices={'path_idx':('path')},
-        users={'*','frw', 'admin':'frw'}
-    )
-    db_module.create_table(
-        db_settings=app_settings['db'],
-        user=users['admin'],
-        table_name='user_paths',
-        columns=OrderedDict([
-            ('user_id', ['VARCHAR']),
-            ('path_id', ['INTEGER']),
-            ('permissions', ['VARCHAR']),
-        ]),
-        indices={'user_idx':('user_id')},
-        users={'*','frw', 'admin':'frw'}
-    )
-    db_module.create_table(
-        db_settings=app_settings['db'],
-        user=users['admin'],
-        table_name='group_paths',
-        columns=OrderedDict([
-            ('group_id', ['VARCHAR']),
-            ('path_id', ['INTEGER']),
-            ('permissions', ['VARCHAR']),
-        ]),
-        indices={'path_idx':('path')},
-        users={'*','frw', 'admin':'frw'}
-    )
-    
-    file_access.update_file_permissions(db_settings, users['admin'], {
-        core.ROOT_DIR: {
-            'users': {
-                '*': ''
-            }
-        }
-    })
-    
-    save_settings(app_settings)
-    return app_settings
-
-def web_app_login(user_id, pwd, app_settings):
-    pwd_context = CryptContext(app_settings.pwd_context)
-    if user_id not in app_settings.users:
-        # Dummy verify to prevent a timing attack (https://crackstation.net/hashing-security.htm)
-        pwd_context.verify('dummy pwd', 'dummy pwd')
-        raise errors.ToyzWebError("Invalid username/password")
-    if not pwd_context.verify(pwd, users['users'][user_id]['pwd']):
-        raise errors.ToyzWebError("Invalid username/password")
-    
-    return users[user_id]
-
-def find_open_port(port):
-    open_port = port
-    try:
-        self.listen(port)
-    except: socket.error:
-        open_port = find_port(port+1)
-    return open_port
-
-def init():
+def init_web_app():
     """
     Run the web application on the server
     """
     print("Server root directory:", core.ROOT_DIR)
     
-    # Check the current working directory and its 'config' subdirectory for a config file
-    # This allows users to have a custom Toyz directory with their own configuration
-    # separate from the master install in the python directory
-    config_name = default_config.app_settings['web']['config_name']
-    config_path = default_config.app_settings['web']['config_path']
-    if os.path.isfile(os.path.join(os.getcwd(), config_name)):
-        config_path = os.isfile(os.path.join(os.getcwd(), config_name))
-    elif os.path.isfile(os.path.join(os.getcwd(), 'config', config_name)):
-        config_path = os.isfile(os.path.join(os.getcwd(), 'config', config_name))
-    else:
-        if not os.path.isfile(config_path):
-            first_time_setup(config_path)
-    
-    app_settings = pickle.load(open(config_path, 'rb'))
-    
-    # Decrypt the config file if it is encrypted
-    if core.str_2_bool(app_settings['config_encrypted']):
-        import getpass
-        from toyz.utils.security import decrypt_config
-        decrypt_config(app_settings, getpass.getpass('key: '))
-    
-    tornado.options.define("port", default=default_config['port'], help="run on the given port", type=int)
-    tornado.options.define("new_path", default=None, help="create a new directory structure in the current path")
-    tornado.options.parse_command_line()
-    
-    # Create a new file structure if the user wants to create a new working directory
-    if options.new_path is not None:
-        if os.path.isdir(options.new_path):
-            new_path = options.new_path
-        elif (core.str_2_bool(raw_input(
-            "Create a new toyz instance in '{0}'? ".format(os.getcwd())))
-        ):
-            new_path = os.getcwd()
-        create_new_instance(new_path, app_settings)
-    
-    # Apply settings entered at the command line
-    app_settings['port'] = options.port
-    
     # Initialize the tornado web application
-    toyz_app = Application(app_settings)
+    toyz_app = ToyzWebApp()
+    print("Application root directory:", toyz_app.toyz_settings.config.root_path)
     
     # Continuous loop to wait for incomming connections
-    print("Server is running on port", toyz_app.port)
-    #tornado.ioloop.IOLoop.instance().start()
+    print("Server is running on port", toyz_app.toyz_settings.web.port)
+    tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == "__main__":
     init_web_app()

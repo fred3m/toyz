@@ -1,3 +1,9 @@
+"""
+Job tasks sent from web client
+Copyright 2014 by Fred Moolekamp
+License: MIT
+"""
+
 def load_directory(id, params):
     core.check4key(params,['path'])
     showHidden=False

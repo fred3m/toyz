@@ -1,30 +1,31 @@
+"""
+Utilities to access path and file permissions for the server
+Copyright 2014 by Fred Moolekamp
+License: MIT
+"""
+from __future__ import print_function, division
 import os
+import importlib
+from collections import OrderedDict
 
 from toyz.utils.errors import ToyzError
-
-def normalize_path(path):
-    path = os.path.expanduser(path) # in case the path has a tilde in it
-    path = os.path.normpath(path) # shorten the path into its simplest form
-    return path
+import core
 
 def split_path(path_in):
     """
-    Split a path into its folders
+    Split a path into a list of its folders
     """
-    path = normalize_path(path_in)
+    path = core.normalize_path(path_in)
     drive, path = os.path.splitdrive(path)
     folders = []
     while True:
         path, folder = os.path.split(path)
-        print path, folder
-        print folders
         if folder != '':
             folders.append(folder)
         else:
             if path != '':
                 folders.append(path)
             break
-    print 'folders:', folders
     folders.reverse()
     return folders
 
@@ -32,7 +33,7 @@ def get_all_parents(path):
     """
     Create a list with all of the parent directories of the file or path
     """
-    path = normalize_path(path)
+    path = core.normalize_path(path)
     parent = os.path.dirname(path)
     last_parent = None
     parents = []
@@ -40,14 +41,13 @@ def get_all_parents(path):
         parents.append(parent)
         last_parent = parent
         parent = os.path.dirname(parent)
-        print parent, last_parent
     return parents
 
 def get_path_tree(path):
     """
     Get all of the sub directories of path
     """
-    path = normalize_path(path)
+    path = core.normalize_path(path)
     tree = []
     for path, dirs, files in os.walk(path):
         tree.append(path)
@@ -61,15 +61,27 @@ def get_roots(db_module, user):
     pass
 
 def get_file_permissions(db_settings, user, path):
-    path_info = db_settings.db_module.get_path_info(db_settings, user, path)
-    permissions = ''
-    if user_id in path_info['users']:
-        permissions = path_info['users'][user_id]
-    else:
-        permissions = ''.join([p for g,p in path_info['groups'] if g in user.groups])
-        permissions = ''.join(set(permissions))
-    if permissions = '':
-        permissions = None
+    """
+    Get all of the permissions for a given path
+    
+    Parameters
+    ----------
+    db_settings: object
+        - Database settings
+    user: ToyzUser
+    path: string
+        - Path to check for permissions
+    """
+    db_module = importlib.import_module(db_settings.interface_name)
+    path_info = db_module.get_path_info(db_settings, user, path)
+    permissions = None
+    if path_info is not None:
+        if user_id in path_info['users']:
+            permissions = path_info['users'][user_id]
+        else:
+            permissions = ''.join([p for g,p in path_info['groups'] if g in user.groups])
+            permissions = ''.join(set(permissions))
+    
     return permissions
 
 def find_parent_permissions(db_settings, user, path):
@@ -80,8 +92,7 @@ def find_parent_permissions(db_settings, user, path):
     ----------
     db_settings: object
         - Database settings
-    user: object
-        - Toyz user making request
+    user: ToyzUser
     path: string
         - Path to begin search for permissions
     """
@@ -95,6 +106,24 @@ def find_parent_permissions(db_settings, user, path):
     return None
 
 def format_path(path_info, user):
+    """
+    When saving permissions for a path, creating and modify any required entries.
+    
+    Parameters
+    ----------
+    path_info: dict
+        - Permissions for a path
+        - Every path should have an `owner`, a dictionary of `users`, and a recursive flag.
+        - If `recursive` is set to True, all child directories will be given the
+        same permissions
+        - Each users dict should have a '*' entry, which represents all users.
+    user: ToyzUser
+    
+    Returns
+    -------
+    path_info: dict
+        - Modified path_info with default included for any missing fields
+    """
     if 'owner' not in path_info:
         path_info['owner'] = user.user_id
     if 'users' not in path_info:
@@ -170,6 +199,7 @@ def update_file_permissions(db_settings, user, paths):
     new_paths = OrderedDict()
     update_paths = OrderedDict()
     invalid_paths = {}
+    db_module = importlib.import_module(db_settings.interface_name)
     
     # Check whether a path entry has been created and that user has permissions to create/modify them
     for path in paths:
@@ -185,33 +215,38 @@ def update_file_permissions(db_settings, user, paths):
                 tree = get_path_tree(path)
                 tree = OrderedDict(((t, paths[path]) for t in tree))
             else:
-                tree = OrderedDict((path, paths[path]))
+                tree = OrderedDict(((path, paths[path]),))
         
             if permissions is None:
                 new_paths.update(tree)
             else:
                 if 'x' in permissions:
-                    update_paths.update(tree)
+                    for tpath in tree:
+                        for user in tpath:
+                            if get_file_permissions(db_settings, user, path) is None:
+                                new_paths.update(tree)
+                            else:
+                                update_paths.update(tree)
                 else:
                     invalid_paths[path] = paths[path]
     
     if len(new_paths)>0:
         # Add an entry in the paths table
-        db_settings.db_module.insert_rows(
-            db_settings=app_settings['db'],
+        db_module.insert_rows(
+            db_settings=db_settings,
             user=user,
             table_name='paths',
             columns = ('path', 'owner'),
-            rows = [(path, new_paths['owner']) for path in new_paths]
+            rows = [(path, new_paths[path]['owner']) for path in new_paths]
         )
         
-        path_ids = get_path_ids(db_module, user, new_paths)
+        path_ids = db_module.get_path_ids(db_settings, user, new_paths)
         # Create an entry in the user_paths table
-        user_paths = [(user, path_ids[path], permissions) 
-            for user, permissions in path_info['users'].items()
-                for path, path_info in new_paths.items()]
-        db_settings.db_module.insert_rows(
-            db_settings=app_settings['db'],
+        user_paths = [(u, path_ids[path], permissions) 
+            for path, path_info in new_paths.items()
+                for u, permissions in path_info['users'].items()]
+        db_module.insert_rows(
+            db_settings=db_settings,
             user=user,
             table_name='user_paths',
             columns = ('user_id', 'path_id', 'permissions'),
@@ -223,8 +258,8 @@ def update_file_permissions(db_settings, user, paths):
             group_paths = [(group, path_ids[path], permissions) 
                 for group, permissions in path_info['groups'].items()
                     for path, path_info in new_paths.items()]
-            db_settings.db_module.insert_rows(
-                db_settings=app_settings['db'],
+            db_module.insert_rows(
+                db_settings=db_settings,
                 user=user,
                 table_name='paths',
                 columns = ('group_id', 'path_id', 'permissions'),
@@ -232,6 +267,6 @@ def update_file_permissions(db_settings, user, paths):
             )
     
     if len(update_paths)>0:
-        db_settings.db_module.update_path_info(db_settings, user, update_paths)
+        db_module.update_path_info(db_settings, user, update_paths)
     
     return invalid_paths

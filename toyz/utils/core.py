@@ -1,24 +1,70 @@
 """
-core.py
 Core classes and functions for Toyz
 Copyright 2014 by Fred Moolekamp
-License: GPLv3
+License: MIT
 """
 from __future__ import division,print_function
 import os
 import sys
-import traceback
 import importlib
+import base64
+import uuid
+import cPickle as pickle
+from collections import OrderedDict
 from multiprocessing import Process, Queue, current_process
 
 from .errors import ToyzError, ToyzDbError, ToyzWebError, ToyzJobError, ToyzWarning
 
+# Path that toyz has been installed in
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),os.pardir))
-default_config_path = os.path.join(core.ROOT_DIR, 'config')
 
-active_users = {}
+# Default settings for a new toyz instance (these can be modified later through the web app)
+default_settings = {
+    'config': {
+        'root_path': os.path.join(ROOT_DIR),
+        'rel_path': os.path.join('config', 'toyz_config.p'),
+        'paths': ['config', 'users', 'db']
+    },
+    'users': {
+        'rel_path': os.path.join('users', 'users.p'),
+        'enable_guest': True
+    },
+    'db': {
+        'db_type': 'sqlite',
+        'interface_name': 'toyz.utils.db_interfaces.sqlite_interface',
+        'rel_path': os.path.join('db', 'toyz.db')
+    },
+    'web': {
+        'port': 8888,
+        'cookie_secret': base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes),
+        'static_path': os.path.join(ROOT_DIR, 'web', 'static'),
+        'template_path': os.path.join(ROOT_DIR, 'web', 'templates'),
+    },
+    'security': {
+        'encrypt_config': False,
+        'encrypt_db': False,
+        'user_login': False,
+        'pwd_context': {
+            'schemes': ['sha512_crypt','pbkdf2_sha512'],
+            'default': "sha512_crypt",
+            'sha512_crypt__default_rounds': 500000,
+            'pbkdf2_sha512__default_rounds': 100000,
+            'all__vary_rounds': 0.1  # vary rounds parameter randomly when creating new hashes
+        }
+    }
+}
+
+def normalize_path(path):
+    """
+    Format bash symbols like `~`, `.`, `..` into a full absolute path
+    """
+    return os.path.abspath(os.path.expanduser(path))
 
 def str_2_bool(bool_str):
+    """
+    Case independent function to convert a string representation of a 
+    boolean (true/false, yes/no) into a bool.
+    """
     lower_str = bool_str.lower()
     if 'true'.startswith(lower_str) or 'yes'.startswith(lower_str):
         return True
@@ -29,8 +75,12 @@ def str_2_bool(bool_str):
             "'{0}' did not match a boolean expression (true/false, yes/no, t/f, y/n)".format(bool_str))
 
 def get_bool(prompt):
+    """
+    prompt a user for a boolean expression and repeat until a valid boolean
+    has been entered.
+    """
     try:
-        bool_str = core.str_2_bool(raw_input(prompt))
+        bool_str = str_2_bool(raw_input(prompt))
     except ToyzError:
         print("'{0}' did not match a boolean expression (true/false, yes/no, t/f, y/n)".format(bool_str))
         return get_bool(prompt)
@@ -38,105 +88,399 @@ def get_bool(prompt):
 
 def check_instance(obj, instances):
     """
-    Check if an object has alr
+    Check if an object is an instance of another object
+    
+    Parameters
+    ----------
+    obj: object
+        - Object to check
+    instances: list
+        - List of objects to crosscheck with obj
+    
+    Return
+    ------
+    is_instance: bool
+        - True if the obj is an instances of one of the objects in the list, false otherwise
     """
     for i in instances:
         if obj is i:
             return False
     return True
 
-def find_loops(obj, instances=[], dicts=(dict), sequences=(tuple, list, set, frozenset)):
+def save_users(toyz_settings, users):
     """
-    Check for infinite loops in the structure of a sequence object
+    Save all users to the users file (updates any changes since the last save).
+    If the `toyz_settings.security.encrypt_config` flag has been set, the 
+    class will be encrypted before it is saved.
     
     Parameters
     ----------
-    obj: dictionary or sequence
-        - Object to check for infinite loops
-    instances: list of dictionaries or sequences
-        - List of objects already defined in the current branch of the larger object
-    dicts: list of dictionary types
-        - Objects with key:value pairs to search for loops. This defaults to [dict] but
-        other objects like collections.OrderedDict can also be used
-    sequences: list of sequence types
-        - Sequences to search for loops. See the collections module for other available sequences
+    toyz_settings: ToyzSettings
+        - Settings for a toyz instance
+    users: dict of ToyzUsers
+        - Keys are the id's of the toyz users, values are ToyzUsers
     """
-    local_tree = list(instances)
-    if not check_instance(obj, local_tree):
-        return False
-    local_tree.append(obj)
-    if isinstance(obj, dicts):
-        for key, val in obj.items():
-            if not find_loops(val, local_tree, dicts, sequences):
-                return False
-    elif isinstance(obj, sequences):
-        for val in obj:
-            if not find_loops(val, local_tree, dicts, sequences):
-                return False
-    return True
+    if toyz_settings.security.encrypt_config:
+        from toyz.utils import security
+        users = security.encrypt_pickle(users, toyz_settings.security.key)
+    pickle.dump(users, open(toyz_settings.users.path, 'wb'))
 
-def dict_2_obj(entries, check_recursive=True, check_sequences=(tuple, list, set, frozenset),
-                    dicts=(dict), sequences=(tuple, list, set, frozenset)
-    ):
+def load_users(toyz_settings):
     """
-    Convert a dictionary into a class with the same structure.
+    Load all users. 
+    If the file has been encrypted, the `toyz.utils.security` module is used 
+    to decrypt them. 
+    """
+    users = pickle.load(open(toyz_settings.users.path, 'rb'))
+    # Decrypt the users file if it is encrypted
+    if 'encrypted_users' in users:
+        from toyz.utils.security import decrypt_pickle
+        users = decrypt_pickle(users, toyz_settings.security.key)
+    return users
+
+def check_pwd(app, user_id, pwd):
+    """
+    Check to see if a users password matches the one on file.
     
     Parameters
     ----------
-    entries: dict
-        - Dictionary to convert into an object
-    check_recursive: boolean, optional
-        - If True, the function recursively searches the dictionary to check for any infinte loops.
-    check_sequences: list of sequence types, optional
-        - Types of sequences to iterate through and convert dictionaries to objects.
-        If the list is empty, no sequences will be search for dictionaries to convert
-    dicts: list of dictionary types, optional
-        - Objects with key:value pairs to search for loops. This defaults to [dict] but
-        other objects like collections.OrderedDict can also be used
-    sequences: list of sequence types, optional
-        - Sequences to search for loops. See the collections module for other available sequences
+    app: toyz.web.Application or toyz.JobApp
+        - Web or Job application containing the user
+    user_id: string
+        - Id of the user logging in
+    pwd: string
+        - password the user has entered
     
     Returns
     -------
-    top: object
-        - Object created from the dictionary
+    valid_login: bool
+        - Return is True if the user name and password 
     """
-    if not isinstance(entries, dicts):
-        raise ToyzError("Class must be initialized from a dictionary")
-    if check_recursive and not find_loops(entries, [], dicts, sequences):
-        raise ToyzError("Inifinite loop found in dictionary")
-    
-    top = type('new', (object,), entries)
-    for key, val in entries.items():
-    	if isinstance(val, dicts):
-    	    setattr(top, key, dict_2_obj(val, check_recursive, check_sequences, dicts, sequences))
-    	elif isinstance(val, check_sequences):
-    	    setattr(top, key, 
-    		    type(val)(
-                    dict_2_obj(val, check_recursive, check_squences, dicts, sequences)
-                    if isinstance(elem, dicts) else elem for elem in val
-                )
-            )
-        elif callable(val):
-            # Callable objects are functions. Next we test if the function is a class method
-            # or static method by looking for a `cls` or `self` as the first variable
-            if 'cls' == val.func_code.co_varnames[0] or 'self' == val.func_code.co_varnames[0]:
-                setattr(top, key, classmethod(val))
-            else:
-                setattr(top, key, staticmethod(val))
-    	else:
-    	    setattr(top, key, val)
-    return top
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(app.toyz_settings.pwd_context)
+    if user_id not in app.users:
+        # Dummy check to prevent a timing attack to guess user names
+        pwd_context.verify('foo', 'bar')
+        return False
+    user_hash = app.users[user_id].pwd
+    return pwd_context.verify(pwd, user_hash)
 
-def export_class_externals(obj):
+class ToyzClass:
     """
-    Create a dictionary with only the external attributes of the class. Per PEP 8
-    (http://www.python.org/dev/peps/pep-0008/): leading underscores and double underscores
-    are only used for internal methods, so we remove all entries that begin with '_'.
-    The difference between this and the built in '__dict__' method is that this function
-    also writes the functions to the dictionary.
+    I often prefer to work with classes rather than dictionaries. To allow
+    these objects to be pickled they must be as a defined class, so this is 
+    simply a class that converts a dictionary into a class.
     """
-    return {key: getattr(obj, key) for key in dir(obj) if key[0]!='_'}
+    def __init__(self, dict_in):
+        self.__dict__ = dict_in
+
+class ToyzSettings:
+    def __init__(self, config_root_path=None):
+        """
+        Check the current working directory for a config directory with a config.p file.
+        This allows users to have a custom Toyz directory with their own configuration
+        separate from the master install in the python directory.
+        """
+        config_filename = default_settings['config']['rel_path']
+        if config_root_path is None:
+            if os.path.isfile(os.path.join(os.getcwd(), config_filename)):
+                config_root_path = os.getcwd()
+            else:
+                config_root_path = default_settings['config']['root_path']
+        
+        config_path = os.path.join(config_root_path, config_filename)
+        if not os.path.isfile(config_path):
+            self.first_time_setup(config_root_path)
+        else:
+            self.load_settings(config_path)
+    
+    def save_settings(self, security_key=None):
+        """
+        Save the toyz settings to disk. If toyz_settings.security.encrypt_config is `True`, 
+        the settings file will be encrypted (this requires a security key).
+        """
+        toyz_settings = self
+        if self.security.encrypt_config:
+            import getpass
+            from toyz.utils.security import encrypt_pickle
+            self.security.key = security_key
+            toyz_settings = encrypt_pickle(self.__dict__, security_key)
+        pickle.dump(toyz_settings, open(self.config.path, 'wb'))
+    
+    def load_settings(self, config_path, security_key=None):
+        """
+        Load settings. If toyz_settings.security.encrypt_config is `True`, 
+        the settings file will be decrypted (this requires a securiity key).
+        """
+        if security_key is None:
+            security_key = getpass.getpass('security key: ')
+        toyz_settings = pickle.load(open(config_path, 'rb'))
+        if hasattr(toyz_settings, 'encrypted_settings'):
+            # Decrypt the config file if it is encrypted
+            import getpass
+            from toyz.utils.security import decrypt_pickle
+            toyz_settings = decrypt_pickle(toyz_settings, security_key)
+        self.__dict__ = toyz_settings.__dict__
+    
+    def first_time_setup(self, config_root_path):
+        """
+        Initial setup of the Toyz application and creation of files the first time it's run.
+    
+        Parameters
+        ----------
+        config_root_path: string
+            - Root path of the new Toyz instance
+        """
+        import getpass
+        from toyz.utils import file_access
+    
+        for key, val in default_settings.items():
+            setattr(self, key, ToyzClass(val))
+        self.config_root_path = config_root_path
+    
+        # Create config directory if it does not exist
+        print("\nToyz: First Time Setup\n----------------------\n")
+        while not get_bool(
+                "Create new Toyz configuration in '{0}'? ".format(self.config.root_path)):
+            self.config.root_path = normalize_path(raw_input("new path: "))
+        self.config.path = os.path.join(
+            self.config.root_path,
+            self.config.rel_path
+        )
+        create_paths([self.config.root_path, os.path.join(self.config.root_path, 'config')])
+    
+        # Create users
+        admin_pwd = 'admin'
+        if get_bool(
+                "The default admin password is 'admin'. It is recommended that you change this "
+                "if multiple users will be accessing the web application.\n\n"
+                "change password? "):
+            admin_pwd = getpass.getpass("new password: ")
+    
+        users = {
+            'admin':ToyzUser(
+                toyz_settings=self, 
+                user_id='admin', 
+                pwd=admin_pwd, 
+                groups=['admin'])}
+        
+        self.users.path = os.path.join(self.config.root_path, 
+                                                self.users.rel_path)
+        pickle.dump(users, open(self.users.path, 'wb'))
+    
+        # Create a database and folder permissions table
+        self.db.path = os.path.join(self.config.root_path, 
+                                            self.db.rel_path)
+        create_paths(os.path.dirname(self.db.path))
+        db_module = importlib.import_module(self.db.interface_name)
+        db_module.create_database(self.db, users['admin'])
+        db_module.create_table(
+            db_settings=self.db,
+            user=users['admin'],
+            table_name='tbl_permissions',
+            columns=OrderedDict([
+                ('table_name', ['VARCHAR']),
+                ('permissions', ['VARCHAR'])
+            ]),
+            indices={'tbl_idx':('table_name',)},
+            users={'*':'', 'admin':'frw'}
+        )
+        db_module.create_table(
+            db_settings=self.db,
+            user=users['admin'],
+            table_name='paths',
+            columns=OrderedDict([
+                ('path_id', ['INTEGER','PRIMARY','KEY','AUTOINCREMENT']),
+                ('path', ['VARCHAR']),
+                ('owner', ['VARCHAR']),
+            ]),
+            indices={'path_idx':('path',)},
+            users={'*':'frw', 'admin':'frw'}
+        )
+        db_module.create_table(
+            db_settings=self.db,
+            user=users['admin'],
+            table_name='user_paths',
+            columns=OrderedDict([
+                ('user_id', ['VARCHAR']),
+                ('path_id', ['INTEGER']),
+                ('permissions', ['VARCHAR']),
+            ]),
+            indices={'user_idx':('user_id',)},
+            users={'*':'frw', 'admin':'frw'}
+        )
+        db_module.create_table(
+            db_settings=self.db,
+            user=users['admin'],
+            table_name='group_paths',
+            columns=OrderedDict([
+                ('group_id', ['VARCHAR']),
+                ('path_id', ['INTEGER']),
+                ('permissions', ['VARCHAR']),
+            ]),
+            indices={'group_idx':('group_id',)},
+            users={'*':'frw', 'admin':'frw'}
+        )
+    
+        file_access.update_file_permissions(self.db, users['admin'], {
+            self.config.root_path: {
+                'users': {
+                    '*': ''
+                }
+            }
+        })
+    
+        print("\nFirst Time Setup completed")
+        self.save_settings()
+
+class ToyzUser:
+    """
+    User logged into the Toyz web application
+    """
+    def __init__(self, toyz_settings, **user_settings):
+        """
+        Initialize a Toyz User
+        
+        Parameters
+        ----------
+        toyz_settings: toyz.core.ToyzSettings
+            - settings for the toyz web and job applications
+        user_settings: key word arguments
+            - Parameters passed to the function specific to the given user. The only 
+            required field is the `user_id`, all other fields are optional and will be set 
+            to the default values specified in the code.
+        """
+        check4keys(user_settings, ['user_id'])
+        self.__dict__.update(user_settings)
+        
+        # Set default values for missing attributes
+        defaults = {
+            'groups': [],
+            'open_sessions': {},
+            'workspaces': {},
+            'toyz': {},
+            'paths': {},
+            'pwd': self.user_id,
+            'app': None
+        }
+        for setting, val in defaults.items():
+            if not hasattr(self, setting):
+                setattr(self, setting, val)
+        
+        # Ensure that required directories exist
+        if 'user' not in self.paths:
+            self.paths['user'] = os.path.join(
+                toyz_settings.config.root_path, 'users', self.user_id)
+        if 'temp' not in self.paths:
+            self.paths['temp'] = os.path.join(self.paths['user'], 'temp')
+        create_paths([path for key, path in self.paths.items()])
+        
+        if self.app is not None:
+            self.app.update_users(self)
+    
+    def get_session_id(self, websocket):
+        for session_id in self.open_sessions:
+            if self.open_sessions[session_id]==websocket:
+                return session_id
+        return None
+    
+    def add_session(self, websocket, session_id=None):
+        if session_id is None:
+            session_id = str(
+                datetime.datetime.now()).replace(' ','__').replace('.','-').replace(':','_')
+        self.open_sessions[session_id] = websocket
+        create_paths(websocket.path)
+        websocket.session = {
+            'user_id': self.user_id,
+            'session_id': session_id,
+            'path': os.path.join(self.paths['temp'], session_id)
+        }
+        websocket.write_message({
+            'id': 'initialize',
+            'user_id': self.user_id,
+            'session_id': session_id
+        })
+    
+    def get_settings(self):
+        return self.__dict__
+    
+    def add_toyz(self, toyz, paths):
+        """
+        Add a toyz from a list of packages and/or a list of paths on the server
+
+        Parameters
+        ----------
+        toyz: list
+            - elements are either names of packages built on the toyz framework or dictionaries, 
+            where the keys are names to identify each package and the values are
+            package names.
+        paths: dict of strings
+            - Keys are names to identify each toy
+            - Values are paths to modules that have not been packaged but fit the toyz framework
+
+        Returns
+        -------
+        None
+        """
+        new_handlers = []
+
+        for toy in toyz:
+            if isinstance(toy, dict):
+                module = importlib.import_module(toyz(toy))
+                self.toyz[toy] = core.Toy(toyz(toy), module=module, key=toy)
+            else:
+                module = importlib.import_module(toy)
+            self.toyz[toy] = core.Toy(toy, module=module)
+                
+        for toy, path in paths.items:
+            contents = os.listdir(path)
+            if 'toy_config.py' in contents:
+                sys.path.insert(0, path)
+                # Load the config file for the current package
+                try:
+                    reload(toy_config)
+                except NameError:
+                    import toy_config
+                toy_name = toy_config.name
+                self.toyz[toy] = core.Toy(toy_name, config=toy_config, path=path, key=toy)
+            else:
+                raise ToyzError("Config file not found for module {0} in {1}".format(toy, path))
+    
+    def __str__(self):
+        """
+        __str__
+        String representation of the class
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        myStr: string
+            -String with each attribute and its value
+        """
+        myStr=''
+        for attr,value in self.__dict__.iteritems():
+            myStr += attr+':'+str(value)+'\n'
+        return myStr
+
+class Toy:
+    """
+    A toy built on the toyz framework.
+    """
+    def __init__(self, toy, module=None, path=None, config=None, key=None):
+        self.name = toy
+        self.module = module
+        self.path = path
+        self.config = config
+        self.key = key
+        if self.config is None:
+            self.config = module.config
+        if self.key is None:
+            self.key = self.name
+    
+    def reload(self, module):
+        reload(self.name)
 
 def job_worker():
     pass    

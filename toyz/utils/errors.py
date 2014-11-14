@@ -1,4 +1,12 @@
 """
+Error classes for Toyz
+Copyright 2014 by Fred Moolekamp
+License: MIT
+"""
+
+import traceback
+
+"""
 Error types used in Toyz
 """
 
