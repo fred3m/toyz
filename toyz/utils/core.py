@@ -11,7 +11,7 @@ import base64
 import uuid
 import cPickle as pickle
 from collections import OrderedDict
-from multiprocessing import Process, Queue, current_process
+import multiprocessing
 
 from .errors import ToyzError, ToyzDbError, ToyzWebError, ToyzJobError, ToyzWarning
 
@@ -23,7 +23,9 @@ default_settings = {
     'config': {
         'root_path': os.path.join(ROOT_DIR),
         'rel_path': os.path.join('config', 'toyz_config.p'),
-        'paths': ['config', 'users', 'db']
+        'paths': ['config', 'users', 'db'],
+        'short_queues': max(multiprocessing.cpu_count()-1,1),
+        'long_queues': 1
     },
     'users': {
         'rel_path': os.path.join('users', 'users.p'),
@@ -43,7 +45,7 @@ default_settings = {
     'security': {
         'encrypt_config': False,
         'encrypt_db': False,
-        'user_login': False,
+        'user_login': True,
         'pwd_context': {
             'schemes': ['sha512_crypt','pbkdf2_sha512'],
             'default': "sha512_crypt",
@@ -107,37 +109,6 @@ def check_instance(obj, instances):
             return False
     return True
 
-def save_users(toyz_settings, users):
-    """
-    Save all users to the users file (updates any changes since the last save).
-    If the `toyz_settings.security.encrypt_config` flag has been set, the 
-    class will be encrypted before it is saved.
-    
-    Parameters
-    ----------
-    toyz_settings: ToyzSettings
-        - Settings for a toyz instance
-    users: dict of ToyzUsers
-        - Keys are the id's of the toyz users, values are ToyzUsers
-    """
-    if toyz_settings.security.encrypt_config:
-        from toyz.utils import security
-        users = security.encrypt_pickle(users, toyz_settings.security.key)
-    pickle.dump(users, open(toyz_settings.users.path, 'wb'))
-
-def load_users(toyz_settings):
-    """
-    Load all users. 
-    If the file has been encrypted, the `toyz.utils.security` module is used 
-    to decrypt them. 
-    """
-    users = pickle.load(open(toyz_settings.users.path, 'rb'))
-    # Decrypt the users file if it is encrypted
-    if 'encrypted_users' in users:
-        from toyz.utils.security import decrypt_pickle
-        users = decrypt_pickle(users, toyz_settings.security.key)
-    return users
-
 def check_pwd(app, user_id, pwd):
     """
     Check to see if a users password matches the one on file.
@@ -157,13 +128,91 @@ def check_pwd(app, user_id, pwd):
         - Return is True if the user name and password 
     """
     from passlib.context import CryptContext
-    pwd_context = CryptContext(app.toyz_settings.pwd_context)
+    pwd_context = CryptContext(**app.toyz_settings.security.pwd_context)
     if user_id not in app.users:
         # Dummy check to prevent a timing attack to guess user names
         pwd_context.verify('foo', 'bar')
         return False
     user_hash = app.users[user_id].pwd
     return pwd_context.verify(pwd, user_hash)
+
+def check4keys(myDict,keys):
+    """
+    check4key
+    
+    Checks a dictionary for a set of required keys
+    
+    Parameters
+    ---------
+    myDict: dictionary
+        -Dictionary to be searched
+    keys: list
+        -List of keys to search for in the dictionary
+    Returns
+    -------
+    No returns but the function raises a JobError and lists all required keys missing from the dictionary
+    """
+    error=""
+    if any(key not in myDict for key in keys):
+        for key in keys:
+            if key not in myDict:
+                error=error+key+", "
+    if error!="":
+        raise ToyzError("Missing parameters: "+error)
+
+def create_paths(paths):
+    """                                                                         
+    Search for paths on the server. If a path does not exist, create the necessary directories.                                                                
+    For example, if paths=['~/Documents/images/2014-6-5_data/'] and only the path                                                                     
+    '~/Documents' exists, both '~/Documents/images/' and '~/Documents/images/2014-6-5_data/'                                                 
+    are created.
+    
+    Parameters                                                                  
+    ----------                                                                  
+    paths: string or list of strings                                            
+        -If paths is a string, this is the path to search for and create. If paths is a list, each one                                                         
+        is a path to search for and create                                      
+                                                                                
+    Returns                                                                     
+    -------                                                                     
+        -None                                                                   
+    """
+    if isinstance(paths,basestring):
+            paths=[paths]
+    for path in paths:
+        try:
+            os.makedirs(path)
+        except OSError:
+            if not os.path.isdir(path):
+                raise ToyzError("Problem creating new directory, check user permissions")
+
+def progress_log(text,id):
+    """
+    progressLog
+    
+    Create a dictionary that can be sent to the clients logger to display the progress of a job running on the server.
+    
+    Parameters
+    ----------
+    text: string
+        - Text to be sent to be displayed on the clients logger
+    
+    Returns
+    -------
+    response: dictionary
+        - The response has the format of an astropyp websocket response, namely an id that identifies the type
+        of response being sent to the client and then any fields specific to the response (in this case 'log').
+        
+        Example:
+            response={
+                'id':'progress log',
+                'log':'Detecting source objects'
+            }
+        
+        The clients logger will display the 'log' field of the dictionary.
+    """
+    log = {'id':"progress log",'log':text}
+    respond(id, log)
 
 class ToyzClass:
     """
@@ -173,6 +222,59 @@ class ToyzClass:
     """
     def __init__(self, dict_in):
         self.__dict__ = dict_in
+
+class ToyzApplication:
+    """
+    Currently the only type of Toyz Application is a ToyzWebApp, which inherits
+    from both this class and `tornado.web.application`. It is possible in the
+    future there will be a separate job application that just runs jobs
+    and communicates with the web applications by an event driven table in
+    a database.
+    """
+    def update_users(self,user):
+        if user.user_id not in self.users:
+            self.users[user_id] = user
+    
+    def save_users(toyz_settings, users):
+        """
+        Save all users to the users file (updates any changes since the last save).
+        If the `toyz_settings.security.encrypt_config` flag has been set, the 
+        class will be encrypted before it is saved.
+    
+        Parameters
+        ----------
+        toyz_settings: ToyzSettings
+            - Settings for a toyz instance
+        users: dict of ToyzUsers
+            - Keys are the id's of the toyz users, values are ToyzUsers
+        """
+        if toyz_settings.security.encrypt_config:
+            from toyz.utils import security
+            users = security.encrypt_pickle(users, toyz_settings.security.key)
+        pickle.dump(users, open(toyz_settings.users.path, 'wb'))
+
+    def load_users(self, toyz_settings):
+        """
+        Load all users. 
+        If the file has been encrypted, the `toyz.utils.security` module is used 
+        to decrypt them. 
+        """
+        users = pickle.load(open(toyz_settings.users.path, 'rb'))
+        # Decrypt the users file if it is encrypted
+        if 'encrypted_users' in users:
+            from toyz.utils.security import decrypt_pickle
+            users = decrypt_pickle(users, toyz_settings.security.key)
+        return users
+    
+    def process_job(self, msg):
+        user = self.users[msg['id']['user_id']]
+        if 'queue' in msg:
+            if msg['queue'] in user.queues:
+                user.queues[msg['queue']].add_job(msg)
+            else:
+                raise ToyzError("Invalid queue sent to server")
+        else:
+            user.queues['long'].add_job(msg)
 
 class ToyzSettings:
     def __init__(self, config_root_path=None):
@@ -250,7 +352,11 @@ class ToyzSettings:
         create_paths([self.config.root_path, os.path.join(self.config.root_path, 'config')])
     
         # Create users
-        admin_pwd = 'admin'
+        # TODO: by default, there will be no login, so the next section should be
+        # removed once the code is working properly
+        from passlib.context import CryptContext
+        pwd_context = CryptContext(**self.security.pwd_context)
+        admin_pwd = pwd_context.encrypt('admin')
         if get_bool(
                 "The default admin password is 'admin'. It is recommended that you change this "
                 "if multiple users will be accessing the web application.\n\n"
@@ -361,7 +467,8 @@ class ToyzUser:
             'toyz': {},
             'paths': {},
             'pwd': self.user_id,
-            'app': None
+            'app': None,
+            'queue_info': {'short':1, 'long':1}
         }
         for setting, val in defaults.items():
             if not hasattr(self, setting):
@@ -378,6 +485,14 @@ class ToyzUser:
         if self.app is not None:
             self.app.update_users(self)
     
+    def init_job_queues(self):
+        self.queues = {}
+        for q_name, q_count in self.queue_info.items():
+            self.queues[q_name] = ToyzJobQueue(
+                queue_name=q_name,
+                process_count=q_count
+            )
+    
     def get_session_id(self, websocket):
         for session_id in self.open_sessions:
             if self.open_sessions[session_id]==websocket:
@@ -385,20 +500,22 @@ class ToyzUser:
         return None
     
     def add_session(self, websocket, session_id=None):
+        import datetime
         if session_id is None:
             session_id = str(
                 datetime.datetime.now()).replace(' ','__').replace('.','-').replace(':','_')
         self.open_sessions[session_id] = websocket
-        create_paths(websocket.path)
         websocket.session = {
-            'user_id': self.user_id,
+            'user': self,
             'session_id': session_id,
-            'path': os.path.join(self.paths['temp'], session_id)
+            'path': os.path.join(self.paths['temp'], session_id),
+            'app': self.app
         }
+        create_paths(websocket.session['path'])
         websocket.write_message({
             'id': 'initialize',
             'user_id': self.user_id,
-            'session_id': session_id
+            'session_id': session_id,
         })
     
     def get_settings(self):
@@ -482,199 +599,152 @@ class Toy:
     def reload(self, module):
         reload(self.name)
 
-def job_worker():
-    pass    
-
-def run_job(job):
+class ToyzJobQueue:
     """
-    run_job
+    An environment for a single user to run tasks.
+    """
+    def __init__(self, queue_name, process_count):
+        self.queue_name = queue_name
+        self.processes = []
+        self.queue = multiprocessing.Queue()
+        print('Initializing processes')
+        for p in range(process_count):
+            process = multiprocessing.Process(
+                name=queue_name+'-'+str(p),
+                target=self.job_worker,
+                args=(self.queue,)
+            )
+            process.daemon = True
+            process.start()
+            self.processes.append(process)
     
-    Loads modules and runs a job (function) sent from a client. Any errors will be trapped and flagged as 
-    an AstopypError and sent back to the client who initiated the job. All job functions will take exactly 3
-    parameters: id,params,websocket. The id is the user, session, and request id information (see below), params
-    is a dictionary of parameters sent by the client, and websocket is the current websocket processing the job.
+    def add_job(self, job):
+        print('job:',job)
+        self.queue.put(job)
+        print('ok')
     
-    Parameters
-    ----------
-    job: dictionary
-        - The job received from the user. The following keys are required:
-            id: dictionary
-                - dictionary that contains the following keys:
-                    userId: string
-                        - Unique identifier of the current user
-                    sessionId: string
-                        -Unique identifier of the current session
-                    requestId: string
-                        -Unique identifier for the current request sent by the client
-            module: string
-                - Python module that contains the function called by the client
-            task: string
-                - Function called by the client
-            parameters: dictionary
-                - Dictionary of required and optional parameters passed to the function
+    def close_env(self, interrupt_jobs=False):
+        self.queue.put({'close_env': True})
+    
+    def job_worker(self, queue):
+        msg = {}
+        while 'EXIT' not in msg:
+            msg = queue.get()
+            self.run_job(msg)
+            
+        print("{0} closed".format(multiprocessing.current_process().name))
+    
+    def run_job(self, job):
+        """
+        Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
+        and flagged as an ToyzError and sent back to the client who initiated the job. 
+        All job functions will take exactly 3 parameters: id,params,websocket. The id is the 
+        user, session, and request id information (see below), params is a dictionary of 
+        parameters sent by the client, and websocket is the current websocket processing the job. 
+        Each job is run as a new process, so any modules imported should be removed from memory 
+        when the job has completed.
+    
+        Parameters
+        ----------
+        job: dictionary
+            - The job received from the user. The following keys are required:
+                id: dictionary
+                    - dictionary that contains the following keys:
+                        user_id: string
+                            - Unique identifier of the current user
+                        session_id: string
+                            -Unique identifier of the current session
+                        request_id: string
+                            -Unique identifier for the current request sent by the client
+                module: string
+                    - Python module that contains the function called by the client
+                task: string
+                    - Function called by the client
+                parameters: dictionary
+                    - Dictionary of required and optional parameters passed to the function
+                }
+                comms: object
+                    - For now this is always a WebSocketHandler, used to send
+                    responses to the client. In a possible future environment where
+                    the web app and job app are separate programs connect via a db,
+                    this would be an object that writes to a table in the db, triggering
+                    an event on the web server that sends the message to the client
+            - Optional keys:
+                queue: string
+                    - This is the name of a users queue to process the job. By default
+                    every user has a `short` queue and a long `queue`, used for 
+                    processing quick and long duration jobs respectively.
+    
+        Returns
+        -------
+        There are no returns from the function but a dictionary is sent to the client.
+        response: dictionary
+            - Response is either an empty dictionary or one that contains (at a minimum) 
+            the key 'id', which is used by the client to identify the type of response it is 
+            receiving. Including the key `request_completed` with a `True` value tells the
+            client that the current request has finished and may be removed from the queue.
+    
+        Example
+        -------
+        A client might send the following job to the server:
+            job = {
+                id : {
+                    userId : 'Fred',
+                    sessionId : '12',
+                    requestId : 305
+                },
+                module : 'fitsviewer',
+                task : 'loadHeader',
+                parameters : {
+                    fileId : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
+                    frame : 0
+                }
             }
     
-    Returns
-    -------
-    There are no returns from the function but a dictionary is sent to the client.
-    response: dictionary
-        - Response is either an empty dictionary or one that contains (at a minimum) the key 'id', which is
-        used by the client to identify the type of response it is receiving.
-    
-    Example
-    -------
-    A client might send the following job to the server:
-        job = {
-            id : {
-                userId : 'Fred',
-                sessionId : '12',
-                requestId : 305
-            },
-            module : 'fitsviewer',
-            task : 'loadHeader',
-            parameters : {
-                fileId : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
-                frame : 0
+        In this case, after receiving the job, this function will import the 'fitsviewer' module (if it has not been
+        imported already) and run the function 'loadHeader(job['id'],job['parameters'],self)'. If there are any
+        errors in loading the header, a response of the form
+            response = {
+                'id' : 'ERROR',
+                'error' : 'Error message here for unable to lead header',
+                'traceback' : traceback.format_exec()
             }
-        }
-    
-    In this case, after receiving the job, this function will import the 'fitsviewer' module (if it has not been
-    imported already) and run the function 'loadHeader(job['id'],job['parameters'],self)'. If there are any
-    errors in loading the header, a response of the form
-        response = {
-            'id' : 'ERROR',
-            'error' : 'Error message here for unable to lead header',
-            'traceback' : traceback.format_exec()
-        }
-    is sent. If the header is loaded correctly a rsponse of the form
-        response = {
-            'id' : 'fitsHeader',
-            'fileId' : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
-            'frame' : 0,
-            'header' : python_list
-        }
-    is sent to the client.
-    """
-    # TODO: Eventually a job should be added to the jobs dictionary and removed after the response has been sent
-    import astro_pypelines
-    response={}
-    try:
-        module = job["module"]
-        base_module = module.split('.')[0]
-        if module == 'web_utils':
-            module = 'astropyp.web_server.web_utils'
-        elif base_module in dir(astro_pypelines.pypelines):
-            module = 'astro_pypelines.pypelines.' + module
-        elif base_module in dir(astro_pypelines.utils):
-            module = 'astro_pypelines.utils.' + module
-        pyp_module = importlib.import_module(module)
-        task = getattr(pyp_module, job["task"])
-        #print("Running task",task)
-        response = task(job['id'],job['parameters'])
-    except ToyzError as error:
-        response = {
-            'id':"ERROR",
-            'error':error.msg,
-            'traceback':traceback.format_exc()
-        }
-    except Exception as error:
-        response = {
-            'id':"ERROR",
-            'error':"PYTHON ERROR:"+type(error).__name__+str(error.args),
-            'traceback':traceback.format_exc()
-        }
-        print(traceback.format_exc())
-    if response != {}:
-        response['requestId'] = job['id']['requestId']
-        #self.write_message(response)
-        respond(job['id'],response)
-    # print("finished task")
-    #logging.info("sent message:%r",response['id'])
-
-def progress_log(text,id):
-    """
-    progressLog
-    
-    Create a dictionary that can be sent to the clients logger to display the progress of a job running on the server.
-    
-    Parameters
-    ----------
-    text: string
-        - Text to be sent to be displayed on the clients logger
-    
-    Returns
-    -------
-    response: dictionary
-        - The response has the format of an astropyp websocket response, namely an id that identifies the type
-        of response being sent to the client and then any fields specific to the response (in this case 'log').
-        
-        Example:
-            response={
-                'id':'progress log',
-                'log':'Detecting source objects'
+        is sent. If the header is loaded correctly a rsponse of the form
+            response = {
+                'id' : 'fitsHeader',
+                'fileId' : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
+                'frame' : 0,
+                'header' : python_list,
+                'request_completed': True
             }
-        
-        The clients logger will display the 'log' field of the dictionary.
-    """
-    log = {'id':"progress log",'log':text}
-    respond(id, log)
-
-def check4keys(myDict,keys):
-    """
-    check4key
-    
-    Checks a dictionary for a set of required keys
-    
-    Parameters
-    ---------
-    myDict: dictionary
-        -Dictionary to be searched
-    keys: list
-        -List of keys to search for in the dictionary
-    Returns
-    -------
-    No returns but the function raises a JobError and lists all required keys missing from the dictionary
-    """
-    error=""
-    if any(key not in myDict for key in keys):
-        for key in keys:
-            if key not in myDict:
-                error=error+key+", "
-    if error!="":
-        raise ToyzError("Missing parameters: "+error)
-
-def respond(id,response):
-    """
-    respond
-    
-    send response from job server back to the client
-    """
-    user = active_users[id['userId']]
-    websocket = user.openSessions[id['sessionId']]
-    websocket.write_message(response)
-
-def create_paths(paths):
-    """                                                                         
-    Search for paths on the server. If a path does not exist, create the necessary directories.                                                                
-    For example, if paths=['~/Documents/images/2014-6-5_data/'] and only the path                                                                     
-    '~/Documents' exists, both '~/Documents/images/' and '~/Documents/images/2014-6-5_data/'                                                 
-    are created.
-    
-    Parameters                                                                  
-    ----------                                                                  
-    paths: string or list of strings                                            
-        -If paths is a string, this is the path to search for and create. If paths is a list, each one                                                         
-        is a path to search for and create                                      
-                                                                                
-    Returns                                                                     
-    -------                                                                     
-        -None                                                                   
-    """
-    if isinstance(paths,basestring):
-            paths=[paths]
-    for path in paths:
+        is sent to the client.
+        """
+        # TODO: Eventually a job should be added to the jobs dictionary and removed after the response has been sent
+        response={}
         try:
-            os.makedirs(path)
-        except OSError:
-            if not os.path.isdir(path):
-                raise ToyzError("Problem creating new directory, check user permissions")
+            module = job["module"]
+            base_module = module.split('.')[0]
+            toyz_module = importlib.import_module(module)
+            task = getattr(toyz_module, job["task"])
+            print("Running task",task)
+            response = task(job['id'],job['parameters'], job['comms'])
+        except ToyzJobError as error:
+            response = {
+                'id':"ERROR",
+                'error':error.msg,
+                'traceback':traceback.format_exc()
+            }
+        except Exception as error:
+            import traceback
+            response = {
+                'id':"ERROR",
+                'error':"PYTHON ERROR:"+type(error).__name__+str(error.args),
+                'traceback':traceback.format_exc()
+            }
+            print(traceback.format_exc())
+        if response != {}:
+            response['request_id'] = job['id']['request_id']
+            #self.write_message(response)
+            job['comms'].write(response)
+        # print("finished task")
+        #logging.info("sent message:%r",response['id'])

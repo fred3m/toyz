@@ -164,10 +164,10 @@ class AuthLoginHandler(AuthHandler, tornado.web.RequestHandler):
         pwd = self.get_argument('pwd',default='')
         if core.check_pwd(self.application, user_id, pwd):
             if user_id not in self.application.active_users:
-                self.application.active_users[user_id] = self.application.users[user_id]
+                self.application.active_users.append(user_id)
                 print('Users logged in:')
-                for user_name, user in self.application.active_users.items():
-                    print(user.user_id)
+                for user_id in self.application.active_users:
+                    print(user_id)
             self.set_current_user(user_id)
             self.redirect(self.get_argument('next',u'/'))
         else:
@@ -187,8 +187,6 @@ class AuthLogoutHandler(tornado.web.RequestHandler):
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     """
-    WebSocketHandler
-    
     Websocket that handles jobs sent to the server from clients
     """
     
@@ -200,13 +198,10 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         ----------
         *args:
             Currently I don't pass any arguments to this function
-        
-        Returns
-        -------
-        None
         """
         user_id=self.get_secure_cookie('user').strip('"')
         self.user = self.application.new_session(user_id, websocket=self)
+        print("Web socket opened!")
         #self.user = core.active_users[userId]
         #core.active_users[userId].add_session(websocket=self)
 
@@ -226,14 +221,15 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         -------
         None
         """
-        user=core.active_users[self.session['userId']]
-        del user.openSessions[self.session['sessionId']]
-        shutil.rmtree(user.stored_dirs['session'][self.session['sessionId']])
-        if len(user.openSessions)==0:
-            shutil.rmtree(user.stored_dirs['temp'])
-            del core.active_users[self.session['userId']]
+        user = self.session['user']
+        app = self.session['app']
+        del user.open_sessions[self.session['session_id']]
+        shutil.rmtree(self.session['path'])
+        if len(user.open_sessions)==0:
+            shutil.rmtree(user.paths['temp'])
+            app.active_users.remove(user.user_id)
         
-        print('active users remaining:',core.active_users)
+        print('active users remaining:',app.active_users)
     
     def on_message(self, message):
         """
@@ -270,10 +266,11 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         """
         #logging.info("message recieved: %r",message)
         decoded=tornado.escape.json_decode(message)
-        userId=decoded['id']['userId']
-        sessionId=decoded['id']['sessionId']
+        print('task:', decoded)
+        user_id=decoded['id']['user_id']
+        session_id=decoded['id']['session_id']
         
-        process_job(decoded)
+        self.session['app'].process_job(decoded)
 
 class MainHandler(ToyzHandler):
     """
@@ -298,7 +295,7 @@ class AuthMainHandler(MainHandler):
     def get(self):
         MainHandler.get(self)
 
-class ToyzWebApp(tornado.web.Application):
+class ToyzWebApp(tornado.web.Application, core.ToyzApplication):
     def __init__(self):
         if tornado.options.options.root_path is not None:
             root_path = core.normalize_path(tornado.options.options.root_path)
@@ -311,7 +308,7 @@ class ToyzWebApp(tornado.web.Application):
         
         if self.toyz_settings.security.user_login:
             main_handler = AuthMainHandler
-            static_handler = AuthOtherStaticFileHandler
+            static_handler = AuthStaticFileHandler
             toyz_static_handler = AuthToyzStaticFileHandler
             toyz_template_handler = AuthToyzTemplateHandler
         else:
@@ -320,8 +317,10 @@ class ToyzWebApp(tornado.web.Application):
             toyz_static_handler = ToyzStaticFileHandler
             toyz_template_handler = ToyzTemplateHandler
         
-        self.users = core.load_users(self.toyz_settings)
-        self.active_users = {}
+        self.users = self.load_users(self.toyz_settings)
+        for user_id, user in self.users.items():
+            user.app = self
+        self.active_users = []
         
         if platform.system() == 'Windows':
             file_path = os.path.splitdrive(core.ROOT_DIR)
@@ -361,6 +360,36 @@ class ToyzWebApp(tornado.web.Application):
         except socket.error:
             open_port = self.find_open_port(port+1)
         return open_port
+    
+    def new_session(self, user_id, websocket):
+        """
+        Open a new websocket session for a given user
+        
+        Parameters
+        ----------
+        user_id: ToyzUser
+        websocket: WebSocketHandler
+        """
+        if user_id not in self.active_users:
+            print("User was not logged in")
+            if user_id not in self.users:
+                raise ToyzError("User ID not found")
+            self.active_users.append(user_id)
+            self.users[user_id].init_job_queues()
+            print("Users logged in:", [u for u in self.active_users])
+        self.users[user_id].add_session(websocket)
+    
+    def process_job(self, msg):
+        user = self.users[msg['id']['user_id']]
+        msg['comms'] = user.open_sessions[msg['id']['session_id']]
+        #msg['comms'] = {}
+        if 'queue' in msg:
+            if msg['queue'] in user.queues:
+                user.queues[msg['queue']].add_job(msg)
+            else:
+                raise ToyzError("Invalid queue sent to server")
+        else:
+            user.queues['long'].add_job(msg)
 
 def init_web_app():
     """

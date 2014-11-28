@@ -1,0 +1,15 @@
+<form action="/auth/login/?next={{next}}" method="post" id="login_form">
+    <fieldset style='display: inline-block'>
+        <div>
+            <label for="user_id">Username</label>
+            <input id="username" name="user_id" type="text" value="">
+        </div>
+        <div>
+            <label for="pwd">Password</label>
+            <input id="password" name="pwd" type="password" value="">
+        </div>
+        <span class="errormessage">{{err_msg}}</span>
+        <div id="form_btn">
+            <input id="submit-btn" type="submit" value="Sign In" tabindex="3">
+        </div>
+</form>
