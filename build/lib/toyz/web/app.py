@@ -17,6 +17,7 @@ import tornado.options
 import tornado.web
 import tornado.websocket
 import tornado.escape
+import tornado.gen
 
 # Imports from Toyz package
 from toyz.utils import core
@@ -295,6 +296,8 @@ class AuthMainHandler(MainHandler):
     def get(self):
         MainHandler.get(self)
 
+from futures import ProcessPoolExecutor
+
 class ToyzWebApp(tornado.web.Application, core.ToyzApplication):
     def __init__(self):
         if tornado.options.options.root_path is not None:
@@ -347,7 +350,6 @@ class ToyzWebApp(tornado.web.Application, core.ToyzApplication):
             'login_url':'/auth/login/'
         }
         tornado.web.Application.__init__(self, handlers, **settings)
-        
         self.toyz_settings.web.port = self.find_open_port(self.toyz_settings.web.port)
     
     def find_open_port(self, port):
@@ -375,21 +377,32 @@ class ToyzWebApp(tornado.web.Application, core.ToyzApplication):
             if user_id not in self.users:
                 raise ToyzError("User ID not found")
             self.active_users.append(user_id)
-            self.users[user_id].init_job_queues()
             print("Users logged in:", [u for u in self.active_users])
         self.users[user_id].add_session(websocket)
     
     def process_job(self, msg):
-        user = self.users[msg['id']['user_id']]
-        msg['comms'] = user#.open_sessions[msg['id']['session_id']]
-        #msg['comms'] = {}
-        if 'queue' in msg:
-            if msg['queue'] in user.queues:
-                user.queues[msg['queue']].add_job(msg)
-            else:
-                raise ToyzError("Invalid queue sent to server")
+        if 'job_type' in msg and msg['job_type'] == 'batch_job':
+            # TODO write code to run a batch job, or send it to a batch
+            # server
+            pass
         else:
-            user.queues['long'].add_job(msg)
+            print('Recieved message:', msg)
+            result = self.run_job(msg)
+            tornado.ioloop.IOLoop.instance().add_future(result, self.respond)
+    
+    @tornado.gen.coroutine
+    def run_job(self, msg):
+        pool = ProcessPoolExecutor(1)
+        result = yield pool.submit(core.run_job, msg)
+        pool.shutdown()
+        raise tornado.gen.Return(result)
+    
+    def respond(self, response):
+        result = response.result()
+        user = self.users[result['id']['user_id']]
+        session = user.open_sessions[result['id']['session_id']]
+        if result != {}:
+            session.write_message(result['response'])
 
 def init_web_app():
     """

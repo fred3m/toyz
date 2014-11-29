@@ -24,8 +24,10 @@ default_settings = {
         'root_path': os.path.join(ROOT_DIR),
         'rel_path': os.path.join('config', 'toyz_config.p'),
         'paths': ['config', 'users', 'db'],
-        'short_queues': 1,
-        'long_queues': 1
+        'queue_info': {
+            'medium': max(multiprocessing.cpu_count()-2,1),
+            'long': 1
+        }
     },
     'users': {
         'rel_path': os.path.join('users', 'users.p'),
@@ -214,6 +216,127 @@ def progress_log(text,id):
     log = {'id':"progress log",'log':text}
     respond(id, log)
 
+def run_job(job):
+    """
+    Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
+    and flagged as an ToyzError and sent back to the client who initiated the job. 
+    All job functions will take exactly 3 parameters: id,params,websocket. The id is the 
+    user, session, and request id information (see below), params is a dictionary of 
+    parameters sent by the client, and websocket is the current websocket processing the job. 
+    Each job is run as a new process, so any modules imported should be removed from memory 
+    when the job has completed.
+
+    Parameters
+    ----------
+    job: dictionary
+        - The job received from the user. The following keys are required:
+            id: dictionary
+                - dictionary that contains the following keys:
+                    user_id: string
+                        - Unique identifier of the current user
+                    session_id: string
+                        -Unique identifier of the current session
+                    request_id: string
+                        -Unique identifier for the current request sent by the client
+            module: string
+                - Python module that contains the function called by the client
+            task: string
+                - Function called by the client
+            parameters: dictionary
+                - Dictionary of required and optional parameters passed to the function
+            }
+            comms: object
+                - For now this is always a WebSocketHandler, used to send
+                responses to the client. In a possible future environment where
+                the web app and job app are separate programs connect via a db,
+                this would be an object that writes to a table in the db, triggering
+                an event on the web server that sends the message to the client
+        - Optional keys:
+            queue: string
+                - This is the name of a users queue to process the job. By default
+                every user has a `short` queue and a long `queue`, used for 
+                processing quick and long duration jobs respectively.
+
+    Returns
+    -------
+    There are no returns from the function but a dictionary is sent to the client.
+    response: dictionary
+        - Response is either an empty dictionary or one that contains (at a minimum) 
+        the key 'id', which is used by the client to identify the type of response it is 
+        receiving. Including the key `request_completed` with a `True` value tells the
+        client that the current request has finished and may be removed from the queue.
+
+    Example
+    -------
+    A client might send the following job to the server:
+        job = {
+            id : {
+                userId : 'Fred',
+                sessionId : '12',
+                requestId : 305
+            },
+            module : 'fitsviewer',
+            task : 'loadHeader',
+            parameters : {
+                fileId : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
+                frame : 0
+            }
+        }
+
+    In this case, after receiving the job, this function will import the 'fitsviewer' module (if it has not been
+    imported already) and run the function 'loadHeader(job['id'],job['parameters'],self)'. If there are any
+    errors in loading the header, a response of the form
+        response = {
+            'id' : 'ERROR',
+            'error' : 'Error message here for unable to lead header',
+            'traceback' : traceback.format_exec()
+        }
+    is sent. If the header is loaded correctly a rsponse of the form
+        response = {
+            'id' : 'fitsHeader',
+            'fileId' : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
+            'frame' : 0,
+            'header' : python_list,
+            'request_completed': True
+        }
+    is sent to the client.
+    """
+    # TODO: Eventually a job should be added to the jobs dictionary and removed after the response has been sent
+    response={}
+    try:
+        module = job["module"]
+        base_module = module.split('.')[0]
+        toyz_module = importlib.import_module(module)
+        task = getattr(toyz_module, job["task"])
+        print("Running task",task)
+        response = task(job['id'],job['parameters'], job['comms'])
+    except ToyzJobError as error:
+        response = {
+            'id':"ERROR",
+            'error':error.msg,
+            'traceback':traceback.format_exc()
+        }
+    except Exception as error:
+        import traceback
+        response = {
+            'id':"ERROR",
+            'error':"PYTHON ERROR:"+type(error).__name__+str(error.args),
+            'traceback':traceback.format_exc()
+        }
+        print(traceback.format_exc())
+    if response != {}:
+        response['request_id'] = job['id']['request_id']
+        #self.write_message(response)
+    
+    result = {
+        'id': job['id'],
+        'response': response
+    }
+    
+    # print("finished task")
+    #logging.info("sent message:%r",response['id'])
+    return result
+
 class ToyzClass:
     """
     I often prefer to work with classes rather than dictionaries. To allow
@@ -222,6 +345,44 @@ class ToyzClass:
     """
     def __init__(self, dict_in):
         self.__dict__ = dict_in
+
+class ToyzJobQueue:
+    """
+    An environment for a single user to run tasks.
+    """
+    def __init__(self, queue_name, process_count):
+        self.queue_name = queue_name
+        self.processes = []
+        self.queue = multiprocessing.Queue()
+        self.initialize()
+    
+    def initialize(self):
+        print('Initializing processes')
+        for p in range(process_count):
+            process = multiprocessing.Process(
+                name=queue_name+'-'+str(p),
+                target=self.job_worker,
+                args=(self.queue,)
+            )
+            process.daemon = True
+            process.start()
+            self.processes.append(process)
+    
+    def add_job(self, job):
+        print('job:',job)
+        self.queue.put(job)
+        print('ok')
+    
+    def close_env(self, interrupt_jobs=False):
+        self.queue.put({'close_env': True})
+    
+    def job_worker(self, queue):
+        msg = {}
+        while 'EXIT' not in msg:
+            msg = queue.get()
+            self.run_job(msg)
+            
+        print("{0} closed".format(multiprocessing.current_process().name))
 
 class ToyzApplication:
     """
@@ -265,16 +426,6 @@ class ToyzApplication:
             from toyz.utils.security import decrypt_pickle
             users = decrypt_pickle(users, toyz_settings.security.key)
         return users
-    
-    def process_job(self, msg):
-        user = self.users[msg['id']['user_id']]
-        if 'queue' in msg:
-            if msg['queue'] in user.queues:
-                user.queues[msg['queue']].add_job(msg)
-            else:
-                raise ToyzError("Invalid queue sent to server")
-        else:
-            user.queues['long'].add_job(msg)
 
 class ToyzSettings:
     def __init__(self, config_root_path=None):
@@ -485,14 +636,6 @@ class ToyzUser:
         if self.app is not None:
             self.app.update_users(self)
     
-    def init_job_queues(self):
-        self.queues = {}
-        for q_name, q_count in self.queue_info.items():
-            self.queues[q_name] = ToyzJobQueue(
-                queue_name=q_name,
-                process_count=q_count
-            )
-    
     def get_session_id(self, websocket):
         for session_id in self.open_sessions:
             if self.open_sessions[session_id]==websocket:
@@ -598,153 +741,3 @@ class Toy:
     
     def reload(self, module):
         reload(self.name)
-
-class ToyzJobQueue:
-    """
-    An environment for a single user to run tasks.
-    """
-    def __init__(self, queue_name, process_count):
-        self.queue_name = queue_name
-        self.processes = []
-        self.queue = multiprocessing.Queue()
-        print('Initializing processes')
-        for p in range(process_count):
-            process = multiprocessing.Process(
-                name=queue_name+'-'+str(p),
-                target=self.job_worker,
-                args=(self.queue,)
-            )
-            process.daemon = True
-            process.start()
-            self.processes.append(process)
-    
-    def add_job(self, job):
-        print('job:',job)
-        self.queue.put(job)
-        print('ok')
-    
-    def close_env(self, interrupt_jobs=False):
-        self.queue.put({'close_env': True})
-    
-    def job_worker(self, queue):
-        msg = {}
-        while 'EXIT' not in msg:
-            msg = queue.get()
-            self.run_job(msg)
-            
-        print("{0} closed".format(multiprocessing.current_process().name))
-    
-    def run_job(self, job):
-        """
-        Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
-        and flagged as an ToyzError and sent back to the client who initiated the job. 
-        All job functions will take exactly 3 parameters: id,params,websocket. The id is the 
-        user, session, and request id information (see below), params is a dictionary of 
-        parameters sent by the client, and websocket is the current websocket processing the job. 
-        Each job is run as a new process, so any modules imported should be removed from memory 
-        when the job has completed.
-    
-        Parameters
-        ----------
-        job: dictionary
-            - The job received from the user. The following keys are required:
-                id: dictionary
-                    - dictionary that contains the following keys:
-                        user_id: string
-                            - Unique identifier of the current user
-                        session_id: string
-                            -Unique identifier of the current session
-                        request_id: string
-                            -Unique identifier for the current request sent by the client
-                module: string
-                    - Python module that contains the function called by the client
-                task: string
-                    - Function called by the client
-                parameters: dictionary
-                    - Dictionary of required and optional parameters passed to the function
-                }
-                comms: object
-                    - For now this is always a WebSocketHandler, used to send
-                    responses to the client. In a possible future environment where
-                    the web app and job app are separate programs connect via a db,
-                    this would be an object that writes to a table in the db, triggering
-                    an event on the web server that sends the message to the client
-            - Optional keys:
-                queue: string
-                    - This is the name of a users queue to process the job. By default
-                    every user has a `short` queue and a long `queue`, used for 
-                    processing quick and long duration jobs respectively.
-    
-        Returns
-        -------
-        There are no returns from the function but a dictionary is sent to the client.
-        response: dictionary
-            - Response is either an empty dictionary or one that contains (at a minimum) 
-            the key 'id', which is used by the client to identify the type of response it is 
-            receiving. Including the key `request_completed` with a `True` value tells the
-            client that the current request has finished and may be removed from the queue.
-    
-        Example
-        -------
-        A client might send the following job to the server:
-            job = {
-                id : {
-                    userId : 'Fred',
-                    sessionId : '12',
-                    requestId : 305
-                },
-                module : 'fitsviewer',
-                task : 'loadHeader',
-                parameters : {
-                    fileId : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
-                    frame : 0
-                }
-            }
-    
-        In this case, after receiving the job, this function will import the 'fitsviewer' module (if it has not been
-        imported already) and run the function 'loadHeader(job['id'],job['parameters'],self)'. If there are any
-        errors in loading the header, a response of the form
-            response = {
-                'id' : 'ERROR',
-                'error' : 'Error message here for unable to lead header',
-                'traceback' : traceback.format_exec()
-            }
-        is sent. If the header is loaded correctly a rsponse of the form
-            response = {
-                'id' : 'fitsHeader',
-                'fileId' : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
-                'frame' : 0,
-                'header' : python_list,
-                'request_completed': True
-            }
-        is sent to the client.
-        """
-        # TODO: Eventually a job should be added to the jobs dictionary and removed after the response has been sent
-        response={}
-        try:
-            module = job["module"]
-            base_module = module.split('.')[0]
-            toyz_module = importlib.import_module(module)
-            task = getattr(toyz_module, job["task"])
-            print("Running task",task)
-            response = task(job['id'],job['parameters'], job['comms'])
-        except ToyzJobError as error:
-            response = {
-                'id':"ERROR",
-                'error':error.msg,
-                'traceback':traceback.format_exc()
-            }
-        except Exception as error:
-            import traceback
-            response = {
-                'id':"ERROR",
-                'error':"PYTHON ERROR:"+type(error).__name__+str(error.args),
-                'traceback':traceback.format_exc()
-            }
-            print(traceback.format_exc())
-        if response != {}:
-            response['request_id'] = job['id']['request_id']
-            #self.write_message(response)
-            job['comms'].write(response)
-        # print("finished task")
-        #logging.info("sent message:%r",response['id'])
