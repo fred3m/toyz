@@ -252,10 +252,12 @@ def run_job(job):
                 this would be an object that writes to a table in the db, triggering
                 an event on the web server that sends the message to the client
         - Optional keys:
-            queue: string
-                - This is the name of a users queue to process the job. By default
-                every user has a `short` queue and a long `queue`, used for 
-                processing quick and long duration jobs respectively.
+            batch: unknown
+                - The presence of this key indicates that the job will be sent to an
+                external job application for processing in a queue (not yet implemented).
+                When implemented this will either be a boolean flag (job['batch']=True for
+                a batch job) or a string containing either the name of a queue or a priority
+                level (low, medium, high, etc).
 
     Returns
     -------

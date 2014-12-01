@@ -110,6 +110,9 @@ class AuthStaticFileHandler(AuthHandler, tornado.web.StaticFileHandler):
         tornado.web.StaticFileHandler.get(self, path)
     
     def validate_absolute_path(self, root, full_path):
+        """
+        Check that the user has permission to view the file
+        """
         print('root:{0}, full_path:{1}'.format(root, full_path))
         user = self.application.users[self.get_current_user()]
         permissions = find_parent_permissions(self.application.db_settings, user, full_path)
@@ -381,7 +384,17 @@ class ToyzWebApp(tornado.web.Application, core.ToyzApplication):
         self.users[user_id].add_session(websocket)
     
     def process_job(self, msg):
-        if 'job_type' in msg and msg['job_type'] == 'batch_job':
+        """
+        Currently all jobs are run directly from the web app. Later a job server
+        will be implemented that will maintain a queue of long duration jobs, so this 
+        function will be used to tag the batch jobs and send them to the job application.
+        
+        Parameters
+        ----------
+        msg: dict
+            - Message sent from web client (see core.run_job for the format of the msg)
+        """
+        if 'batch' in msg:
             # TODO write code to run a batch job, or send it to a batch
             # server
             pass
@@ -392,12 +405,37 @@ class ToyzWebApp(tornado.web.Application, core.ToyzApplication):
     
     @tornado.gen.coroutine
     def run_job(self, msg):
+        """
+        Run a job by opening a new process (possible on a new cpu) and passing the
+        job and parameters to the process. This function is actually a generator of a
+        `Future()` object, so the exception `tornado.gen.Return` is raised to return
+        the result.
+        
+        Parameters
+        ----------
+        msg: dict
+            - Message sent from web client (see core.run_job for the format of the msg)
+            
+        Returns
+        -------
+        result: future containing a dictionary
+            - Message to send back to the user. If there is no response, then `result={}`
+        """
         pool = ProcessPoolExecutor(1)
         result = yield pool.submit(core.run_job, msg)
         pool.shutdown()
         raise tornado.gen.Return(result)
     
     def respond(self, response):
+        """
+        Once a job has completed, included jobs run by an external job application, 
+        send the response to the user.
+        
+        Parameters
+        ----------
+        response: dict
+            - Message to send to the user. See `core.run_job` for the format of a response
+        """
         result = response.result()
         user = self.users[result['id']['user_id']]
         session = user.open_sessions[result['id']['session_id']]
