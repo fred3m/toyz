@@ -120,6 +120,9 @@ Toyz.Gui.buildParamDiv = function(param, $div, key){
     }else{
         $paramDiv.addClass('paramDiv-default');
     };
+    if(param.hasOwnProperty('divCss')){
+        $paramDiv.css(param.divCss);
+    };
     // If properties for the parameter have been defined
     if(param.hasOwnProperty('prop')){
         $input.prop(param.prop);
@@ -350,6 +353,9 @@ Toyz.Gui.initParams=function(param, $parent, key){
                     prop:{
                         innerHTML:'+'
                     },
+                    divCss:{
+                        float: 'left'
+                    },
                     func:{
                         click:function(param){
                             return function(){
@@ -364,6 +370,7 @@ Toyz.Gui.initParams=function(param, $parent, key){
                                         .prop('type', 'radio')
                                         .prop('name', group)
                                         .prop('checked', true)
+                                        .css('float','left')
                                 };
                                 if(!(param.hasOwnProperty('items'))){
                                     param.items=[];
@@ -390,6 +397,9 @@ Toyz.Gui.initParams=function(param, $parent, key){
                     lbl:'',
                     prop:{
                         innerHTML:'-'
+                    },
+                    divCss:{
+                        float:'left'
                     },
                     func:{
                         click:function(param){

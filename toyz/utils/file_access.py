@@ -41,6 +41,7 @@ def get_all_parents(path):
         parents.append(parent)
         last_parent = parent
         parent = os.path.dirname(parent)
+    print('path:{0}, parents:{1}'.format(path, parents))
     return parents
 
 def get_path_tree(path):
@@ -76,17 +77,18 @@ def get_file_permissions(db_settings, user, path):
     path_info = db_module.get_path_info(db_settings, user, path)
     permissions = None
     if path_info is not None:
-        if user_id in path_info['users']:
-            permissions = path_info['users'][user_id]
+        if user.user_id in path_info['users']:
+            permissions = path_info['users'][user.user_id]
         else:
             permissions = ''.join([p for g,p in path_info['groups'] if g in user.groups])
             permissions = ''.join(set(permissions))
     
     return permissions
 
-def find_parent_permissions(db_settings, user, path):
+def get_parent_permissions(db_settings, user, path):
     """
-    Descend a tree and find the first parent directory with permissions set.
+    Find the permissions of the given path. If it doesn't have any permissions
+    explicitely set, descend a tree and find the first parent directory with permissions set.
     
     Parameters
     ----------
@@ -96,6 +98,10 @@ def find_parent_permissions(db_settings, user, path):
     path: string
         - Path to begin search for permissions
     """
+    permissions = get_file_permissions(db_settings, user, path)
+    if permissions is not None:
+        return permissions
+    print('descending')
     parents = get_all_parents(path)
     if parents[0] != path:
         parents.insert(0,path)
@@ -209,7 +215,7 @@ def update_file_permissions(db_settings, user, paths):
             # Descend tree to check if there are any restrictions on a parent directory.
             # This prevents a user from searching another users directory for a path
             # whose permissions may not have been explicitely set
-            permissions = find_parent_permissions(db_settings, user, path)
+            permissions = get_parent_permissions(db_settings, user, path)
             paths[path] = format_path(paths[path], user)
             if paths[path]['recursive']:
                 tree = get_path_tree(path)

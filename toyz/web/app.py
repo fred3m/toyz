@@ -32,13 +32,13 @@ tornado.options.parse_command_line()
 class ToyzHandler(tornado.web.RequestHandler):
     def get_toyz_path(self, path):
         """
-        Given a toyz path, return the root path for the 
+        Given a toyz path, return the root path for the toy
         """
         toyz_info = path.split('/')
         toy_name = toyz_info[0]
         rel_path = '/'.join(toyz_info[1:])
         user = self.app.users[self.get_user_id()]
-    
+        
         if toy_name in user.toyz:
             root, rel_path = os.path.split(user.toyz[toy].full_path)
         else:
@@ -166,7 +166,7 @@ class AuthLoginHandler(AuthHandler, tornado.web.RequestHandler):
         """
         user_id = self.get_argument('user_id',default='')
         pwd = self.get_argument('pwd',default='')
-        if core.check_pwd(self.application, user_id, pwd):
+        if core.check_pwd(self.application.toyz_settings, user_id, pwd):
             if user_id not in self.application.active_users:
                 self.application.active_users.append(user_id)
                 print('Users logged in:')
@@ -204,10 +204,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             Currently I don't pass any arguments to this function
         """
         user_id=self.get_secure_cookie('user').strip('"')
-        self.user = self.application.new_session(user_id, websocket=self)
+        self.application.new_session(user_id, websocket=self)
         print("Web socket opened!")
-        #self.user = core.active_users[userId]
-        #core.active_users[userId].add_session(websocket=self)
+        print("websocket user:",user_id)
 
     def on_close(self):
         """
@@ -272,6 +271,12 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         decoded=tornado.escape.json_decode(message)
         print('task:', decoded)
         user_id=decoded['id']['user_id']
+        if user_id !=self.session['user'].user_id:
+            self.write_message({
+                'id':"ERROR",
+                'error':"Websocket user does not match task user_id",
+                'traceback':''
+            })
         session_id=decoded['id']['session_id']
         
         self.session['app'].process_job(decoded)
@@ -301,13 +306,14 @@ class AuthMainHandler(MainHandler):
 
 from futures import ProcessPoolExecutor
 
-class ToyzWebApp(tornado.web.Application, core.ToyzApplication):
+class ToyzWebApp(tornado.web.Application):
     def __init__(self):
         if tornado.options.options.root_path is not None:
             root_path = core.normalize_path(tornado.options.options.root_path)
         else:
             root_path = tornado.options.options.root_path
         
+        self.root_path = root_path
         self.toyz_settings = core.ToyzSettings(root_path)
         if tornado.options.options.port is not None:
             self.toyz_settings.web.port = tornado.options.options.port
@@ -323,7 +329,7 @@ class ToyzWebApp(tornado.web.Application, core.ToyzApplication):
             toyz_static_handler = ToyzStaticFileHandler
             toyz_template_handler = ToyzTemplateHandler
         
-        self.users = self.load_users(self.toyz_settings)
+        self.users = core.load_users(self.toyz_settings)
         for user_id, user in self.users.items():
             user.app = self
         self.active_users = []
@@ -422,14 +428,14 @@ class ToyzWebApp(tornado.web.Application, core.ToyzApplication):
             - Message to send back to the user. If there is no response, then `result={}`
         """
         pool = ProcessPoolExecutor(1)
-        result = yield pool.submit(core.run_job, msg)
+        result = yield pool.submit(core.run_job, self.toyz_settings, msg)
         pool.shutdown()
         raise tornado.gen.Return(result)
     
     def respond(self, response):
         """
         Once a job has completed, included jobs run by an external job application, 
-        send the response to the user.
+        send the response to the user. Also, updated any objects that need to be updated
         
         Parameters
         ----------
@@ -437,10 +443,32 @@ class ToyzWebApp(tornado.web.Application, core.ToyzApplication):
             - Message to send to the user. See `core.run_job` for the format of a response
         """
         result = response.result()
-        user = self.users[result['id']['user_id']]
-        session = user.open_sessions[result['id']['session_id']]
+        # Check to see if the application has any fields that need to be updated
+        if 'update_app' in result:
+            for prop in result['update_app']:
+                self.update(prop)
+            del result['update_app']
+        # respond to the client
         if result != {}:
+            user = self.users[result['id']['user_id']]
+            session = user.open_sessions[result['id']['session_id']]
             session.write_message(result['response'])
+    
+    def update(self, attr):
+        """
+        Certain properties of the application may be changed by an external job,
+        for example a user may change his/her password, a new user may be created,
+        a setting may be changed, etc. When this happens the job notifies the application
+        that something has changed and this function is called to reload the property.
+        """
+        if attr == 'users':
+            self.users = core.load_users(self.toyz_settings)
+            for user_id, user in self.users.items():
+                user.app = self
+        elif attr == 'groups':
+            self.groups = core.load_groups(self.toyz_settings)
+        elif attr == 'toyz_settings':
+            self.toyz_settings = core.ToyzSettings(self.root_path)
 
 def init_web_app():
     """

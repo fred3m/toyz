@@ -96,7 +96,7 @@ Toyz.Console.Settings.getAccountSettings = function(params){
             type: 'label',
             lbl: '',
             prop: {
-                innerHTML: 'You are Logged in as <font color="red">'+params.userId+'</font>'
+                innerHTML: 'You are Logged in as <font color="red">'+params.user_id+'</font>'
             }
         },
         logout: {
@@ -121,18 +121,18 @@ Toyz.Console.Settings.getAccountSettings = function(params){
                 }(params.change_pwd)
             }
         },
-        stored_dirs:{
+        paths:{
             type: 'div',
-            legend: 'Stored Directories',
+            legend: 'Paths',
             css: {
                 'width': 600
             },
             params: {
-                stored_dirs: {
+                paths: {
                     type: 'list',
                     radio: 'stored_dirs',
                     items: [],
-                    key_name: 'stored_dir-',
+                    key_name: 'path-',
                     newItem: {
                         type: 'div',
                         params: {
@@ -140,13 +140,35 @@ Toyz.Console.Settings.getAccountSettings = function(params){
                                 lbl:'directory label'
                             },
                             path: {
+                                lbl: 'path',
                                 prop: {
                                     size: 80
                                 }
                             }
                         }
                     }
-                }
+                },
+            }
+        },
+        toyz:{
+            type: 'div',
+            legend: 'Toyz',
+            css: {
+                'width': 600
+            },
+            params: {
+                toyz: {
+                    type: 'list',
+                    radio: 'toyz',
+                    items: [],
+                    key_name: 'toy-',
+                    newItem: {
+                        type:'div',
+                        params:{
+                            toy: {}
+                        }
+                    }
+                },
             }
         }
     };

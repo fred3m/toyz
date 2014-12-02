@@ -85,6 +85,14 @@ Toyz.Core.jobsocketInit=function(options){
         rcvError:function(errorMsg){
             alert('ERROR: '+errorMsg.error);
             console.log('Error',errorMsg);
+        },
+        notify: function(result){
+            alert(result.msg);
+            console.log('notification:', result);
+        },
+        warn: function(result){
+            alert(result.warning);
+            console.log('warning:', result);
         }
     },options);
     var url="ws://"+location.host+jobsocket.job_url;
@@ -110,6 +118,12 @@ Toyz.Core.jobsocketInit=function(options){
         if(result.id=='ERROR'){
             jobsocket.rcvError(result);
             return;
+        }else if(result.id=='notification'){
+            jobsocket.notify(result);
+            return;
+        }else if(result.id=='warning'){
+            jobsocket.warn(result);
+            return;
         }else if(result.id=='initialize'){
             jobsocket.user_id=result.user_id;
             jobsocket.session_id=result.session_id;
@@ -122,7 +136,11 @@ Toyz.Core.jobsocketInit=function(options){
         if(result.hasOwnProperty('request_id') && jobsocket.requests.hasOwnProperty(result.request_id.toString())){
             var f=jobsocket.requests[result.request_id.toString()].func;
             var params=jobsocket.requests[result.request_id.toString()].params;
-            delete jobsocket.requests[result.request_id.toString()];
+            if(!('progress_update' in result)){
+                delete jobsocket.requests[result.request_id.toString()];
+            }else{
+                console.log('progres update', result);
+            }
             f(result,params);
         }else{
             jobsocket.receiveAction(result);

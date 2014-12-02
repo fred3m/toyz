@@ -15,17 +15,17 @@
         <div id='tabs'>
             <ul id='tab-links'>
                 <li><a href='#account-settings'>Account Settings</a></li>
-                <li><a href='#pypelines'>Pypelines</a></li>
-                <li><a href='#job-queue'>Job Queue</a></li>
+                <li><a href='#toyz-list'>Toyz</a></li>
+                <li><a href='#job-queue'>Job Queues</a></li>
             </ul>
             <div id='account-settings'>
                 <div id='account-settings-div'></div>
                 <button id='submit-account-settings'>Submit</button>
             </div>
             <div id='job-queue'>Job Queue has not yet been added to Toyz</div>
-            <div id='pypelines'>
-                <p>Eventually this will show all pypelines loaded on the server</p>
-                <a href='/fitsviewer'>Fitsviewer</a>
+            <div id='toyz-list'>
+                <p>Eventually this will show all toyz loaded on the server</p>
+                <a href='/workspace'>Workspace</a>
             </div>
         </div>
         <div id='dialogs'></div>
@@ -37,23 +37,42 @@
         var new_user;
         function rxMsg(result){
             console.log('rx message:', result);
-            if(result.id == 'user settings'){
+            if(result.id == 'user_settings'){
                 var account_info = {
-                    userId: websocket.userId,
+                    user_id: websocket.user_id,
                     change_pwd: change_pwd
                 };
+                var paths = new Array();
+                var toyz = new Array();
                 
-                var my_params = Toyz.Settings.getAccountSettings(account_info);
+                for(var path in result.paths){
+                    if(result.paths.hasOwnProperty(path)){
+                        paths.push({
+                            path_name: path,
+                            path: result.paths[path]
+                        })
+                    }
+                };
+                for(var i=0; i<result.toyz.length; i++){
+                    toyz.push({'toy': result.toyz[i]});
+                };
+                account_settings = {
+                    paths: paths,
+                    toyz: toyz
+                };
+                
+                var my_params = Toyz.Console.Settings.getAccountSettings(account_info);
                 account_settings = Toyz.Gui.initParamList(
                     {
                         type:'div',
-                        params: Toyz.Settings.getAccountSettings(account_info)
+                        params: Toyz.Console.Settings.getAccountSettings(account_info)
                     },
                     options = {
                         $parent: $('#account-settings-div'),
-                        default: result.account_settings
+                        default: account_settings
                     }
                 );
+                console.log('account_settings:',account_settings);
                 
                 if(result.hasOwnProperty('admin_settings')){
                     var $admin_div = $('<div/>')
@@ -76,11 +95,11 @@
                     $("#tabs").append($admin_div);
                     $("#tabs").tabs("refresh");
                 };
-            }else if(result.id == 'change pwd'){
+            }else if(result.id == 'change_pwd'){
                 alert('Password saved correctly');
-            }else if(result.id == 'update account settings'){
+            }else if(result.id == 'update_user_settings'){
                 alert('Settings saved correctly');
-            }else if(result.id == 'new user'){
+            }else if(result.id == 'new_user'){
                 alert('New user created');
             };
         };
@@ -127,7 +146,7 @@
                 buttons:{
                     'Change':function(){
                         websocket.sendTask({
-                            module: 'web_utils',
+                            module: 'toyz.web.tasks',
                             task: 'change_pwd',
                             parameters: {
                                 current_pwd: change_pwd.params.params.current_pwd.$input.val(),
@@ -171,7 +190,7 @@
                 buttons:{
                     'Add':function(){
                         websocket.sendTask({
-                            module: 'web_utils',
+                            module: 'toyz.web.tasks',
                             task: 'add_new_user',
                             parameters: {
                                 userId: new_user.params.params.userId.$input.val(),
@@ -199,8 +218,8 @@
                 delete params['change_pwd_btn']
                 
                 websocket.sendTask({
-                    module: 'web_utils',
-                    task: 'update_account_settings',
+                    module: 'toyz.web.tasks',
+                    task: 'update_user_settings',
                     parameters: params
                 });
                 console.log('Parameters:',params);
@@ -210,7 +229,7 @@
                 receiveAction: rxMsg,
                 onopen: function(){
                     websocket.sendTask({
-                        module: 'web_utils',
+                        module: 'toyz.web.tasks',
                         task: 'load_user_settings',
                         parameters: {}
                     });

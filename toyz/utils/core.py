@@ -27,7 +27,8 @@ default_settings = {
         'queue_info': {
             'medium': max(multiprocessing.cpu_count()-2,1),
             'long': 1
-        }
+        },
+        'approved_modules': ['toyz.web.tasks']
     },
     'users': {
         'rel_path': os.path.join('users', 'users.p'),
@@ -45,7 +46,6 @@ default_settings = {
         'template_path': os.path.join(ROOT_DIR, 'web', 'templates'),
     },
     'security': {
-        'encrypt_config': False,
         'encrypt_db': False,
         'user_login': True,
         'pwd_context': {
@@ -111,14 +111,16 @@ def check_instance(obj, instances):
             return False
     return True
 
-def check_pwd(app, user_id, pwd):
+def check_pwd(toyz_settings, user_id, pwd):
     """
     Check to see if a users password matches the one on file.
     
     Parameters
     ----------
-    app: toyz.web.Application or toyz.JobApp
-        - Web or Job application containing the user
+    users: list of toyz.ToyzUser
+        - Users for the current application
+    toyz_settings: toyz.ToyzSettings
+        - Settings for the current application
     user_id: string
         - Id of the user logging in
     pwd: string
@@ -130,13 +132,34 @@ def check_pwd(app, user_id, pwd):
         - Return is True if the user name and password 
     """
     from passlib.context import CryptContext
-    pwd_context = CryptContext(**app.toyz_settings.security.pwd_context)
-    if user_id not in app.users:
+    pwd_context = CryptContext(**toyz_settings.security.pwd_context)
+    users = load_users(toyz_settings)
+    if user_id not in users:
         # Dummy check to prevent a timing attack to guess user names
         pwd_context.verify('foo', 'bar')
         return False
-    user_hash = app.users[user_id].pwd
+    user_hash = users[user_id].pwd
     return pwd_context.verify(pwd, user_hash)
+
+def encrypt_pwd(toyz_settings, pwd):
+    """
+    Use the passlib module to create a hash for the given password
+    
+    Parameters
+    ----------
+    toyz_settings: toyz.ToyzSettings
+        - Settings for the current application
+    pwd: string
+        - password the user has entered
+    
+    Returns
+    -------
+    pwd_hash: string
+        - Password hash to be stored for the given password
+    """
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(**toyz_settings.security.pwd_context)
+    return pwd_context.encrypt(pwd)
 
 def check4keys(myDict,keys):
     """
@@ -187,6 +210,35 @@ def create_paths(paths):
         except OSError:
             if not os.path.isdir(path):
                 raise ToyzError("Problem creating new directory, check user permissions")
+    
+def save_users(toyz_settings, users):
+    """
+    Save all users to the users file (updates any changes since the last save).
+    If the `toyz_settings.security.encrypt_config` flag has been set, the 
+    class will be encrypted before it is saved.
+
+    Parameters
+    ----------
+    toyz_settings: ToyzSettings
+        - Settings for a toyz instance
+    users: dict of ToyzUsers
+        - Keys are the id's of the toyz users, values are ToyzUsers
+    """
+    db_module = importlib.import_module(toyz_settings.db.interface_name)
+    u = [u for uid,u in users.items()]
+    db_module.save_users(toyz_settings.db, u)
+
+def save_user(toyz_settings, user):
+    save_users(toyz_settings, {user.user_id: user})
+
+def load_users(toyz_settings):
+    """
+    Load all users. 
+    If the file has been encrypted, the `toyz.utils.security` module is used 
+    to decrypt them. 
+    """
+    db_module = importlib.import_module(toyz_settings.db.interface_name)
+    return db_module.load_users(toyz_settings.db)
 
 def progress_log(text,id):
     """
@@ -216,7 +268,7 @@ def progress_log(text,id):
     log = {'id':"progress log",'log':text}
     respond(id, log)
 
-def run_job(job):
+def run_job(toyz_settings, job):
     """
     Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
     and flagged as an ToyzError and sent back to the client who initiated the job. 
@@ -228,6 +280,9 @@ def run_job(job):
 
     Parameters
     ----------
+    toyz_settings: toyz.ToyzSettings
+        - Settings for the application runnning the job (may be needed to load user info 
+        or check permissions)
     job: dictionary
         - The job received from the user. The following keys are required:
             id: dictionary
@@ -267,6 +322,10 @@ def run_job(job):
         the key 'id', which is used by the client to identify the type of response it is 
         receiving. Including the key `request_completed` with a `True` value tells the
         client that the current request has finished and may be removed from the queue.
+        - An optional key 'update_app' may be included in the response if any attributes
+        of the main application have been changed and need to be updated. The value of the
+        field is a list of attributes from the main application that need to be updated
+        once the job has completed.
 
     Example
     -------
@@ -304,14 +363,18 @@ def run_job(job):
     is sent to the client.
     """
     # TODO: Eventually a job should be added to the jobs dictionary and removed after the response has been sent
+    import traceback
     response={}
     try:
         module = job["module"]
-        base_module = module.split('.')[0]
-        toyz_module = importlib.import_module(module)
-        task = getattr(toyz_module, job["task"])
-        print("Running task",task)
-        response = task(job['id'],job['parameters'], job['comms'])
+        #base_module = module.split('.')[0]
+        if module in toyz_settings.config.approved_modules:
+            toyz_module = importlib.import_module(module)
+            task = getattr(toyz_module, job["task"])
+            print("Running task",task)
+            response = task(toyz_settings, job['id'],job['parameters'])
+        else:
+            raise ToyzJobError("Module is not listed in approved modules")
     except ToyzJobError as error:
         response = {
             'id':"ERROR",
@@ -319,7 +382,6 @@ def run_job(job):
             'traceback':traceback.format_exc()
         }
     except Exception as error:
-        import traceback
         response = {
             'id':"ERROR",
             'error':"PYTHON ERROR:"+type(error).__name__+str(error.args),
@@ -332,11 +394,12 @@ def run_job(job):
     
     result = {
         'id': job['id'],
-        'response': response
+        'response': response,
     }
     
     # print("finished task")
     #logging.info("sent message:%r",response['id'])
+    print('result:', result)
     return result
 
 class ToyzClass:
@@ -348,6 +411,7 @@ class ToyzClass:
     def __init__(self, dict_in):
         self.__dict__ = dict_in
 
+#TODO Currently ToyzJobQueue isn't used. If this isn't implemented later, remove
 class ToyzJobQueue:
     """
     An environment for a single user to run tasks.
@@ -385,49 +449,6 @@ class ToyzJobQueue:
             self.run_job(msg)
             
         print("{0} closed".format(multiprocessing.current_process().name))
-
-class ToyzApplication:
-    """
-    Currently the only type of Toyz Application is a ToyzWebApp, which inherits
-    from both this class and `tornado.web.application`. It is possible in the
-    future there will be a separate job application that just runs jobs
-    and communicates with the web applications by an event driven table in
-    a database.
-    """
-    def update_users(self,user):
-        if user.user_id not in self.users:
-            self.users[user_id] = user
-    
-    def save_users(toyz_settings, users):
-        """
-        Save all users to the users file (updates any changes since the last save).
-        If the `toyz_settings.security.encrypt_config` flag has been set, the 
-        class will be encrypted before it is saved.
-    
-        Parameters
-        ----------
-        toyz_settings: ToyzSettings
-            - Settings for a toyz instance
-        users: dict of ToyzUsers
-            - Keys are the id's of the toyz users, values are ToyzUsers
-        """
-        if toyz_settings.security.encrypt_config:
-            from toyz.utils import security
-            users = security.encrypt_pickle(users, toyz_settings.security.key)
-        pickle.dump(users, open(toyz_settings.users.path, 'wb'))
-
-    def load_users(self, toyz_settings):
-        """
-        Load all users. 
-        If the file has been encrypted, the `toyz.utils.security` module is used 
-        to decrypt them. 
-        """
-        users = pickle.load(open(toyz_settings.users.path, 'rb'))
-        # Decrypt the users file if it is encrypted
-        if 'encrypted_users' in users:
-            from toyz.utils.security import decrypt_pickle
-            users = decrypt_pickle(users, toyz_settings.security.key)
-        return users
 
 class ToyzSettings:
     def __init__(self, config_root_path=None):
@@ -507,15 +528,14 @@ class ToyzSettings:
         # Create users
         # TODO: by default, there will be no login, so the next section should be
         # removed once the code is working properly
-        from passlib.context import CryptContext
-        pwd_context = CryptContext(**self.security.pwd_context)
-        admin_pwd = pwd_context.encrypt('admin')
+        admin_pwd = 'admin'
         if get_bool(
                 "The default admin password is 'admin'. It is recommended that you change this "
                 "if multiple users will be accessing the web application.\n\n"
                 "change password? "):
             admin_pwd = getpass.getpass("new password: ")
-    
+        if self.security.user_login:
+            admin_pwd = encrypt_pwd(self, admin_pwd)
         users = {
             'admin':ToyzUser(
                 toyz_settings=self, 
@@ -523,9 +543,8 @@ class ToyzSettings:
                 pwd=admin_pwd, 
                 groups=['admin'])}
         
-        self.users.path = os.path.join(self.config.root_path, 
-                                                self.users.rel_path)
-        pickle.dump(users, open(self.users.path, 'wb'))
+        #self.users.path = os.path.join(self.config.root_path, self.users.rel_path)
+        #pickle.dump(users, open(self.users.path, 'wb'))
     
         # Create a database and folder permissions table
         self.db.path = os.path.join(self.config.root_path, 
@@ -542,6 +561,17 @@ class ToyzSettings:
                 ('permissions', ['VARCHAR'])
             ]),
             indices={'tbl_idx':('table_name',)},
+            users={'*':'', 'admin':'frw'}
+        )
+        db_module.create_table(
+            db_settings=self.db,
+            user=users['admin'],
+            table_name='users',
+            columns=OrderedDict([
+                ('user_id', ['VARCHAR']),
+                ('user_info', ['VARCHAR'])
+            ]),
+            indices={'users_idx':('user_id',)},
             users={'*':'', 'admin':'frw'}
         )
         db_module.create_table(
@@ -588,9 +618,10 @@ class ToyzSettings:
                 }
             }
         })
-    
-        print("\nFirst Time Setup completed")
+        
+        save_users(self, users)
         self.save_settings()
+        print("\nFirst Time Setup completed")
 
 class ToyzUser:
     """
@@ -620,8 +651,7 @@ class ToyzUser:
             'toyz': {},
             'paths': {},
             'pwd': self.user_id,
-            'app': None,
-            'queue_info': {'short':1, 'long':1}
+            'app': None
         }
         for setting, val in defaults.items():
             if not hasattr(self, setting):
@@ -635,8 +665,11 @@ class ToyzUser:
             self.paths['temp'] = os.path.join(self.paths['user'], 'temp')
         create_paths([path for key, path in self.paths.items()])
         
+        if len(self.toyz)==0:
+            self.toyz = toyz_settings.config.approved_modules
+        
         if self.app is not None:
-            self.app.update_users(self)
+            update_users(self)
     
     def get_session_id(self, websocket):
         for session_id in self.open_sessions:
