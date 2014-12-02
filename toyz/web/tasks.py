@@ -13,8 +13,7 @@ def load_user_settings(toyz_settings, id, params):
     """
     Load settings for a given user
     """
-    users = core.load_user(toyz_settings)
-    user = users[id['user_id']]
+    user = core.load_user(toyz_settings, id['user_id'])
     response = {
         'id':'user_settings',
         'paths': user.paths,

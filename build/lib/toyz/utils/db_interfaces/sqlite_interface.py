@@ -411,19 +411,18 @@ def get_path_info(db_settings, user, path):
     return path_info
 
 def save_users(db_settings, users):
-    print('db_settings', db_settings.__dict__)
     db = sqlite3.connect(db_settings.path)
-    for user in users:
-        u = db.execute("select user_id from users where user_id=?",(user.user_id,))
+    for user_id, user in users.items():
+        u = db.execute("select user_id from users where user_id=?",(user_id,))
         if len(u.fetchall())==0:
             db.execute(
-                "inset into users (user_id, user_info) values (?,?)",
-                (user.user_id, json.dumps(user))
+                "insert into users (user_id, user_info) values (?,?)",
+                (user_id, json.dumps(user))
             )
         else:
             db.execute(
                 "update users set user_info=? where user_id=?;",
-                (json.dumps(user), user.user_id))
+                (json.dumps(user), user_id))
     db.commit()
     db.close()
 
@@ -432,3 +431,11 @@ def load_users(db_settings):
     cursor = db.execute("select user_id, user_info from users;")
     users = {row[0]: json.loads(row[1]) for row in cursor.fetchall()}
     return users
+
+def load_user(db_settings, user_id):
+    db = sqlite3.connect(db_settings.path)
+    cursor = db.execute("select user_info from users where user_id=?;",(user_id,))
+    user = cursor.fetchall()
+    if len(user)==0:
+        raise ToyzError("User not found in database")
+    return json.loads(user[0][0])

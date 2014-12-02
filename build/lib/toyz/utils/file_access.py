@@ -69,7 +69,8 @@ def get_file_permissions(db_settings, user, path):
     ----------
     db_settings: object
         - Database settings
-    user: ToyzUser
+    user: ToyzClass
+        - Settings for Toyz user
     path: string
         - Path to check for permissions
     """

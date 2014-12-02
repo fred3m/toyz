@@ -37,7 +37,8 @@ class ToyzHandler(tornado.web.RequestHandler):
         toyz_info = path.split('/')
         toy_name = toyz_info[0]
         rel_path = '/'.join(toyz_info[1:])
-        user = self.app.users[self.get_user_id()]
+        #user = self.app.users[self.get_user_id()]
+        user = core.load_user(self.application.toyz_settings, self.get_user_id())
         
         if toy_name in user.toyz:
             root, rel_path = os.path.split(user.toyz[toy].full_path)
@@ -114,8 +115,9 @@ class AuthStaticFileHandler(AuthHandler, tornado.web.StaticFileHandler):
         Check that the user has permission to view the file
         """
         print('root:{0}, full_path:{1}'.format(root, full_path))
-        user = self.application.users[self.get_current_user()]
-        permissions = find_parent_permissions(self.application.db_settings, user, full_path)
+        user = core.load_user(self.application.toyz_settings, self.get_current_user())
+        permissions = file_acces.get_parent_permissions(
+            self.application.db_settings, user, full_path)
         if 'r' in permissions or 'x' in permissions:
             absolute_path = tornado.web.StaticFileHandler.validate_absolute_path(
                     self, root, full_path)
@@ -167,11 +169,6 @@ class AuthLoginHandler(AuthHandler, tornado.web.RequestHandler):
         user_id = self.get_argument('user_id',default='')
         pwd = self.get_argument('pwd',default='')
         if core.check_pwd(self.application.toyz_settings, user_id, pwd):
-            if user_id not in self.application.active_users:
-                self.application.active_users.append(user_id)
-                print('Users logged in:')
-                for user_id in self.application.active_users:
-                    print(user_id)
             self.set_current_user(user_id)
             self.redirect(self.get_argument('next',u'/'))
         else:
@@ -203,10 +200,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         *args:
             Currently I don't pass any arguments to this function
         """
-        user_id=self.get_secure_cookie('user').strip('"')
+        user_id = self.get_secure_cookie('user').strip('"')
         self.application.new_session(user_id, websocket=self)
         print("Web socket opened!")
-        print("websocket user:",user_id)
 
     def on_close(self):
         """
@@ -224,15 +220,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         -------
         None
         """
-        user = self.session['user']
-        app = self.session['app']
-        del user.open_sessions[self.session['session_id']]
-        shutil.rmtree(self.session['path'])
-        if len(user.open_sessions)==0:
-            shutil.rmtree(user.paths['temp'])
-            app.active_users.remove(user.user_id)
-        
-        print('active users remaining:',app.active_users)
+        self.application.close_session(self.session)
     
     def on_message(self, message):
         """
@@ -271,7 +259,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         decoded=tornado.escape.json_decode(message)
         print('task:', decoded)
         user_id=decoded['id']['user_id']
-        if user_id !=self.session['user'].user_id:
+        if user_id !=self.session['user_id']:
             self.write_message({
                 'id':"ERROR",
                 'error':"Websocket user does not match task user_id",
@@ -279,7 +267,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             })
         session_id=decoded['id']['session_id']
         
-        self.session['app'].process_job(decoded)
+        self.application.process_job(decoded)
 
 class MainHandler(ToyzHandler):
     """
@@ -329,10 +317,7 @@ class ToyzWebApp(tornado.web.Application):
             toyz_static_handler = ToyzStaticFileHandler
             toyz_template_handler = ToyzTemplateHandler
         
-        self.users = core.load_users(self.toyz_settings)
-        for user_id, user in self.users.items():
-            user.app = self
-        self.active_users = []
+        self.user_sessions = {}
         
         if platform.system() == 'Windows':
             file_path = os.path.splitdrive(core.ROOT_DIR)
@@ -346,7 +331,7 @@ class ToyzWebApp(tornado.web.Application):
             }),
             (r"/auth/login/", AuthLoginHandler),
             (r"/auth/logout/", AuthLogoutHandler),
-            #(r"/static/(.*)", static_handler, {'path': self.toyz_settings.config.root_path}),
+            #(r"/static/(.*)", static_handler, {'path': core.ROOT_DIR}),
             (r"/file/(.*)", static_handler, {'path': file_path}),
             (r"/toyz/static/(.*)", toyz_static_handler),
             (r"/toyz/template/(.*)", toyz_template_handler),
@@ -381,13 +366,36 @@ class ToyzWebApp(tornado.web.Application):
         user_id: ToyzUser
         websocket: WebSocketHandler
         """
-        if user_id not in self.active_users:
-            print("User was not logged in")
-            if user_id not in self.users:
-                raise ToyzError("User ID not found")
-            self.active_users.append(user_id)
-            print("Users logged in:", [u for u in self.active_users])
-        self.users[user_id].add_session(websocket)
+        import datetime
+        user = core.load_user(self.toyz_settings, user_id)
+        if user_id not in self.user_sessions:
+            self.user_sessions[user_id] = {}
+            print("Users logged in:", self.user_sessions.keys())
+        
+        session_id = str(
+            datetime.datetime.now()).replace(' ','__').replace('.','-').replace(':','_')
+        self.user_sessions[user_id][session_id] = websocket
+        websocket.session = {
+            'user_id': user_id,
+            'session_id': session_id,
+            'path': os.path.join(user.paths['temp'], session_id),
+        }
+        core.create_paths(websocket.session['path'])
+        websocket.write_message({
+            'id': 'initialize',
+            'user_id': user_id,
+            'session_id': session_id,
+        })
+    
+    
+    def close_session(self, session):
+        shutil.rmtree(session['path'])
+        del self.user_sessions[session['user_id']][session['session_id']]
+        if len(self.user_sessions[session['user_id']])==0:
+            user = core.load_user(self.toyz_settings, session['user_id'])
+            shutil.rmtree(user.paths['temp'])
+        
+        print('active users remaining:', self.user_sessions.keys())
     
     def process_job(self, msg):
         """
@@ -450,8 +458,7 @@ class ToyzWebApp(tornado.web.Application):
             del result['update_app']
         # respond to the client
         if result != {}:
-            user = self.users[result['id']['user_id']]
-            session = user.open_sessions[result['id']['session_id']]
+            session = self.user_sessions[result['id']['user_id']][result['id']['session_id']]
             session.write_message(result['response'])
     
     def update(self, attr):
@@ -461,13 +468,7 @@ class ToyzWebApp(tornado.web.Application):
         a setting may be changed, etc. When this happens the job notifies the application
         that something has changed and this function is called to reload the property.
         """
-        if attr == 'users':
-            self.users = core.load_users(self.toyz_settings)
-            for user_id, user in self.users.items():
-                user.app = self
-        elif attr == 'groups':
-            self.groups = core.load_groups(self.toyz_settings)
-        elif attr == 'toyz_settings':
+        if attr == 'toyz_settings':
             self.toyz_settings = core.ToyzSettings(self.root_path)
 
 def init_web_app():

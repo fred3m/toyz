@@ -225,8 +225,8 @@ def save_users(toyz_settings, users):
         - Keys are the id's of the toyz users, values are ToyzUsers
     """
     db_module = importlib.import_module(toyz_settings.db.interface_name)
-    u = [u for uid,u in users.items()]
-    db_module.save_users(toyz_settings.db, u)
+    u_dict = {uid:u.__dict__ for uid,u in users.items()}
+    db_module.save_users(toyz_settings.db, u_dict)
 
 def save_user(toyz_settings, user):
     save_users(toyz_settings, {user.user_id: user})
@@ -238,35 +238,22 @@ def load_users(toyz_settings):
     to decrypt them. 
     """
     db_module = importlib.import_module(toyz_settings.db.interface_name)
-    return db_module.load_users(toyz_settings.db)
+    
+    users= db_module.load_users(toyz_settings.db)
+    #print('users:', users)
+    #print('type:', type(users))
+    #print('val type:', type(users['admin']))
+    users = {uid:ToyzUser(toyz_settings, **u) for uid, u in users.items()}
+    #print('\n\n',users['admin'])
+    #print('class', ToyzClass(users['admin']))
+    return users
 
-def progress_log(text,id):
+def load_user(toyz_settings, user_id):
     """
-    progressLog
-    
-    Create a dictionary that can be sent to the clients logger to display the progress of a job running on the server.
-    
-    Parameters
-    ----------
-    text: string
-        - Text to be sent to be displayed on the clients logger
-    
-    Returns
-    -------
-    response: dictionary
-        - The response has the format of an astropyp websocket response, namely an id that identifies the type
-        of response being sent to the client and then any fields specific to the response (in this case 'log').
-        
-        Example:
-            response={
-                'id':'progress log',
-                'log':'Detecting source objects'
-            }
-        
-        The clients logger will display the 'log' field of the dictionary.
+    Load settings for a single user
     """
-    log = {'id':"progress log",'log':text}
-    respond(id, log)
+    db_module = importlib.import_module(toyz_settings.db.interface_name)
+    return ToyzUser(toyz_settings, **db_module.load_user(toyz_settings.db, user_id))
 
 def run_job(toyz_settings, job):
     """
@@ -476,11 +463,11 @@ class ToyzSettings:
         the settings file will be encrypted (this requires a security key).
         """
         toyz_settings = self
-        if self.security.encrypt_config:
-            import getpass
-            from toyz.utils.security import encrypt_pickle
-            self.security.key = security_key
-            toyz_settings = encrypt_pickle(self.__dict__, security_key)
+        #if self.security.encrypt_config:
+        #    import getpass
+        #    from toyz.utils.security import encrypt_pickle
+        #    self.security.key = security_key
+        #    toyz_settings = encrypt_pickle(self.__dict__, security_key)
         pickle.dump(toyz_settings, open(self.config.path, 'wb'))
     
     def load_settings(self, config_path, security_key=None):
@@ -538,7 +525,7 @@ class ToyzSettings:
             admin_pwd = encrypt_pwd(self, admin_pwd)
         users = {
             'admin':ToyzUser(
-                toyz_settings=self, 
+                toyz_settings=self,
                 user_id='admin', 
                 pwd=admin_pwd, 
                 groups=['admin'])}
@@ -646,7 +633,7 @@ class ToyzUser:
         # Set default values for missing attributes
         defaults = {
             'groups': [],
-            'open_sessions': {},
+            'user_sessions': {},
             'workspaces': {},
             'toyz': {},
             'paths': {},
@@ -667,37 +654,6 @@ class ToyzUser:
         
         if len(self.toyz)==0:
             self.toyz = toyz_settings.config.approved_modules
-        
-        if self.app is not None:
-            update_users(self)
-    
-    def get_session_id(self, websocket):
-        for session_id in self.open_sessions:
-            if self.open_sessions[session_id]==websocket:
-                return session_id
-        return None
-    
-    def add_session(self, websocket, session_id=None):
-        import datetime
-        if session_id is None:
-            session_id = str(
-                datetime.datetime.now()).replace(' ','__').replace('.','-').replace(':','_')
-        self.open_sessions[session_id] = websocket
-        websocket.session = {
-            'user': self,
-            'session_id': session_id,
-            'path': os.path.join(self.paths['temp'], session_id),
-            'app': self.app
-        }
-        create_paths(websocket.session['path'])
-        websocket.write_message({
-            'id': 'initialize',
-            'user_id': self.user_id,
-            'session_id': session_id,
-        })
-    
-    def get_settings(self):
-        return self.__dict__
     
     def add_toyz(self, toyz, paths):
         """

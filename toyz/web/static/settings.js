@@ -165,7 +165,12 @@ Toyz.Console.Settings.getAccountSettings = function(params){
                     newItem: {
                         type:'div',
                         params:{
-                            toy: {}
+                            toy: {
+                                lbl:'toy'
+                            },
+                            toy_path:{
+                                lbl:'path'
+                            }
                         }
                     }
                 },
