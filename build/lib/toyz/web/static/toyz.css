@@ -25,3 +25,8 @@
 .div-title {
     font-size: 200%;
 }
+
+ul {
+    list-style:none;
+    padding-left:0;
+}

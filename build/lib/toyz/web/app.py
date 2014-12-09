@@ -202,7 +202,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         """
         user_id = self.get_secure_cookie('user').strip('"')
         self.application.new_session(user_id, websocket=self)
-        print("Web socket opened!")
 
     def on_close(self):
         """
@@ -257,7 +256,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         """
         #logging.info("message recieved: %r",message)
         decoded=tornado.escape.json_decode(message)
-        print('task:', decoded)
         user_id=decoded['id']['user_id']
         if user_id !=self.session['user_id']:
             self.write_message({
@@ -378,7 +376,7 @@ class ToyzWebApp(tornado.web.Application):
         websocket.session = {
             'user_id': user_id,
             'session_id': session_id,
-            'path': os.path.join(user.paths['temp'], session_id),
+            'path': os.path.join(user.shortcuts['temp'], session_id),
         }
         core.create_paths(websocket.session['path'])
         websocket.write_message({
@@ -387,13 +385,12 @@ class ToyzWebApp(tornado.web.Application):
             'session_id': session_id,
         })
     
-    
     def close_session(self, session):
         shutil.rmtree(session['path'])
         del self.user_sessions[session['user_id']][session['session_id']]
         if len(self.user_sessions[session['user_id']])==0:
             user = core.load_user(self.toyz_settings, session['user_id'])
-            shutil.rmtree(user.paths['temp'])
+            shutil.rmtree(user.shortcuts['temp'])
         
         print('active users remaining:', self.user_sessions.keys())
     
@@ -413,7 +410,6 @@ class ToyzWebApp(tornado.web.Application):
             # server
             pass
         else:
-            print('Recieved message:', msg)
             result = self.run_job(msg)
             tornado.ioloop.IOLoop.instance().add_future(result, self.respond)
     
@@ -479,7 +475,7 @@ def init_web_app():
     
     # Initialize the tornado web application
     toyz_app = ToyzWebApp()
-    print("Application root directory:", toyz_app.toyz_settings.config.root_path)
+    print("Application root directory:", toyz_app.root_path)
     
     # Continuous loop to wait for incomming connections
     print("Server is running on port", toyz_app.toyz_settings.web.port)

@@ -54,7 +54,7 @@ Toyz.Core.jobsocketInit=function(options){
                 };
                 if(typeof callback!='undefined'){
                     var params=passParams||{};
-                    jobsocket.requests[task.id.requestId.toString()]={func:callback,params:params};
+                    jobsocket.requests[task.id.request_id.toString()]={func:callback,params:params};
                 };
                 console.log("sending task:", task);
                 jobsocket.ws.send(JSON.stringify(task));

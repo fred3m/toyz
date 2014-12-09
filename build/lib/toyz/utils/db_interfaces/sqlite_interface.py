@@ -430,6 +430,7 @@ def load_users(db_settings):
     db = sqlite3.connect(db_settings.path)
     cursor = db.execute("select user_id, user_info from users;")
     users = {row[0]: json.loads(row[1]) for row in cursor.fetchall()}
+    db.close()
     return users
 
 def load_user(db_settings, user_id):
@@ -437,5 +438,46 @@ def load_user(db_settings, user_id):
     cursor = db.execute("select user_info from users where user_id=?;",(user_id,))
     user = cursor.fetchall()
     if len(user)==0:
-        raise ToyzError("User not found in database")
+        db.close()
+        raise ToyzDbError("User not found in database")
+    db.close()
     return json.loads(user[0][0])
+
+def get_all_user_permissions(db_settings, user_id):
+    db = sqlite3.connect(db_settings.path)
+    cursor = db.execute("select path_id, permissions from user_paths where user_id=?;",(user_id,))
+    path_ids = cursor.fetchall()
+    permissions = {}
+    for pid, permission in path_ids:
+        cursor = db.execute("select path from paths where path_id=?", (pid,))
+        path = cursor.fetchall()
+        if len(path)>1:
+            raise ToyzDbError("Multiple paths exist for path_id", pid)
+        elif len(path)==0:
+            raise ToyzDbError("No matching path for path_id", pid)
+        permissions[path[0][0]] = permission
+    db.close()
+    return permissions
+
+def load_groups(db_settings):
+    db = sqlite3.connect(db_settings.path)
+    cursor = db.execute("select group_id, group_info from groups;")
+    groups = {row[0]: json.loads(row[1]) for row in cursor.fetchall()}
+    db.close()
+    return groups
+
+def save_groups(db_settings, groups):
+    db = sqlite3.connect(db_settings.path)
+    for group_id, group_info in groups.items():
+        u = db.execute("select group_id from groups where group_id=?",(group_id,))
+        if len(u.fetchall())==0:
+            db.execute(
+                "insert into groups (group_id, group_info) values (?,?)",
+                (group_id, json.dumps(group_info))
+            )
+        else:
+            db.execute(
+                "update groups set group_info=? where group_id=?;",
+                (json.dumps(group), group_id))
+    db.commit()
+    db.close()

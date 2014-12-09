@@ -22,22 +22,14 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),os.pardir))
 default_settings = {
     'config': {
         'root_path': os.path.join(ROOT_DIR),
-        'rel_path': os.path.join('config', 'toyz_config.p'),
-        'paths': ['config', 'users', 'db'],
-        'queue_info': {
-            'medium': max(multiprocessing.cpu_count()-2,1),
-            'long': 1
-        },
+        'config_path': os.path.join('config', 'toyz_config.p'),
         'approved_modules': ['toyz.web.tasks'],
-    },
-    'users': {
-        'rel_path': os.path.join('users', 'users.p'),
         'enable_guest': True
     },
     'db': {
         'db_type': 'sqlite',
         'interface_name': 'toyz.utils.db_interfaces.sqlite_interface',
-        'rel_path': os.path.join('db', 'toyz.db')
+        'db_path': os.path.join('db', 'toyz.db')
     },
     'web': {
         'port': 8888,
@@ -76,7 +68,8 @@ def str_2_bool(bool_str):
         return False
     else:
         raise ToyzError(
-            "'{0}' did not match a boolean expression (true/false, yes/no, t/f, y/n)".format(bool_str))
+            "'{0}' did not match a boolean expression "
+            " (true/false, yes/no, t/f, y/n)".format(bool_str))
 
 def get_bool(prompt):
     """
@@ -86,7 +79,9 @@ def get_bool(prompt):
     try:
         bool_str = str_2_bool(raw_input(prompt))
     except ToyzError:
-        print("'{0}' did not match a boolean expression (true/false, yes/no, t/f, y/n)".format(bool_str))
+        print(
+            "'{0}' did not match a boolean expression "
+            "(true/false, yes/no, t/f, y/n)".format(bool_str))
         return get_bool(prompt)
     return bool_str
 
@@ -175,7 +170,8 @@ def check4keys(myDict,keys):
         -List of keys to search for in the dictionary
     Returns
     -------
-    No returns but the function raises a JobError and lists all required keys missing from the dictionary
+    No returns but the function raises a JobError and lists all required keys missing 
+    from the dictionary
     """
     error=""
     if any(key not in myDict for key in keys):
@@ -187,20 +183,20 @@ def check4keys(myDict,keys):
 
 def create_paths(paths):
     """                                                                         
-    Search for paths on the server. If a path does not exist, create the necessary directories.                                                                
-    For example, if paths=['~/Documents/images/2014-6-5_data/'] and only the path                                                                     
-    '~/Documents' exists, both '~/Documents/images/' and '~/Documents/images/2014-6-5_data/'                                                 
+    Search for paths on the server. If a path does not exist, create the necessary directories.
+    For example, if paths=['~/Documents/images/2014-6-5_data/'] and only the path 
+    '~/Documents' exists, both '~/Documents/images/' and '~/Documents/images/2014-6-5_data/'
     are created.
     
-    Parameters                                                                  
-    ----------                                                                  
-    paths: string or list of strings                                            
-        -If paths is a string, this is the path to search for and create. If paths is a list, each one                                                         
-        is a path to search for and create                                      
-                                                                                
-    Returns                                                                     
-    -------                                                                     
-        -None                                                                   
+    Parameters
+    ----------
+    paths: string or list of strings
+        -If paths is a string, this is the path to search for and create. If paths is a list, 
+        each one is a path to search for and create
+    
+    Returns
+    -------
+        -None
     """
     if isinstance(paths,basestring):
             paths=[paths]
@@ -213,9 +209,7 @@ def create_paths(paths):
     
 def save_users(toyz_settings, users):
     """
-    Save all users to the users file (updates any changes since the last save).
-    If the `toyz_settings.security.encrypt_config` flag has been set, the 
-    class will be encrypted before it is saved.
+    Save all users to the database (updates any changes since the last save).
 
     Parameters
     ----------
@@ -229,24 +223,27 @@ def save_users(toyz_settings, users):
     db_module.save_users(toyz_settings.db, u_dict)
 
 def save_user(toyz_settings, user):
+    """
+    Save a user to the database
+    """
     save_users(toyz_settings, {user.user_id: user})
 
 def load_users(toyz_settings):
     """
-    Load all users. 
-    If the file has been encrypted, the `toyz.utils.security` module is used 
-    to decrypt them. 
+    Load all users 
     """
     db_module = importlib.import_module(toyz_settings.db.interface_name)
-    
-    users= db_module.load_users(toyz_settings.db)
-    #print('users:', users)
-    #print('type:', type(users))
-    #print('val type:', type(users['admin']))
+    users = db_module.load_users(toyz_settings.db)
     users = {uid:ToyzUser(toyz_settings, **u) for uid, u in users.items()}
-    #print('\n\n',users['admin'])
-    #print('class', ToyzClass(users['admin']))
     return users
+
+def load_groups(toyz_settings):
+    """
+    load all groups
+    """
+    db_module = importlib.import_module(toyz_settings.db.interface_name)
+    groups = db_module.load_groups(toyz_settings.db)
+    return groups
 
 def load_user(toyz_settings, user_id):
     """
@@ -254,6 +251,26 @@ def load_user(toyz_settings, user_id):
     """
     db_module = importlib.import_module(toyz_settings.db.interface_name)
     return ToyzUser(toyz_settings, **db_module.load_user(toyz_settings.db, user_id))
+
+def update_file_permissions(toyz_settings, user_type, user_id, paths):
+    """
+    Update the path permissions for a user or group. Any paths not listed for the user
+    will be removed from his/her permissions
+    """
+    user = load_user(toyz_settings, user_id)
+    db_module = importlib.import_module(toyz_settings.db.interface_name)
+    permissions = db_module.get_all_user_permissions(toyz_settings.db, user)
+    for path in permissions:
+        if path not in paths:
+            if user_type == 'user':
+                db_module.delete_user_path(toyz_settings.db, path)
+            elif user_type == 'group':
+                db_module.delete_group_path(toyz_settings.db, path)
+            else:
+                raise ToyzError(
+                    "Invalid user type for file permissions: must be 'user' or 'group'")
+    for path in paths:
+        file_access.update_file_permissions(db_settings, user, paths)
 
 def run_job(toyz_settings, job):
     """
@@ -331,9 +348,10 @@ def run_job(toyz_settings, job):
             }
         }
 
-    In this case, after receiving the job, this function will import the 'fitsviewer' module (if it has not been
-    imported already) and run the function 'loadHeader(job['id'],job['parameters'],self)'. If there are any
-    errors in loading the header, a response of the form
+    In this case, after receiving the job, this function will import the 'fitsviewer' module 
+    (if it has not been imported already) and run the function 
+    'loadHeader(job['id'],job['parameters'],self)'. If there are any errors in loading the header,
+    a response of the form
         response = {
             'id' : 'ERROR',
             'error' : 'Error message here for unable to lead header',
@@ -358,7 +376,6 @@ def run_job(toyz_settings, job):
         if module in toyz_settings.config.approved_modules:
             toyz_module = importlib.import_module(module)
             task = getattr(toyz_module, job["task"])
-            print("Running task",task)
             response = task(toyz_settings, job['id'],job['parameters'])
         else:
             raise ToyzJobError("Module is not listed in approved modules")
@@ -384,9 +401,7 @@ def run_job(toyz_settings, job):
         'response': response,
     }
     
-    # print("finished task")
     #logging.info("sent message:%r",response['id'])
-    print('result:', result)
     return result
 
 class ToyzClass:
@@ -422,9 +437,7 @@ class ToyzJobQueue:
             self.processes.append(process)
     
     def add_job(self, job):
-        print('job:',job)
         self.queue.put(job)
-        print('ok')
     
     def close_env(self, interrupt_jobs=False):
         self.queue.put({'close_env': True})
@@ -444,7 +457,7 @@ class ToyzSettings:
         This allows users to have a custom Toyz directory with their own configuration
         separate from the master install in the python directory.
         """
-        config_filename = default_settings['config']['rel_path']
+        config_filename = default_settings['config']['config_path']
         if config_root_path is None:
             if os.path.isfile(os.path.join(os.getcwd(), config_filename)):
                 config_root_path = os.getcwd()
@@ -499,7 +512,6 @@ class ToyzSettings:
     
         for key, val in default_settings.items():
             setattr(self, key, ToyzClass(val))
-        self.config_root_path = config_root_path
     
         # Create config directory if it does not exist
         print("\nToyz: First Time Setup\n----------------------\n")
@@ -508,10 +520,10 @@ class ToyzSettings:
             self.config.root_path = normalize_path(raw_input("new path: "))
         self.config.path = os.path.join(
             self.config.root_path,
-            self.config.rel_path
+            self.config.config_path
         )
         create_paths([self.config.root_path, os.path.join(self.config.root_path, 'config')])
-    
+        
         # Create users
         # TODO: by default, there will be no login, so the next section should be
         # removed once the code is working properly
@@ -528,14 +540,12 @@ class ToyzSettings:
                 toyz_settings=self,
                 user_id='admin', 
                 pwd=admin_pwd, 
-                groups=['admin'])}
+                #groups=['admin']
+                )}
         
-        #self.users.path = os.path.join(self.config.root_path, self.users.rel_path)
-        #pickle.dump(users, open(self.users.path, 'wb'))
-    
         # Create a database and folder permissions table
         self.db.path = os.path.join(self.config.root_path, 
-                                            self.db.rel_path)
+                                            self.db.db_path)
         create_paths(os.path.dirname(self.db.path))
         db_module = importlib.import_module(self.db.interface_name)
         db_module.create_database(self.db, users['admin'])
@@ -564,6 +574,17 @@ class ToyzSettings:
         db_module.create_table(
             db_settings=self.db,
             user=users['admin'],
+            table_name='groups',
+            columns=OrderedDict([
+                ('group_id', ['VARCHAR']),
+                ('group_info', ['VARCHAR'])
+            ]),
+            indices={'group_idx':('group_id',)},
+            users={'*':'', 'admin':'frw'}
+        )
+        db_module.create_table(
+            db_settings=self.db,
+            user=users['admin'],
             table_name='paths',
             columns=OrderedDict([
                 ('path_id', ['INTEGER','PRIMARY','KEY','AUTOINCREMENT']),
@@ -582,7 +603,7 @@ class ToyzSettings:
                 ('path_id', ['INTEGER']),
                 ('permissions', ['VARCHAR']),
             ]),
-            indices={'user_idx':('user_id',)},
+            indices={'user_path_idx':('user_id',)},
             users={'*':'frw', 'admin':'frw'}
         )
         db_module.create_table(
@@ -594,7 +615,7 @@ class ToyzSettings:
                 ('path_id', ['INTEGER']),
                 ('permissions', ['VARCHAR']),
             ]),
-            indices={'group_idx':('group_id',)},
+            indices={'group_path_idx':('group_id',)},
             users={'*':'frw', 'admin':'frw'}
         )
     
@@ -605,6 +626,8 @@ class ToyzSettings:
                 }
             }
         })
+        
+        db_module.save_groups(db_settings=self.db, groups={'admin':{}, 'modify_toyz':{}})
         
         save_users(self, users)
         self.save_settings()
@@ -636,24 +659,29 @@ class ToyzUser:
             'user_sessions': {},
             'workspaces': {},
             'toyz': {},
-            'paths': {},
-            'pwd': self.user_id,
+            'modules': [],
+            'shortcuts': {},
             'app': None
         }
+        
         for setting, val in defaults.items():
             if not hasattr(self, setting):
                 setattr(self, setting, val)
         
         # Ensure that required directories exist
-        if 'user' not in self.paths:
-            self.paths['user'] = os.path.join(
+        if 'user' not in self.shortcuts:
+            self.shortcuts['user'] = os.path.join(
                 toyz_settings.config.root_path, 'users', self.user_id)
-        if 'temp' not in self.paths:
-            self.paths['temp'] = os.path.join(self.paths['user'], 'temp')
-        create_paths([path for key, path in self.paths.items()])
+        if 'temp' not in self.shortcuts:
+            self.shortcuts['temp'] = os.path.join(self.shortcuts['user'], 'temp')
+        create_paths([path for key, path in self.shortcuts.items()])
         
-        if len(self.toyz)==0:
-            self.toyz = toyz_settings.config.approved_modules
+        # Set the users password (if it is a first time user)
+        if not hasattr(self, 'pwd'):
+            if toyz_settings.security.user_login:
+                self.pwd = encrypt_pwd(toyz_settings, self.user_id)
+            else:
+                self.pwd = self.user_id
     
     def add_toyz(self, toyz, paths):
         """
