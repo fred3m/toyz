@@ -5,7 +5,7 @@ Common non-package specific utility functions
 """
 
 import core
-import db_utils
+import db
 import errors
 import file_access
 import security

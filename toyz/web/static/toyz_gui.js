@@ -67,11 +67,20 @@ Toyz.Gui.buildParamDiv = function(param, $div){
                 $input.append($option);
             }
         }else{
-            for(var opt in param.options){
-                $option=$('<option/>')
-                    .html(param.options[opt])
-                    .val(opt)
-                $input.append($option);
+            if($.isArray(param.options)){
+                for(var i=0;i<param.options.length; i++){
+                    $option=$('<option/>')
+                        .html(param.options[i])
+                        .val(param.options[i])
+                    $input.append($option);
+                }
+            }else{
+                for(var opt in param.options){
+                    $option=$('<option/>')
+                        .html(param.options[opt])
+                        .val(opt)
+                    $input.append($option);
+                };
             };
         };
         if(param.hasOwnProperty('defaultVal')){
@@ -124,6 +133,7 @@ Toyz.Gui.buildParamDiv = function(param, $div){
     // Special types of parameters may also be used, for example
     // a path with a button to open a file dialog
     if(param.hasOwnProperty('file_dialog')){
+        console.log('file dialog:', param);
         if(!param.hasOwnProperty('css')){
             param.$input.prop('size',80);
         };
@@ -138,7 +148,7 @@ Toyz.Gui.buildParamDiv = function(param, $div){
                     file_dir = param.$input.val();
                 };
                 param.file_dialog.load_directory(file_dir,function(){
-                    param.$input.val(file_dialog.path+$('#'+file_dialog.fileInput).val());
+                    param.$input.val(file_dialog.path+file_dialog.files.$select.val());
                 });
             }
         }(param));

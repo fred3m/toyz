@@ -22,6 +22,7 @@ import tornado.gen
 # Imports from Toyz package
 from toyz.utils import core
 from toyz.utils import file_access
+import toyz.utils.db as db_utils
 from toyz.utils.errors import ToyzError, ToyzWebError
 
 tornado.options.define("port", default=None, help="run on the given port", type=int)
@@ -37,16 +38,15 @@ class ToyzHandler(tornado.web.RequestHandler):
         toyz_info = path.split('/')
         toy_name = toyz_info[0]
         rel_path = '/'.join(toyz_info[1:])
-        #user = self.app.users[self.get_user_id()]
-        user = core.load_user(self.application.toyz_settings, self.get_user_id())
+        user_toyz = db_utils.get_param(self.application.toyz_settings, 'toyz', 
+            user_id=self.get_user_id())
         
-        if toy_name in user.toyz:
-            root, rel_path = os.path.split(user.toyz[toy].full_path)
+        if toy_name in user_toyz:
+            root, path = os.path.split(user_toyz[toy])
         else:
             raise tornado.web.HTTPError(404)
             
-        full_path = os.path.join(root, path)
-        permissions = find_parent_permissions(self.application.db_settings, user, full_path)
+        permissions = find_parent_permissions(self.application.db_settings, user, path)
         if 'r' in permissions or 'x' in permissions:
             return root, rel_path
         else:
@@ -78,7 +78,7 @@ class ToyzTemplateHandler(ToyzHandler, tornado.web.RequestHandler):
     
     @tornado.web.asynchronous
     def get(self, path):
-        self.template_path, rel_path= self.get_toyz_path(path)
+        self.template_path, rel_path=self.get_toyz_path(path)
         self.render(rel_path)
     
     def get_template_path():
@@ -92,8 +92,8 @@ class AuthToyzTemplateHandler(AuthHandler, ToyzTemplateHandler):
 
 class ToyzStaticFileHandler(ToyzHandler, tornado.web.StaticFileHandler):
     """
-    Secure handler for all toyz added to the application. This handles security, such as making sure
-    the user has a registered cookie and that the user has acces to the requested files.
+    Secure handler for all toyz added to the application. This handles security, such as making 
+    sure the user has a registered cookie and that the user has acces to the requested files.
     """
     @tornado.web.asynchronous
     def get(self, path):
@@ -115,9 +115,8 @@ class AuthStaticFileHandler(AuthHandler, tornado.web.StaticFileHandler):
         Check that the user has permission to view the file
         """
         print('root:{0}, full_path:{1}'.format(root, full_path))
-        user = core.load_user(self.application.toyz_settings, self.get_current_user())
         permissions = file_acces.get_parent_permissions(
-            self.application.db_settings, user, full_path)
+            self.application.db_settings, full_path, user_id=self.get_current_user())
         if 'r' in permissions or 'x' in permissions:
             absolute_path = tornado.web.StaticFileHandler.validate_absolute_path(
                     self, root, full_path)
@@ -207,9 +206,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         """
         on_close
         
-        on_close is called when the websocket is closed. Eventually this function will delete all temporary
-        files being used by the users current session and delete entries in global variables such as
-        openSessions, openFits, etc
+        on_close is called when the websocket is closed. Eventually this function will delete 
+        all temporary files being used by the users current session and delete entries in global 
+        variables such as openSessions, openFits, etc
         
         Parameters
         ----------
@@ -225,15 +224,18 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         """
         on_message
         
-        on_message is called when the websocket recieves a message from the client. The user and session information
-        is then extracted and processed before running the job initiated by the client.
+        on_message is called when the websocket recieves a message from the client. 
+        The user and session information is then extracted and processed before running the 
+        job initiated by the client.
         
         Parameters
         ----------
         message: JSON unicode string
-            - Websockets pass json objects from a client to the server. The input message is the json unicode string
-            received by the server from the client that has not yet been decoded.
-            - The server expects all messages (after decoding from JSON) to be a dictionary with the following keys:
+            - Websockets pass json objects from a client to the server. The input message is the 
+            json unicode string received by the server from the client that has not yet been 
+            decoded.
+            - The server expects all messages (after decoding from JSON) to be a dictionary with 
+            the following keys:
                 id: dictionary
                     - dictionary that contains the following keys:
                         userId: string
@@ -365,7 +367,7 @@ class ToyzWebApp(tornado.web.Application):
         websocket: WebSocketHandler
         """
         import datetime
-        user = core.load_user(self.toyz_settings, user_id)
+        #user = core.load_user(self.toyz_settings, user_id)
         if user_id not in self.user_sessions:
             self.user_sessions[user_id] = {}
             print("Users logged in:", self.user_sessions.keys())
@@ -373,10 +375,13 @@ class ToyzWebApp(tornado.web.Application):
         session_id = str(
             datetime.datetime.now()).replace(' ','__').replace('.','-').replace(':','_')
         self.user_sessions[user_id][session_id] = websocket
+        shortcuts = db_utils.get_param(self.toyz_settings.db, 'shortcuts', 
+            user_id=user_id)
+        shortcuts = core.check_user_shortcuts(self.toyz_settings, user_id, shortcuts)
         websocket.session = {
             'user_id': user_id,
             'session_id': session_id,
-            'path': os.path.join(user.shortcuts['temp'], session_id),
+            'path': os.path.join(shortcuts['temp'], session_id),
         }
         core.create_paths(websocket.session['path'])
         websocket.write_message({
@@ -389,8 +394,9 @@ class ToyzWebApp(tornado.web.Application):
         shutil.rmtree(session['path'])
         del self.user_sessions[session['user_id']][session['session_id']]
         if len(self.user_sessions[session['user_id']])==0:
-            user = core.load_user(self.toyz_settings, session['user_id'])
-            shutil.rmtree(user.shortcuts['temp'])
+            shortcuts = db_utils.get_param(self.toyz_settings.db, 'shortcuts', 
+                user_id=session['user_id'])
+            shutil.rmtree(shortcuts['temp'])
         
         print('active users remaining:', self.user_sessions.keys())
     
@@ -472,6 +478,7 @@ def init_web_app():
     Run the web application on the server
     """
     print("Server root directory:", core.ROOT_DIR)
+    #print('moduel update', db_utils.param_formats['modules']['update'])
     
     # Initialize the tornado web application
     toyz_app = ToyzWebApp()
