@@ -52,14 +52,18 @@ default_settings = {
 
 def normalize_path(path):
     """
-    Format bash symbols like `~`, `.`, `..` into a full absolute path
+    Format a path with bash symbols like `~`, `.`, `..` into a full absolute path. This
+    simply returns ``os.path.abspath(os.path.expanduser(path))`` .
     """
     return os.path.abspath(os.path.expanduser(path))
 
 def str_2_bool(bool_str):
     """
     Case independent function to convert a string representation of a 
-    boolean (true/false, yes/no) into a bool.
+    boolean (*true*/*false*, *yes*/*no*) into a **bool**. This is case insensitive, and will
+    also accept part of a boolean string (*t*/*f*, *y*/*n*).
+    
+    Raises a :py:class:`toyz.utils.errors.ToyzError` if an invalid expression is entered.
     """
     lower_str = bool_str.lower()
     if 'true'.startswith(lower_str) or 'yes'.startswith(lower_str):
@@ -73,8 +77,8 @@ def str_2_bool(bool_str):
 
 def get_bool(prompt):
     """
-    prompt a user for a boolean expression and repeat until a valid boolean
-    has been entered.
+    Prompt a user for a boolean expression and repeat until a valid boolean
+    has been entered. ``prompt`` is the text to prompt the user with.
     """
     try:
         bool_str = str_2_bool(raw_input(prompt))
@@ -90,16 +94,12 @@ def check_instance(obj, instances):
     Check if an object is an instance of another object
     
     Parameters
-    ----------
-    obj: object
-        - Object to check
-    instances: list
-        - List of objects to crosscheck with obj
+        - obj (*object* ): Object to check
+        - instances (*list* ): List of objects to crosscheck with obj
     
-    Return
-    ------
-    is_instance: bool
-        - True if the obj is an instances of one of the objects in the list, false otherwise
+    Returns
+        - is_instance (*bool* ): *True* if the obj is an instances of one of the objects in 
+          the list, *False* otherwise
     """
     for i in instances:
         if obj is i:
@@ -108,23 +108,16 @@ def check_instance(obj, instances):
 
 def check_pwd(toyz_settings, user_id, pwd):
     """
-    Check to see if a users password matches the one on file.
+    Check to see if a users password matches the one stored in the database.
     
     Parameters
-    ----------
-    users: list of toyz.ToyzUser
-        - Users for the current application
-    toyz_settings: toyz.ToyzSettings
-        - Settings for the current application
-    user_id: string
-        - Id of the user logging in
-    pwd: string
-        - password the user has entered
+        - toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings` ): Settings for the current 
+          application
+        - user_id (*string* ): Id of the user logging in
+        - pwd: (*string* ): password the user has entered
     
     Returns
-    -------
-    valid_login: bool
-        - Return is True if the user name and password 
+        - valid_login (*bool* ): True if the user name and password match
     """
     from passlib.context import CryptContext
     pwd_context = CryptContext(**toyz_settings.security.pwd_context)
@@ -138,19 +131,16 @@ def check_pwd(toyz_settings, user_id, pwd):
 
 def encrypt_pwd(toyz_settings, pwd):
     """
-    Use the passlib module to create a hash for the given password
+    Use the passlib module to create a hash for the given password.
     
     Parameters
-    ----------
-    toyz_settings: toyz.ToyzSettings
-        - Settings for the current application
-    pwd: string
-        - password the user has entered
+        - toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings` ): Settings for the 
+          current application
+        - pwd (*string* ): password the user has entered
     
     Returns
-    -------
-    pwd_hash: string
-        - Password hash to be stored for the given password
+        - pwd_hash (*string* ): Password hash to be stored for the given password. If passwords
+          are not encrypted, this will just return the ``pwd`` passed to the function.
     """
     from passlib.context import CryptContext
     pwd_context = CryptContext(**toyz_settings.security.pwd_context)
@@ -158,20 +148,15 @@ def encrypt_pwd(toyz_settings, pwd):
 
 def check4keys(myDict,keys):
     """
-    check4key
-    
-    Checks a dictionary for a set of required keys
+    Checks a dictionary for a set of required keys.
     
     Parameters
-    ---------
-    myDict: dictionary
-        -Dictionary to be searched
-    keys: list
-        -List of keys to search for in the dictionary
-    Returns
-    -------
-    No returns but the function raises a JobError and lists all required keys missing 
-    from the dictionary
+        myDict (*dict* ): Dictionary to be searched
+        keys (*list* ): List of keys to search for in the dictionary
+    
+    Raises
+        Raises a :py:class:`toyz.utils.core.ToyzJobError` if any keys are missing from 
+        ``myDict`` and lists all of the missing keys
     """
     error=""
     if any(key not in myDict for key in keys):
@@ -184,19 +169,13 @@ def check4keys(myDict,keys):
 def create_paths(paths):
     """                                                                         
     Search for paths on the server. If a path does not exist, create the necessary directories.
-    For example, if paths=['~/Documents/images/2014-6-5_data/'] and only the path 
-    '~/Documents' exists, both '~/Documents/images/' and '~/Documents/images/2014-6-5_data/'
+    For example, if ``paths=['~/Documents/images/2014-6-5_data/']`` and only the path 
+    *'~/Documents'* exists, both *'~/Documents/images/'* and *'~/Documents/images/2014-6-5_data/'*
     are created.
     
     Parameters
-    ----------
-    paths: string or list of strings
-        -If paths is a string, this is the path to search for and create. If paths is a list, 
-        each one is a path to search for and create
-    
-    Returns
-    -------
-        -None
+        paths (*string* or *list* of strings): If paths is a string, this is the path to 
+        search for and create. If paths is a list, each one is a path to search for and create
     """
     if isinstance(paths,basestring):
             paths=[paths]
@@ -208,6 +187,18 @@ def create_paths(paths):
                 raise ToyzError("Problem creating new directory, check user permissions")
 
 def get_user_type(params):
+    """
+    Since user properties and group properties are kept in the same table and use the same
+    functions, many functions use the keyword `user_id` or `group_id` to figure out if
+    they are operating on groups or users.
+    
+    Parameters
+        - params (*dict* ): Dictionary of parameters sent to a function
+    
+    Returns
+        - user (*dict* ): Dictionary with user_type. This is always either 
+          ``{user_id: params['user_id']}`` or ``{group_id: params['group_id']}``
+    """
     if 'user_id' in params:
         if 'group_id' in params:
             raise ToyzError("Must specify either a user_id OR group_id but not both")
@@ -220,7 +211,13 @@ def get_user_type(params):
 
 def check_user_shortcuts(toyz_settings, user_id, shortcuts=None):
     """
-    Check that a user has all of the default shortcuts
+    Check that a user has all of the default shortcuts.
+    
+    Parameters
+        - toyz_settings ( :py:class:`toyz.utils.core.toyz_settings` ): Toyz Settings
+        - user_id (*string* ): User id to check for shortcuts
+        - shortcuts (*dict*, optional): Dictionary of shortcuts for a user. Shortcuts
+          are always of the form ``shortcut_name:path`` .
     """
     modified = False
     if shortcuts==None:
@@ -245,10 +242,12 @@ def check_user_shortcuts(toyz_settings, user_id, shortcuts=None):
 def run_job(toyz_settings, job):
     """
     Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
-    and flagged as an ToyzError and sent back to the client who initiated the job. 
-    All job functions will take exactly 3 parameters: toyz_settings, tid, params. The tid is the 
-    task id (user, session, and request id) information (see below), params is a dictionary of 
-    parameters sent by the client. 
+    and flagged as a :py:class:toyz.utils.core.`ToyzError` and sent back to the client who 
+    initiated the job. 
+    
+    All job functions will take exactly 3 parameters: toyz_settings, tid, params. The **tid** 
+    is the task id (*user*, *session*, and *request_id* ) information (see below), and 
+    **params** is a dictionary of parameters sent by the client. 
     
     Each job is run as a new process, so any modules imported should be removed from memory 
     when the job has completed.
@@ -368,16 +367,22 @@ def run_job(toyz_settings, job):
 class ToyzClass:
     """
     I often prefer to work with classes rather than dictionaries. To allow
-    these objects to be pickled they must be as a defined class, so this is 
+    these objects to be pickled they must be defined as a class, so this is 
     simply a class that converts a dictionary into a class.
     """
     def __init__(self, dict_in):
+        """
+        Converts a dictionary into a set of class methods.
+        """
         self.__dict__ = dict_in
 
 class ToyzSettings:
+    """
+    Settings for the current toyz application.
+    """
     def __init__(self, config_root_path=None):
         """
-        Check the current working directory for a config directory with a config.p file.
+        Check the current working directory for a config directory with a ``config.p`` file.
         This allows users to have a custom Toyz directory with their own configuration
         separate from the master install in the python directory.
         """
@@ -396,8 +401,10 @@ class ToyzSettings:
     
     def save_settings(self, security_key=None):
         """
-        Save the toyz settings to disk. If toyz_settings.security.encrypt_config is `True`, 
+        Save the toyz settings to disk. If toyz_settings.security.encrypt_config is *True*, 
         the settings file will be encrypted (this requires a security key).
+        
+        *Security not yet implemented*
         """
         toyz_settings = self
         #if self.security.encrypt_config:
@@ -409,8 +416,10 @@ class ToyzSettings:
     
     def load_settings(self, config_path, security_key=None):
         """
-        Load settings. If toyz_settings.security.encrypt_config is `True`, 
+        Load settings. If ``toyz_settings.security.encrypt_config`` is *True*, 
         the settings file will be decrypted (this requires a securiity key).
+        
+        *Security not yet implemented*
         """
         toyz_settings = pickle.load(open(config_path, 'rb'))
         if hasattr(toyz_settings, 'encrypted_settings'):
@@ -427,9 +436,7 @@ class ToyzSettings:
         Initial setup of the Toyz application and creation of files the first time it's run.
     
         Parameters
-        ----------
-        config_root_path: string
-            - Root path of the new Toyz instance
+            - config_root_path (*string* ): Default root path of the new Toyz instance
         """
         from toyz.utils import file_access
     
@@ -468,6 +475,8 @@ class ToyzSettings:
 class Toy:
     """
     A toy built on the toyz framework.
+    
+    *This class has not yet been setup*
     """
     def __init__(self, toy, module=None, path=None, config=None, key=None):
         self.name = toy
@@ -486,7 +495,9 @@ class Toy:
 #TODO Currently ToyzUser isn't used. If this isn't implemented later, remove
 class ToyzUser:
     """
-    User logged into the Toyz web application
+    User logged into the Toyz web application.
+    
+    *No longer implemented*
     """
     def __init__(self, toyz_settings, **user_settings):
         """
@@ -598,6 +609,8 @@ class ToyzUser:
 class ToyzJobQueue:
     """
     An environment for a single user to run tasks.
+    
+    *No longer implemented, but may be in the future*
     """
     def __init__(self, queue_name, process_count):
         self.queue_name = queue_name
