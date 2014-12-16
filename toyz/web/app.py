@@ -28,7 +28,6 @@ from toyz.utils.errors import ToyzError, ToyzWebError
 tornado.options.define("port", default=None, help="run on the given port", type=int)
 tornado.options.define("root_path", default=None, 
     help="Use root_path as the root directory for a Toyz instance")
-tornado.options.parse_command_line()
 
 class ToyzHandler(tornado.web.RequestHandler):
     def get_toyz_path(self, path):
@@ -477,6 +476,7 @@ def init_web_app():
     """
     Run the web application on the server
     """
+    tornado.options.parse_command_line()
     print("Server root directory:", core.ROOT_DIR)
     #print('moduel update', db_utils.param_formats['modules']['update'])
     
