@@ -486,23 +486,28 @@ also accept part of a boolean string (<em>t</em>/<em>f</em>, <em>y</em>/<em>n</e
 </div>
 <div class="section" id="module-toyz.utils.db">
 <span id="toyz-utils-db-module"></span><h2>toyz.utils.db module<a class="headerlink" href="#module-toyz.utils.db" title="Permalink to this headline">¶</a></h2>
-<p>Utilities that may be necessary for all database interfaces
-Copyright 2014 by Fred Moolekamp
-License: MIT</p>
+<p>To keep Toyz database agnostic this module works as a stardard API to access 
+any database interfaces written into the framework. Currently on the <tt class="docutils literal"><span class="pre">sqlite</span></tt>
+interface is supported.</p>
 <dl class="function">
 <dt id="toyz.utils.db.check_chars">
 <tt class="descclassname">toyz.utils.db.</tt><tt class="descname">check_chars</tt><big>(</big><em>err_flag</em>, <em>*lists</em><big>)</big><a class="headerlink" href="#toyz.utils.db.check_chars" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if every value in every list is alpha-numeric</p>
+<dd><p>Check if every value in every list is alpha-numeric.</p>
 <dl class="docutils">
-<dt>err_flag: boolean</dt>
-<dd><ul class="first simple">
-<li>If err_flag is True, an exception will be raised if the field is not alpha_numeric.</li>
-</ul>
-<p class="last">If err_flag is False, the function will return False</p>
-</dd>
-<dt>lists: lists</dt>
+<dt>Parameters</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>err_flag (<em>bool</em> ): </dt>
 <dd><ul class="first last simple">
-<li>Each list in lists must be a list of strings, each one a keyword to verify if it is alpha-numeric</li>
+<li>If err_flag is True, an exception will be raised if the field is not alpha_numeric.</li>
+<li>If err_flag is False, the function will return False</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">lists (<em>lists</em>): Each list in lists must be a list of strings, each one a 
+keyword to verify if it is alpha-numeric</p>
+</li>
 </ul>
 </dd>
 </dl>
@@ -511,45 +516,55 @@ License: MIT</p>
 <dl class="function">
 <dt id="toyz.utils.db.create_toyz_database">
 <tt class="descclassname">toyz.utils.db.</tt><tt class="descname">create_toyz_database</tt><big>(</big><em>db_settings</em><big>)</big><a class="headerlink" href="#toyz.utils.db.create_toyz_database" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Create a new Toyz database. This should only be done when creating a new
+instance of a Toyz application.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db.db_func">
 <tt class="descclassname">toyz.utils.db.</tt><tt class="descname">db_func</tt><big>(</big><em>db_settings</em>, <em>func</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db.db_func" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function from a database outside of the database API</p>
+<dd><p>Function from a database outside of the database API.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db.delete_param">
 <tt class="descclassname">toyz.utils.db.</tt><tt class="descname">delete_param</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db.delete_param" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delete a parameter from the database</p>
+<dd><p>Delete a parameter from the database.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db.get_all_ids">
 <tt class="descclassname">toyz.utils.db.</tt><tt class="descname">get_all_ids</tt><big>(</big><em>db_settings</em>, <em>user_type</em><big>)</big><a class="headerlink" href="#toyz.utils.db.get_all_ids" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get all user_id&#8217;s or group_id&#8217;s in the database.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db.get_param">
 <tt class="descclassname">toyz.utils.db.</tt><tt class="descname">get_param</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db.get_param" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get a parameter from the database.</p>
+<dd><p>Get a parameter from the database. This may be either a single value,
+dictionary, or list of values, depending on the parameter.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db.get_path_info">
 <tt class="descclassname">toyz.utils.db.</tt><tt class="descname">get_path_info</tt><big>(</big><em>db_settings</em>, <em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.db.get_path_info" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get the permissions for all users and groups for a given path.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db.init">
 <tt class="descclassname">toyz.utils.db.</tt><tt class="descname">init</tt><big>(</big><em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db.init" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>For some databases it might be necessary to initialize them on startup, so this function
+call <tt class="docutils literal"><span class="pre">init</span></tt> in the current database interface</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db.update_all_params">
 <tt class="descclassname">toyz.utils.db.</tt><tt class="descname">update_all_params</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db.update_all_params" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Update a parameter with a single value, a list of values, or a dictionary.
+In the case of a list or a dictionary, this function also removes any entries
+in the database not contained in <tt class="docutils literal"><span class="pre">params</span></tt> .</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db.update_param">
