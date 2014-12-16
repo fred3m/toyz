@@ -11,7 +11,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-    toyz
+    intro.rst
+    toyz.rst
 
 Indices and tables
 ==================

@@ -422,7 +422,7 @@ once the job has completed.</p>
 <dl class="docutils">
 <dt>A client might send the following job to the server:</dt>
 <dd><dl class="first docutils">
-<dt>job = {</dt>
+<dt><a href="#id1"><span class="problematic" id="id2">``</span></a>job = {</dt>
 <dd><dl class="first docutils">
 <dt>id <span class="classifier-delimiter">:</span> <span class="classifier">{</span></dt>
 <dd>userId : &#8216;Fred&#8217;,
@@ -439,7 +439,7 @@ frame : 0</div></blockquote>
 <p class="last">}</p>
 </dd>
 </dl>
-<p class="last">}</p>
+<p class="last">}``</p>
 </dd>
 </dl>
 <p>In this case, after receiving the job, this function will import the &#8216;fitsviewer&#8217; module 
@@ -448,24 +448,24 @@ frame : 0</div></blockquote>
 a response of the form</p>
 <blockquote>
 <div><dl class="docutils">
-<dt>response = {</dt>
+<dt><a href="#id3"><span class="problematic" id="id4">``</span></a>response = {</dt>
 <dd>&#8216;id&#8217; : &#8216;ERROR&#8217;,
 &#8216;error&#8217; : &#8216;Error message here for unable to lead header&#8217;,
 &#8216;traceback&#8217; : traceback.format_exec()</dd>
 </dl>
-<p>}</p>
+<p>}``</p>
 </div></blockquote>
 <dl class="docutils">
 <dt>is sent. If the header is loaded correctly a rsponse of the form</dt>
 <dd><dl class="first docutils">
-<dt>response = {</dt>
+<dt><a href="#id5"><span class="problematic" id="id6">``</span></a>response = {</dt>
 <dd>&#8216;id&#8217; : &#8216;fitsHeader&#8217;,
 &#8216;fileId&#8217; : &#8216;fhv66yugjgvj*^&amp;^$vjkvkfhfct%^%##$f$hgkjh&#8217;,
 &#8216;frame&#8217; : 0,
 &#8216;header&#8217; : python_list,
 &#8216;request_completed&#8217;: True</dd>
 </dl>
-<p class="last">}</p>
+<p class="last">}``</p>
 </dd>
 </dl>
 <p>is sent to the client.</p>

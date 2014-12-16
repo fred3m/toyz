@@ -1,8 +1,7 @@
-"""
-Core classes and functions for Toyz
-Copyright 2014 by Fred Moolekamp
-License: MIT
-"""
+# Core classes and functions for Toyz
+# Copyright 2014 by Fred Moolekamp
+# License: MIT
+
 from __future__ import division,print_function
 import os
 import sys
@@ -305,7 +304,8 @@ def run_job(toyz_settings, job):
     Example
     -------
     A client might send the following job to the server:
-        ``job = {
+    .. code-block:: python
+        job = {
             id : {
                 userId : 'Fred',
                 sessionId : '12',
@@ -317,7 +317,7 @@ def run_job(toyz_settings, job):
                 fileId : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
                 frame : 0
             }
-        }``
+        }
 
     In this case, after receiving the job, this function will import the 'fitsviewer' module 
     (if it has not been imported already) and run the function 
