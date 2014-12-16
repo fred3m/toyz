@@ -11,8 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: toyz
-    :members: utils
+    toyz
 
 Indices and tables
 ==================
