@@ -52,7 +52,7 @@ default_settings = {
 
 def normalize_path(path):
     """
-    Format a path with bash symbols like `~`, `.`, `..` into a full absolute path. This
+    Format a path with bash symbols like **~** , **.** , **..** into a full absolute path. This
     simply returns ``os.path.abspath(os.path.expanduser(path))`` .
     """
     return os.path.abspath(os.path.expanduser(path))
