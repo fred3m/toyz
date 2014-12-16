@@ -387,27 +387,18 @@ or check permissions)</li>
 </ul>
 </dd>
 <dt>job: <em>dict</em></dt>
-<dd><ul class="first last">
-<li><p class="first">The job received from the user. Each job will contain the following keys:</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">id</span></tt>: Dictionary with unique values for the given job. These are the
+<dd><ul class="first last simple">
+<li>The job received from the user. Each job will contain the following keys:</li>
+<li><tt class="docutils literal"><span class="pre">id</span></tt> (<em>dict</em>): Unique values for the given job. These are the
 <strong>user_id</strong>, the id of the user loaded from a secure cookie; the
 <strong>session_id</strong>, a unique identifier for the websocket; and the
-<strong>request_id</strong>, a unique identifier for the current request, sent from the client</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">module</span></tt>: Name of the Python module that contains the function called by the 
-client. In order for a module to work for a user, he/she must either have
+<strong>request_id</strong>, a unique identifier for the current request, sent from the client</li>
+<li><tt class="docutils literal"><span class="pre">module</span></tt> (<em>str</em>): Name of the Python module that contains the function called 
+by the client. In order for a module to work for a user, he/she must either have
 permissions set to view the module or belong to a group with permissions set
-to view the module (including <em>all_users</em>).</p>
-</li>
-<li><p class="first"><tt class="docutils literal"><span class="pre">task</span></tt>: Name of the function called by the client</p>
-</li>
-<li><dl class="first docutils">
-<dt><tt class="docutils literal"><span class="pre">parameters</span></tt>: Dictionary of required and optional parameters passed to the </dt>
-<dd><p class="first last">function.</p>
-</dd>
-</dl>
-</li>
+to view the module (including <em>all_users</em>).</li>
+<li><tt class="docutils literal"><span class="pre">task</span></tt> (<em>str</em>): Name of the function called by the client</li>
+<li><tt class="docutils literal"><span class="pre">parameters</span></tt> (<em>dict</em>): Required and optional parameters passed to the function.</li>
 </ul>
 </dd>
 </dl>
