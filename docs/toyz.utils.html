@@ -445,7 +445,8 @@ client that the current request has finished and may be removed from the queue.<
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>In this case, after receiving the job, this function will import the <a href="#id1"><span class="problematic" id="id2">toyz.web.tasks_</span></a> 
+<p>In this case, after receiving the job, this function will import the 
+<a href="#id1"><span class="problematic" id="id2">:py:module:`toyz.web.tasks`</span></a>
 module (if it has not been imported already) and run the function 
 <tt class="docutils literal"><span class="pre">load_directory(toyz_settings,</span> <span class="pre">job['id'],job['parameters'])</span></tt>. 
 If there are any errors in loading the directory, a response of the form</p>
