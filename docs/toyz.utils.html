@@ -126,6 +126,7 @@
 <dt id="toyz.utils.core.Toy">
 <em class="property">class </em><tt class="descclassname">toyz.utils.core.</tt><tt class="descname">Toy</tt><big>(</big><em>toy</em>, <em>module=None</em>, <em>path=None</em>, <em>config=None</em>, <em>key=None</em><big>)</big><a class="headerlink" href="#toyz.utils.core.Toy" title="Permalink to this definition">¶</a></dt>
 <dd><p>A toy built on the toyz framework.</p>
+<p><em>This class has not yet been setup</em></p>
 <dl class="method">
 <dt id="toyz.utils.core.Toy.reload">
 <tt class="descname">reload</tt><big>(</big><em>module</em><big>)</big><a class="headerlink" href="#toyz.utils.core.Toy.reload" title="Permalink to this definition">¶</a></dt>
@@ -137,7 +138,7 @@
 <dt id="toyz.utils.core.ToyzClass">
 <em class="property">class </em><tt class="descclassname">toyz.utils.core.</tt><tt class="descname">ToyzClass</tt><big>(</big><em>dict_in</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzClass" title="Permalink to this definition">¶</a></dt>
 <dd><p>I often prefer to work with classes rather than dictionaries. To allow
-these objects to be pickled they must be as a defined class, so this is 
+these objects to be pickled they must be defined as a class, so this is 
 simply a class that converts a dictionary into a class.</p>
 </dd></dl>
 
@@ -145,6 +146,7 @@ simply a class that converts a dictionary into a class.</p>
 <dt id="toyz.utils.core.ToyzJobQueue">
 <em class="property">class </em><tt class="descclassname">toyz.utils.core.</tt><tt class="descname">ToyzJobQueue</tt><big>(</big><em>queue_name</em>, <em>process_count</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzJobQueue" title="Permalink to this definition">¶</a></dt>
 <dd><p>An environment for a single user to run tasks.</p>
+<p><em>No longer implemented, but may be in the future</em></p>
 <dl class="method">
 <dt id="toyz.utils.core.ToyzJobQueue.add_job">
 <tt class="descname">add_job</tt><big>(</big><em>job</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzJobQueue.add_job" title="Permalink to this definition">¶</a></dt>
@@ -170,14 +172,15 @@ simply a class that converts a dictionary into a class.</p>
 <dl class="class">
 <dt id="toyz.utils.core.ToyzSettings">
 <em class="property">class </em><tt class="descclassname">toyz.utils.core.</tt><tt class="descname">ToyzSettings</tt><big>(</big><em>config_root_path=None</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzSettings" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>Settings for the current toyz application.</p>
+<dl class="method">
 <dt id="toyz.utils.core.ToyzSettings.first_time_setup">
 <tt class="descname">first_time_setup</tt><big>(</big><em>config_root_path</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzSettings.first_time_setup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initial setup of the Toyz application and creation of files the first time it&#8217;s run.</p>
 <dl class="docutils">
-<dt>config_root_path: string</dt>
+<dt>Parameters</dt>
 <dd><ul class="first last simple">
-<li>Root path of the new Toyz instance</li>
+<li>config_root_path (<em>string</em> ): Default root path of the new Toyz instance</li>
 </ul>
 </dd>
 </dl>
@@ -186,15 +189,17 @@ simply a class that converts a dictionary into a class.</p>
 <dl class="method">
 <dt id="toyz.utils.core.ToyzSettings.load_settings">
 <tt class="descname">load_settings</tt><big>(</big><em>config_path</em>, <em>security_key=None</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzSettings.load_settings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load settings. If toyz_settings.security.encrypt_config is <cite>True</cite>, 
+<dd><p>Load settings. If <tt class="docutils literal"><span class="pre">toyz_settings.security.encrypt_config</span></tt> is <em>True</em>, 
 the settings file will be decrypted (this requires a securiity key).</p>
+<p><em>Security not yet implemented</em></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="toyz.utils.core.ToyzSettings.save_settings">
 <tt class="descname">save_settings</tt><big>(</big><em>security_key=None</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzSettings.save_settings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the toyz settings to disk. If toyz_settings.security.encrypt_config is <cite>True</cite>, 
+<dd><p>Save the toyz settings to disk. If toyz_settings.security.encrypt_config is <em>True</em>, 
 the settings file will be encrypted (this requires a security key).</p>
+<p><em>Security not yet implemented</em></p>
 </dd></dl>
 
 </dd></dl>
@@ -202,7 +207,8 @@ the settings file will be encrypted (this requires a security key).</p>
 <dl class="class">
 <dt id="toyz.utils.core.ToyzUser">
 <em class="property">class </em><tt class="descclassname">toyz.utils.core.</tt><tt class="descname">ToyzUser</tt><big>(</big><em>toyz_settings</em>, <em>**user_settings</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzUser" title="Permalink to this definition">¶</a></dt>
-<dd><p>User logged into the Toyz web application</p>
+<dd><p>User logged into the Toyz web application.</p>
+<p><em>No longer implemented</em></p>
 <dl class="method">
 <dt id="toyz.utils.core.ToyzUser.add_toyz">
 <tt class="descname">add_toyz</tt><big>(</big><em>toyz</em>, <em>paths</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzUser.add_toyz" title="Permalink to this definition">¶</a></dt>
@@ -230,16 +236,15 @@ package names.</p>
 <dl class="function">
 <dt id="toyz.utils.core.check4keys">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">check4keys</tt><big>(</big><em>myDict</em>, <em>keys</em><big>)</big><a class="headerlink" href="#toyz.utils.core.check4keys" title="Permalink to this definition">¶</a></dt>
-<dd><p>check4key</p>
-<p>Checks a dictionary for a set of required keys</p>
+<dd><p>Checks a dictionary for a set of required keys.</p>
 <dl class="docutils">
-<dt>myDict: dictionary</dt>
-<dd>-Dictionary to be searched</dd>
-<dt>keys: list</dt>
-<dd>-List of keys to search for in the dictionary</dd>
+<dt>Parameters</dt>
+<dd>myDict (<em>dict</em> ): Dictionary to be searched
+keys (<em>list</em> ): List of keys to search for in the dictionary</dd>
+<dt>Raises</dt>
+<dd>Raises a <tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzJobError</span></tt> if any keys are missing from 
+<tt class="docutils literal"><span class="pre">myDict</span></tt> and lists all of the missing keys</dd>
 </dl>
-<p>No returns but the function raises a JobError and lists all required keys missing 
-from the dictionary</p>
 </dd></dl>
 
 <dl class="function">
@@ -247,21 +252,16 @@ from the dictionary</p>
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">check_instance</tt><big>(</big><em>obj</em>, <em>instances</em><big>)</big><a class="headerlink" href="#toyz.utils.core.check_instance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if an object is an instance of another object</p>
 <dl class="docutils">
-<dt>obj: object</dt>
+<dt>Parameters</dt>
 <dd><ul class="first last simple">
-<li>Object to check</li>
+<li>obj (<em>object</em> ): Object to check</li>
+<li>instances (<em>list</em> ): List of objects to crosscheck with obj</li>
 </ul>
 </dd>
-<dt>instances: list</dt>
+<dt>Returns</dt>
 <dd><ul class="first last simple">
-<li>List of objects to crosscheck with obj</li>
-</ul>
-</dd>
-</dl>
-<dl class="docutils">
-<dt>is_instance: bool</dt>
-<dd><ul class="first last simple">
-<li>True if the obj is an instances of one of the objects in the list, false otherwise</li>
+<li>is_instance (<em>bool</em> ): <em>True</em> if the obj is an instances of one of the objects in 
+the list, <em>False</em> otherwise</li>
 </ul>
 </dd>
 </dl>
@@ -270,33 +270,19 @@ from the dictionary</p>
 <dl class="function">
 <dt id="toyz.utils.core.check_pwd">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">check_pwd</tt><big>(</big><em>toyz_settings</em>, <em>user_id</em>, <em>pwd</em><big>)</big><a class="headerlink" href="#toyz.utils.core.check_pwd" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check to see if a users password matches the one on file.</p>
+<dd><p>Check to see if a users password matches the one stored in the database.</p>
 <dl class="docutils">
-<dt>users: list of toyz.ToyzUser</dt>
+<dt>Parameters</dt>
 <dd><ul class="first last simple">
-<li>Users for the current application</li>
+<li>toyz_settings ( <a class="reference internal" href="#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a> ): Settings for the current 
+application</li>
+<li>user_id (<em>string</em> ): Id of the user logging in</li>
+<li>pwd: (<em>string</em> ): password the user has entered</li>
 </ul>
 </dd>
-<dt>toyz_settings: toyz.ToyzSettings</dt>
+<dt>Returns</dt>
 <dd><ul class="first last simple">
-<li>Settings for the current application</li>
-</ul>
-</dd>
-<dt>user_id: string</dt>
-<dd><ul class="first last simple">
-<li>Id of the user logging in</li>
-</ul>
-</dd>
-<dt>pwd: string</dt>
-<dd><ul class="first last simple">
-<li>password the user has entered</li>
-</ul>
-</dd>
-</dl>
-<dl class="docutils">
-<dt>valid_login: bool</dt>
-<dd><ul class="first last simple">
-<li>Return is True if the user name and password</li>
+<li>valid_login (<em>bool</em> ): True if the user name and password match</li>
 </ul>
 </dd>
 </dl>
@@ -305,45 +291,49 @@ from the dictionary</p>
 <dl class="function">
 <dt id="toyz.utils.core.check_user_shortcuts">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">check_user_shortcuts</tt><big>(</big><em>toyz_settings</em>, <em>user_id</em>, <em>shortcuts=None</em><big>)</big><a class="headerlink" href="#toyz.utils.core.check_user_shortcuts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check that a user has all of the default shortcuts</p>
+<dd><p>Check that a user has all of the default shortcuts.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.toyz_settings</span></tt> ): Toyz Settings</li>
+<li>user_id (<em>string</em> ): User id to check for shortcuts</li>
+<li>shortcuts (<em>dict</em>, optional): Dictionary of shortcuts for a user. Shortcuts
+are always of the form <tt class="docutils literal"><span class="pre">shortcut_name:path</span></tt> .</li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.core.create_paths">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">create_paths</tt><big>(</big><em>paths</em><big>)</big><a class="headerlink" href="#toyz.utils.core.create_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search for paths on the server. If a path does not exist, create the necessary directories.
-For example, if paths=[&#8216;~/Documents/images/2014-6-5_data/&#8217;] and only the path 
-&#8216;~/Documents&#8217; exists, both &#8216;~/Documents/images/&#8217; and &#8216;~/Documents/images/2014-6-5_data/&#8217;
+For example, if <tt class="docutils literal"><span class="pre">paths=['~/Documents/images/2014-6-5_data/']</span></tt> and only the path 
+<em>&#8216;~/Documents&#8217;</em> exists, both <em>&#8216;~/Documents/images/&#8217;</em> and <em>&#8216;~/Documents/images/2014-6-5_data/&#8217;</em>
 are created.</p>
 <dl class="docutils">
-<dt>paths: string or list of strings</dt>
-<dd>-If paths is a string, this is the path to search for and create. If paths is a list, 
-each one is a path to search for and create</dd>
+<dt>Parameters</dt>
+<dd>paths (<em>string</em> or <em>list</em> of strings): If paths is a string, this is the path to 
+search for and create. If paths is a list, each one is a path to search for and create</dd>
 </dl>
-<blockquote>
-<div>-None</div></blockquote>
 </dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.core.encrypt_pwd">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">encrypt_pwd</tt><big>(</big><em>toyz_settings</em>, <em>pwd</em><big>)</big><a class="headerlink" href="#toyz.utils.core.encrypt_pwd" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use the passlib module to create a hash for the given password</p>
+<dd><p>Use the passlib module to create a hash for the given password.</p>
 <dl class="docutils">
-<dt>toyz_settings: toyz.ToyzSettings</dt>
+<dt>Parameters</dt>
 <dd><ul class="first last simple">
-<li>Settings for the current application</li>
+<li>toyz_settings ( <a class="reference internal" href="#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a> ): Settings for the 
+current application</li>
+<li>pwd (<em>string</em> ): password the user has entered</li>
 </ul>
 </dd>
-<dt>pwd: string</dt>
+<dt>Returns</dt>
 <dd><ul class="first last simple">
-<li>password the user has entered</li>
-</ul>
-</dd>
-</dl>
-<dl class="docutils">
-<dt>pwd_hash: string</dt>
-<dd><ul class="first last simple">
-<li>Password hash to be stored for the given password</li>
+<li>pwd_hash (<em>string</em> ): Password hash to be stored for the given password. If passwords
+are not encrypted, this will just return the <tt class="docutils literal"><span class="pre">pwd</span></tt> passed to the function.</li>
 </ul>
 </dd>
 </dl>
@@ -352,29 +342,47 @@ each one is a path to search for and create</dd>
 <dl class="function">
 <dt id="toyz.utils.core.get_bool">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">get_bool</tt><big>(</big><em>prompt</em><big>)</big><a class="headerlink" href="#toyz.utils.core.get_bool" title="Permalink to this definition">¶</a></dt>
-<dd><p>prompt a user for a boolean expression and repeat until a valid boolean
-has been entered.</p>
+<dd><p>Prompt a user for a boolean expression and repeat until a valid boolean
+has been entered. <tt class="docutils literal"><span class="pre">prompt</span></tt> is the text to prompt the user with.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.core.get_user_type">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">get_user_type</tt><big>(</big><em>params</em><big>)</big><a class="headerlink" href="#toyz.utils.core.get_user_type" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Since user properties and group properties are kept in the same table and use the same
+functions, many functions use the keyword <cite>user_id</cite> or <cite>group_id</cite> to figure out if
+they are operating on groups or users.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>params (<em>dict</em> ): Dictionary of parameters sent to a function</li>
+</ul>
+</dd>
+<dt>Returns</dt>
+<dd><ul class="first last simple">
+<li>user (<em>dict</em> ): Dictionary with user_type. This is always either 
+<tt class="docutils literal"><span class="pre">{user_id:</span> <span class="pre">params['user_id']}</span></tt> or <tt class="docutils literal"><span class="pre">{group_id:</span> <span class="pre">params['group_id']}</span></tt></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.core.normalize_path">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">normalize_path</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.core.normalize_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format bash symbols like <cite>~</cite>, <cite>.</cite>, <cite>..</cite> into a full absolute path</p>
+<dd><p>Format a path with bash symbols like <cite>~</cite>, <cite>.</cite>, <cite>..</cite> into a full absolute path. This
+simply returns <tt class="docutils literal"><span class="pre">os.path.abspath(os.path.expanduser(path))</span></tt> .</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.core.run_job">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">run_job</tt><big>(</big><em>toyz_settings</em>, <em>job</em><big>)</big><a class="headerlink" href="#toyz.utils.core.run_job" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
-and flagged as an ToyzError and sent back to the client who initiated the job. 
-All job functions will take exactly 3 parameters: toyz_settings, tid, params. The tid is the 
-task id (user, session, and request id) information (see below), params is a dictionary of 
-parameters sent by the client.</p>
+and flagged as a :py:class:toyz.utils.core.`ToyzError` and sent back to the client who 
+initiated the job.</p>
+<p>All job functions will take exactly 3 parameters: toyz_settings, tid, params. The <strong>tid</strong> 
+is the task id (<em>user</em>, <em>session</em>, and <em>request_id</em> ) information (see below), and 
+<strong>params</strong> is a dictionary of parameters sent by the client.</p>
 <p>Each job is run as a new process, so any modules imported should be removed from memory 
 when the job has completed.</p>
 <dl class="docutils">
@@ -467,7 +475,9 @@ If there are any errors in loading the directory, a response of the form</p>
 <dt id="toyz.utils.core.str_2_bool">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">str_2_bool</tt><big>(</big><em>bool_str</em><big>)</big><a class="headerlink" href="#toyz.utils.core.str_2_bool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Case independent function to convert a string representation of a 
-boolean (true/false, yes/no) into a bool.</p>
+boolean (<em>true</em>/<em>false</em>, <em>yes</em>/<em>no</em>) into a <strong>bool</strong>. This is case insensitive, and will
+also accept part of a boolean string (<em>t</em>/<em>f</em>, <em>y</em>/<em>n</em>).</p>
+<p>Raises a <a class="reference internal" href="#toyz.utils.errors.ToyzError" title="toyz.utils.errors.ToyzError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzError</span></tt></a> if an invalid expression is entered.</p>
 </dd></dl>
 
 </div>

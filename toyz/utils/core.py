@@ -151,8 +151,8 @@ def check4keys(myDict,keys):
     Checks a dictionary for a set of required keys.
     
     Parameters
-        myDict (*dict* ): Dictionary to be searched
-        keys (*list* ): List of keys to search for in the dictionary
+        - myDict (*dict* ): Dictionary to be searched
+        - keys (*list* ): List of keys to search for in the dictionary
     
     Raises
         Raises a :py:class:`toyz.utils.core.ToyzJobError` if any keys are missing from 
