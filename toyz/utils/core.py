@@ -252,7 +252,7 @@ def run_job(toyz_settings, job):
     
     Each job is run as a new process, so any modules imported should be removed from memory 
     when the job has completed.
-
+    
     Parameters
     ----------
     
@@ -289,7 +289,7 @@ def run_job(toyz_settings, job):
                   When implemented this will either be a boolean flag (job['batch']=True for
                   a batch job) or a string containing either the name of a queue or a priority
                   level (low, medium, high, etc).
-
+    
     Returns
     -------
     
@@ -303,7 +303,7 @@ def run_job(toyz_settings, job):
           of the main application have been changed and need to be updated. The value of the
           field is a list of attributes from the main application that need to be updated
           once the job has completed.
-
+    
     Example
     -------
     
