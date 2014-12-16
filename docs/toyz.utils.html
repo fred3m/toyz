@@ -505,8 +505,14 @@ interface is supported.</p>
 </dd>
 </dl>
 </li>
-<li><p class="first">lists (<em>lists</em>): Each list in lists must be a list of strings, each one a 
-keyword to verify if it is alpha-numeric</p>
+<li><dl class="first docutils">
+<dt>lists (<em>lists</em>): </dt>
+<dd><ul class="first last simple">
+<li>Each list in lists must be a list of strings, each one a 
+keyword to verify if it is alpha-numeric</li>
+</ul>
+</dd>
+</dl>
 </li>
 </ul>
 </dd>
@@ -575,14 +581,11 @@ in the database not contained in <tt class="docutils literal"><span class="pre">
 </div>
 <div class="section" id="module-toyz.utils.errors">
 <span id="toyz-utils-errors-module"></span><h2>toyz.utils.errors module<a class="headerlink" href="#module-toyz.utils.errors" title="Permalink to this headline">¶</a></h2>
-<p>Error classes for Toyz
-Copyright 2014 by Fred Moolekamp
-License: MIT</p>
+<p>Error classes used in Toyz.</p>
 <dl class="exception">
 <dt id="toyz.utils.errors.Error">
 <em class="property">exception </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">Error</tt><a class="headerlink" href="#toyz.utils.errors.Error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/exceptions.html#exceptions.Exception" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></a></p>
-<p>Error</p>
 <p>Base class for custom errors related to the running of Toyz</p>
 </dd></dl>
 
@@ -590,7 +593,6 @@ License: MIT</p>
 <dt id="toyz.utils.errors.ToyzDbError">
 <em class="property">exception </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">ToyzDbError</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.utils.errors.ToyzDbError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#toyz.utils.errors.ToyzError" title="toyz.utils.errors.ToyzError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzError</span></tt></a></p>
-<p>ToyzError</p>
 <p>Class for errors initiating in the Toyz Database Interface</p>
 </dd></dl>
 
@@ -598,7 +600,6 @@ License: MIT</p>
 <dt id="toyz.utils.errors.ToyzError">
 <em class="property">exception </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">ToyzError</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.utils.errors.ToyzError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#toyz.utils.errors.Error" title="toyz.utils.errors.Error"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.Error</span></tt></a></p>
-<p>ToyzError</p>
 <p>Class for custom errors related to the running of Toyz.</p>
 </dd></dl>
 
@@ -606,20 +607,19 @@ License: MIT</p>
 <dt id="toyz.utils.errors.ToyzJobError">
 <em class="property">exception </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">ToyzJobError</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.utils.errors.ToyzJobError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#toyz.utils.errors.ToyzError" title="toyz.utils.errors.ToyzError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzError</span></tt></a></p>
-<p>ToyzError</p>
 <p>Class for errors initiating in the Toyz Job Queue</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="toyz.utils.errors.ToyzWarning">
 <em class="property">class </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">ToyzWarning</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.utils.errors.ToyzWarning" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Class for warnings</p>
+</dd></dl>
 
 <dl class="exception">
 <dt id="toyz.utils.errors.ToyzWebError">
 <em class="property">exception </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">ToyzWebError</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.utils.errors.ToyzWebError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#toyz.utils.errors.ToyzError" title="toyz.utils.errors.ToyzError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzError</span></tt></a></p>
-<p>ToyzError</p>
 <p>Class for errors initiating in the Toyz Web Application</p>
 </dd></dl>
 
