@@ -255,6 +255,7 @@ def run_job(toyz_settings, job):
 
     Parameters
     ----------
+    
     toyz_settings: toyz.ToyzSettings
         - Settings for the application runnning the job (may be needed to load user info 
           or check permissions)
@@ -291,6 +292,7 @@ def run_job(toyz_settings, job):
 
     Returns
     -------
+    
     There are no returns from the function but a dictionary is sent to the client.
     response: dictionary
         - Response is either an empty dictionary or one that contains (at a minimum) 
@@ -304,6 +306,7 @@ def run_job(toyz_settings, job):
 
     Example
     -------
+    
     A client might send the following job to the server:
     
     .. code-block:: javascript

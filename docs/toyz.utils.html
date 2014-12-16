@@ -314,17 +314,17 @@ has been entered.</p>
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">run_job</tt><big>(</big><em>toyz_settings</em>, <em>job</em><big>)</big><a class="headerlink" href="#toyz.utils.core.run_job" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
 and flagged as an ToyzError and sent back to the client who initiated the job. 
-All job functions will take exactly 3 parameters: id,params,websocket. The id is the 
-user, session, and request id information (see below), params is a dictionary of 
-parameters sent by the client, and websocket is the current websocket processing the job. 
-Each job is run as a new process, so any modules imported should be removed from memory 
+All job functions will take exactly 3 parameters: toyz_settings, tid, params. The tid is the 
+task id (user, session, and request id) information (see below), params is a dictionary of 
+parameters sent by the client.</p>
+<p>Each job is run as a new process, so any modules imported should be removed from memory 
 when the job has completed.</p>
 <dl class="docutils">
 <dt>toyz_settings: toyz.ToyzSettings</dt>
-<dd><ul class="first simple">
-<li>Settings for the application runnning the job (may be needed to load user info</li>
+<dd><ul class="first last simple">
+<li>Settings for the application runnning the job (may be needed to load user info 
+or check permissions)</li>
 </ul>
-<p class="last">or check permissions)</p>
 </dd>
 <dt>job: dictionary</dt>
 <dd><ul class="first last">
@@ -373,12 +373,12 @@ when the job has completed.</p>
 comms: object</p>
 <blockquote class="last">
 <div><ul class="simple">
-<li>For now this is always a WebSocketHandler, used to send</li>
-</ul>
-<p>responses to the client. In a possible future environment where
+<li>For now this is always a WebSocketHandler, used to send
+responses to the client. In a possible future environment where
 the web app and job app are separate programs connect via a db,
 this would be an object that writes to a table in the db, triggering
-an event on the web server that sends the message to the client</p>
+an event on the web server that sends the message to the client</li>
+</ul>
 </div></blockquote>
 </dd>
 </dl>
@@ -387,13 +387,13 @@ an event on the web server that sends the message to the client</p>
 <dt>Optional keys:</dt>
 <dd><dl class="first last docutils">
 <dt>batch: unknown</dt>
-<dd><ul class="first simple">
-<li>The presence of this key indicates that the job will be sent to an</li>
-</ul>
-<p class="last">external job application for processing in a queue (not yet implemented).
+<dd><ul class="first last simple">
+<li>The presence of this key indicates that the job will be sent to an
+external job application for processing in a queue (not yet implemented).
 When implemented this will either be a boolean flag (job[&#8216;batch&#8217;]=True for
 a batch job) or a string containing either the name of a queue or a priority
-level (low, medium, high, etc).</p>
+level (low, medium, high, etc).</li>
+</ul>
 </dd>
 </dl>
 </dd>
@@ -406,58 +406,59 @@ level (low, medium, high, etc).</p>
 response: dictionary</p>
 <blockquote>
 <div><ul class="simple">
-<li>Response is either an empty dictionary or one that contains (at a minimum)</li>
-</ul>
-<p>the key &#8216;id&#8217;, which is used by the client to identify the type of response it is 
+<li>Response is either an empty dictionary or one that contains (at a minimum) 
+the key &#8216;id&#8217;, which is used by the client to identify the type of response it is 
 receiving. Including the key <cite>request_completed</cite> with a <cite>True</cite> value tells the
-client that the current request has finished and may be removed from the queue.
-- An optional key &#8216;update_app&#8217; may be included in the response if any attributes
+client that the current request has finished and may be removed from the queue.</li>
+<li>An optional key &#8216;update_app&#8217; may be included in the response if any attributes
 of the main application have been changed and need to be updated. The value of the
 field is a list of attributes from the main application that need to be updated
-once the job has completed.</p>
+once the job has completed.</li>
+</ul>
 </div></blockquote>
 <p>A client might send the following job to the server:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">job</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="nb">id</span> <span class="p">:</span> <span class="p">{</span>
-        <span class="n">userId</span> <span class="p">:</span> <span class="s">&#39;Fred&#39;</span><span class="p">,</span>
-        <span class="n">sessionId</span> <span class="p">:</span> <span class="s">&#39;12&#39;</span><span class="p">,</span>
-        <span class="n">requestId</span> <span class="p">:</span> <span class="mi">305</span>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">job</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">id</span> <span class="o">:</span> <span class="p">{</span>
+        <span class="nx">user_id</span> <span class="o">:</span> <span class="s1">&#39;Iggy&#39;</span><span class="p">,</span>
+        <span class="nx">session_id</span> <span class="o">:</span> <span class="s1">&#39;12&#39;</span><span class="p">,</span>
+        <span class="nx">request_id</span> <span class="o">:</span> <span class="mi">305</span>
     <span class="p">},</span>
-    <span class="n">module</span> <span class="p">:</span> <span class="s">&#39;fitsviewer&#39;</span><span class="p">,</span>
-    <span class="n">task</span> <span class="p">:</span> <span class="s">&#39;loadHeader&#39;</span><span class="p">,</span>
-    <span class="n">parameters</span> <span class="p">:</span> <span class="p">{</span>
-        <span class="n">fileId</span> <span class="p">:</span> <span class="s">&#39;fhv66yugjgvj*^&amp;^$vjkvkfhfct%^%##$f$hgkjh&#39;</span><span class="p">,</span>
-        <span class="n">frame</span> <span class="p">:</span> <span class="mi">0</span>
+    <span class="nx">module</span> <span class="o">:</span> <span class="s1">&#39;toyz.web.tasks&#39;</span><span class="p">,</span>
+    <span class="nx">task</span> <span class="o">:</span> <span class="s1">&#39;load_directory&#39;</span><span class="p">,</span>
+    <span class="nx">parameters</span> <span class="o">:</span> <span class="p">{</span>
+        <span class="nx">path</span><span class="o">:</span> <span class="s1">&#39;~/images&#39;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>In this case, after receiving the job, this function will import the &#8216;fitsviewer&#8217; module 
+<p>In this case, after receiving the job, this function will import the <a href="#id1"><span class="problematic" id="id2">toyz.web.tasks_</span></a> module 
 (if it has not been imported already) and run the function 
-&#8216;loadHeader(job[&#8216;id&#8217;],job[&#8216;parameters&#8217;],self)&#8217;. If there are any errors in loading the header,
-a response of the form</p>
+<tt class="docutils literal"><span class="pre">load_directory(toyz_settings,</span> <span class="pre">job['id'],job['parameters'])</span></tt>. If there are any errors in 
+loading the directory, a response of the form</p>
+<p>..code-block:: python</p>
 <blockquote>
 <div><dl class="docutils">
-<dt><a href="#id1"><span class="problematic" id="id2">``</span></a>response = {</dt>
+<dt>response = {</dt>
 <dd>&#8216;id&#8217; : &#8216;ERROR&#8217;,
-&#8216;error&#8217; : &#8216;Error message here for unable to lead header&#8217;,
+&#8216;error&#8217; : &#8216;Error message here for unable to lead directory&#8217;,
 &#8216;traceback&#8217; : traceback.format_exec()</dd>
 </dl>
-<p>}``</p>
+<p>}</p>
 </div></blockquote>
-<dl class="docutils">
-<dt>is sent. If the header is loaded correctly a rsponse of the form</dt>
-<dd><dl class="first docutils">
-<dt><a href="#id3"><span class="problematic" id="id4">``</span></a>response = {</dt>
-<dd>&#8216;id&#8217; : &#8216;fitsHeader&#8217;,
-&#8216;fileId&#8217; : &#8216;fhv66yugjgvj*^&amp;^$vjkvkfhfct%^%##$f$hgkjh&#8217;,
-&#8216;frame&#8217; : 0,
-&#8216;header&#8217; : python_list,
-&#8216;request_completed&#8217;: True</dd>
+<p>is sent. If the directory is loaded correctly a rsponse of the form</p>
+<p>..code-block:: python</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>response={</dt>
+<dd>&#8216;id&#8217;: &#8216;directory&#8217;,
+&#8216;path&#8217;: &#8216;~/images/proj1&#8217;,
+&#8216;shortcuts&#8217;: [&#8216;user&#8217;, &#8216;temp&#8217;, &#8216;home&#8217;],
+&#8216;folders&#8217;: [&#8216;proj1&#8217;, &#8216;proj2&#8217;],
+&#8216;files&#8217;: [],
+&#8216;parent&#8217;: &#8216;~/images&#8217;</dd>
 </dl>
-<p class="last">}``</p>
-</dd>
-</dl>
+<p>}</p>
+</div></blockquote>
 <p>is sent to the client.</p>
 </dd></dl>
 
