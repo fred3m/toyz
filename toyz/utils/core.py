@@ -155,7 +155,7 @@ def check4keys(myDict,keys):
         - keys (*list* ): List of keys to search for in the dictionary
     
     Raises
-        Raises a :py:class:`toyz.utils.core.ToyzJobError` if any keys are missing from 
+        Raises a :py:class:`toyz.utils.errors.ToyzJobError` if any keys are missing from 
         ``myDict`` and lists all of the missing keys
     """
     error=""
