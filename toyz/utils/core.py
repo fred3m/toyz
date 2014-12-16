@@ -300,7 +300,8 @@ def run_job(toyz_settings, job):
                 }
             }
         
-        In this case, after receiving the job, this function will import the toyz.web.tasks_ 
+        In this case, after receiving the job, this function will import the 
+        :py:module:`toyz.web.tasks`
         module (if it has not been imported already) and run the function 
         ``load_directory(toyz_settings, job['id'],job['parameters'])``. 
         If there are any errors in loading the directory, a response of the form

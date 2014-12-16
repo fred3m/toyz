@@ -431,47 +431,43 @@ client that the current request has finished and may be removed from the queue.<
 <p>Example</p>
 <blockquote>
 <div><p>A client might send the following job to the server:</p>
-<div class="highlight-javascript"><div class="highlight"><pre>job = {
-    id : {
-        user_id : &#39;Iggy&#39;,
-        session_id : &#39;12&#39;,
-        request_id : 305
-    },
-    module : &#39;toyz.web.tasks&#39;,
-    task : &#39;load_directory&#39;,
-    parameters : {
-        path: &#39;~/images&#39;
-    }
-}
-
-In this case, after receiving the job, this function will import the toyz.web.tasks_ 
-module (if it has not been imported already) and run the function 
-``load_directory(toyz_settings, job[&#39;id&#39;],job[&#39;parameters&#39;])``. 
-If there are any errors in loading the directory, a response of the form
-
-.. code-block:: python
-
-    response = {
-        &#39;id&#39; : &#39;ERROR&#39;,
-        &#39;error&#39; : &#39;Error message here for unable to lead directory&#39;,
-        &#39;traceback&#39; : traceback.format_exec()
-    }
-is sent. If the directory is loaded correctly a rsponse of the form
-
-.. code-block:: python
-
-    response={
-        &#39;id&#39;: &#39;directory&#39;,
-        &#39;path&#39;: &#39;~/images/proj1&#39;,
-        &#39;shortcuts&#39;: [&#39;user&#39;, &#39;temp&#39;, &#39;home&#39;],
-        &#39;folders&#39;: [&#39;proj1&#39;, &#39;proj2&#39;],
-        &#39;files&#39;: [],
-        &#39;parent&#39;: &#39;~/images&#39;
-    }
-
-is sent to the client.
+<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">job</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">id</span> <span class="o">:</span> <span class="p">{</span>
+        <span class="nx">user_id</span> <span class="o">:</span> <span class="s1">&#39;Iggy&#39;</span><span class="p">,</span>
+        <span class="nx">session_id</span> <span class="o">:</span> <span class="s1">&#39;12&#39;</span><span class="p">,</span>
+        <span class="nx">request_id</span> <span class="o">:</span> <span class="mi">305</span>
+    <span class="p">},</span>
+    <span class="nx">module</span> <span class="o">:</span> <span class="s1">&#39;toyz.web.tasks&#39;</span><span class="p">,</span>
+    <span class="nx">task</span> <span class="o">:</span> <span class="s1">&#39;load_directory&#39;</span><span class="p">,</span>
+    <span class="nx">parameters</span> <span class="o">:</span> <span class="p">{</span>
+        <span class="nx">path</span><span class="o">:</span> <span class="s1">&#39;~/images&#39;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </pre></div>
 </div>
+<p>In this case, after receiving the job, this function will import the <a href="#id1"><span class="problematic" id="id2">toyz.web.tasks_</span></a> 
+module (if it has not been imported already) and run the function 
+<tt class="docutils literal"><span class="pre">load_directory(toyz_settings,</span> <span class="pre">job['id'],job['parameters'])</span></tt>. 
+If there are any errors in loading the directory, a response of the form</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&#39;id&#39;</span> <span class="p">:</span> <span class="s">&#39;ERROR&#39;</span><span class="p">,</span>
+    <span class="s">&#39;error&#39;</span> <span class="p">:</span> <span class="s">&#39;Error message here for unable to lead directory&#39;</span><span class="p">,</span>
+    <span class="s">&#39;traceback&#39;</span> <span class="p">:</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exec</span><span class="p">()</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>is sent. If the directory is loaded correctly a rsponse of the form</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">response</span><span class="o">=</span><span class="p">{</span>
+    <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="s">&#39;directory&#39;</span><span class="p">,</span>
+    <span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="s">&#39;~/images/proj1&#39;</span><span class="p">,</span>
+    <span class="s">&#39;shortcuts&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;user&#39;</span><span class="p">,</span> <span class="s">&#39;temp&#39;</span><span class="p">,</span> <span class="s">&#39;home&#39;</span><span class="p">],</span>
+    <span class="s">&#39;folders&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;proj1&#39;</span><span class="p">,</span> <span class="s">&#39;proj2&#39;</span><span class="p">],</span>
+    <span class="s">&#39;files&#39;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s">&#39;parent&#39;</span><span class="p">:</span> <span class="s">&#39;~/images&#39;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>is sent to the client.</p>
 </div></blockquote>
 </dd></dl>
 
