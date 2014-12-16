@@ -52,7 +52,7 @@ default_settings = {
 
 def normalize_path(path):
     """
-    Format a path with bash symbols like **~** , **.** , **..** into a full absolute path. This
+    Format a path with bash symbols like '**~**' , '**.**' , '**..**' into a full absolute path. This
     simply returns ``os.path.abspath(os.path.expanduser(path))`` .
     """
     return os.path.abspath(os.path.expanduser(path))
@@ -242,7 +242,7 @@ def check_user_shortcuts(toyz_settings, user_id, shortcuts=None):
 def run_job(toyz_settings, job):
     """
     Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
-    and flagged as a :py:class:toyz.utils.core.`ToyzError` and sent back to the client who 
+    and flagged as a :py:class:toyz.utils.errors.`ToyzError` and sent back to the client who 
     initiated the job. 
     
     All job functions will take exactly 3 parameters: toyz_settings, tid, params. The **tid** 
