@@ -381,11 +381,11 @@ simply returns <tt class="docutils literal"><span class="pre">os.path.abspath(os
 <dt id="toyz.utils.core.run_job">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">run_job</tt><big>(</big><em>toyz_settings</em>, <em>job</em><big>)</big><a class="headerlink" href="#toyz.utils.core.run_job" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
-and flagged as a <tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errorsToyzError</span></tt> and sent back to the client who 
+and flagged as a <a class="reference internal" href="#toyz.utils.errors.ToyzError" title="toyz.utils.errors.ToyzError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzError</span></tt></a> and sent back to the client who 
 initiated the job.</p>
-<p>All job functions will take exactly 3 parameters: toyz_settings, tid, params. The <strong>tid</strong> 
-is the task id (<em>user</em>, <em>session</em>, and <em>request_id</em> ) information (see below), and 
-<strong>params</strong> is a dictionary of parameters sent by the client.</p>
+<p>All job functions will take exactly 3 parameters: <strong>toyz_settings</strong>, <strong>tid</strong>, <strong>params</strong>. 
+The <strong>tid</strong> is the task id (<em>user</em>, <em>session</em>, and <em>request_id</em> ) information (see below), 
+and <strong>params</strong> is a dictionary of parameters sent by the client.</p>
 <p>Each job is run as a new process, so any modules imported should be removed from memory 
 when the job has completed.</p>
 <dl class="docutils">
