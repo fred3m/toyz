@@ -284,9 +284,9 @@ def run_job(toyz_settings, job):
     Example
     
         A client might send the following job to the server:
-    
+        
         .. code-block:: javascript
-    
+        
             job = {
                 id : {
                     user_id : 'Iggy',
@@ -300,21 +300,22 @@ def run_job(toyz_settings, job):
                 }
             }
         
-            In this case, after receiving the job, this function will import the toyz.web.tasks_ 
-            module (if it has not been imported already) and run the function 
-            ``load_directory(toyz_settings, job['id'],job['parameters'])``. 
-            If there are any errors in loading the directory, a response of the form
+        In this case, after receiving the job, this function will import the toyz.web.tasks_ 
+        module (if it has not been imported already) and run the function 
+        ``load_directory(toyz_settings, job['id'],job['parameters'])``. 
+        If there are any errors in loading the directory, a response of the form
     
-            .. code-block:: python
-    
-                response = {
-                    'id' : 'ERROR',
-                    'error' : 'Error message here for unable to lead directory',
-                    'traceback' : traceback.format_exec()
-                }
-            is sent. If the directory is loaded correctly a rsponse of the form
-    
-            .. code-block:: python
+        .. code-block:: python
+        
+            response = {
+                'id' : 'ERROR',
+                'error' : 'Error message here for unable to lead directory',
+                'traceback' : traceback.format_exec()
+            }
+        
+        is sent. If the directory is loaded correctly a rsponse of the form
+        
+        .. code-block:: python
     
                 response={
                     'id': 'directory',
@@ -325,7 +326,7 @@ def run_job(toyz_settings, job):
                     'parent': '~/images'
                 }
     
-            is sent to the client.
+        is sent to the client.
     """
     # TODO: Eventually a job should be added to the jobs dictionary and removed after the response has been sent
     import traceback

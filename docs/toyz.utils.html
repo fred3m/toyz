@@ -378,140 +378,101 @@ parameters sent by the client.</p>
 <p>Each job is run as a new process, so any modules imported should be removed from memory 
 when the job has completed.</p>
 <dl class="docutils">
-<dt>toyz_settings (toyz.ToyzSettings)</dt>
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>toyz_settings: <em>toyz.ToyzSettings</em></dt>
 <dd><ul class="first last simple">
 <li>Settings for the application runnning the job (may be needed to load user info 
 or check permissions)</li>
 </ul>
 </dd>
-<dt>job: dictionary</dt>
+<dt>job: <em>dict</em></dt>
 <dd><ul class="first last">
+<li><p class="first">The job received from the user. Each job will contain the following keys:</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">id</span></tt>: Dictionary with unique values for the given job. These are the
+<strong>user_id</strong>, the id of the user loaded from a secure cookie; the
+<strong>session_id</strong>, a unique identifier for the websocket; and the
+<strong>request_id</strong>, a unique identifier for the current request, sent from the client</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">module</span></tt>: Name of the Python module that contains the function called by the 
+client. In order for a module to work for a user, he/she must either have
+permissions set to view the module or belong to a group with permissions set
+to view the module (including <em>all_users</em>).</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">task</span></tt>: Name of the function called by the client</p>
+</li>
 <li><dl class="first docutils">
-<dt>The job received from the user. The following keys are required:</dt>
-<dd><dl class="first docutils">
-<dt>id: dictionary</dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt>dictionary that contains the following keys:</dt>
+<dt><tt class="docutils literal"><span class="pre">parameters</span></tt>: Dictionary of required and optional parameters passed to the </dt>
+<dd><p class="first last">function.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Returns</dt>
 <dd><dl class="first last docutils">
-<dt>user_id: string</dt>
+<dt>result: <em>dict</em></dt>
 <dd><ul class="first last simple">
-<li>Unique identifier of the current user</li>
-</ul>
-</dd>
-<dt>session_id: string</dt>
-<dd><p class="first last">-Unique identifier of the current session</p>
-</dd>
-<dt>request_id: string</dt>
-<dd><p class="first last">-Unique identifier for the current request sent by the client</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-<dt>module: string</dt>
-<dd><ul class="first last simple">
-<li>Python module that contains the function called by the client</li>
-</ul>
-</dd>
-<dt>task: string</dt>
-<dd><ul class="first last simple">
-<li>Function called by the client</li>
-</ul>
-</dd>
-<dt>parameters: dictionary</dt>
-<dd><ul class="first last simple">
-<li>Dictionary of required and optional parameters passed to the function</li>
-</ul>
-</dd>
-</dl>
-<p>}
-comms: object</p>
-<blockquote class="last">
-<div><ul class="simple">
-<li>For now this is always a WebSocketHandler, used to send
-responses to the client. In a possible future environment where
-the web app and job app are separate programs connect via a db,
-this would be an object that writes to a table in the db, triggering
-an event on the web server that sends the message to the client</li>
-</ul>
-</div></blockquote>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>Optional keys:</dt>
-<dd><dl class="first last docutils">
-<dt>batch: unknown</dt>
-<dd><ul class="first last simple">
-<li>The presence of this key indicates that the job will be sent to an
-external job application for processing in a queue (not yet implemented).
-When implemented this will either be a boolean flag (job[&#8216;batch&#8217;]=True for
-a batch job) or a string containing either the name of a queue or a priority
-level (low, medium, high, etc).</li>
-</ul>
-</dd>
-</dl>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-<p>There are no returns from the function but a dictionary is sent to the client.
-response: dictionary</p>
-<blockquote>
-<div><ul class="simple">
-<li>Response is either an empty dictionary or one that contains (at a minimum) 
-the key &#8216;id&#8217;, which is used by the client to identify the type of response it is 
-receiving. Including the key <cite>request_completed</cite> with a <cite>True</cite> value tells the
+<li>The result is returned to the application running the job and is composed
+of two keys: an <tt class="docutils literal"><span class="pre">id</span></tt>: the job id for the completed job, and a <tt class="docutils literal"><span class="pre">response</span></tt>
+that is sent to the client.</li>
+<li>The response is either an empty dictionary or one that contains (at a minimum) 
+the key <strong>id</strong>, which is used by the client to identify the type of response it is 
+receiving. Including the key <strong>request_completed</strong> with a <em>True</em> value tells the
 client that the current request has finished and may be removed from the queue.</li>
-<li>An optional key &#8216;update_app&#8217; may be included in the response if any attributes
-of the main application have been changed and need to be updated. The value of the
-field is a list of attributes from the main application that need to be updated
-once the job has completed.</li>
 </ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Example</p>
+<blockquote>
+<div><p>A client might send the following job to the server:</p>
+<div class="highlight-javascript"><div class="highlight"><pre>job = {
+    id : {
+        user_id : &#39;Iggy&#39;,
+        session_id : &#39;12&#39;,
+        request_id : 305
+    },
+    module : &#39;toyz.web.tasks&#39;,
+    task : &#39;load_directory&#39;,
+    parameters : {
+        path: &#39;~/images&#39;
+    }
+}
+
+In this case, after receiving the job, this function will import the toyz.web.tasks_ 
+module (if it has not been imported already) and run the function 
+``load_directory(toyz_settings, job[&#39;id&#39;],job[&#39;parameters&#39;])``. 
+If there are any errors in loading the directory, a response of the form
+
+.. code-block:: python
+
+    response = {
+        &#39;id&#39; : &#39;ERROR&#39;,
+        &#39;error&#39; : &#39;Error message here for unable to lead directory&#39;,
+        &#39;traceback&#39; : traceback.format_exec()
+    }
+is sent. If the directory is loaded correctly a rsponse of the form
+
+.. code-block:: python
+
+    response={
+        &#39;id&#39;: &#39;directory&#39;,
+        &#39;path&#39;: &#39;~/images/proj1&#39;,
+        &#39;shortcuts&#39;: [&#39;user&#39;, &#39;temp&#39;, &#39;home&#39;],
+        &#39;folders&#39;: [&#39;proj1&#39;, &#39;proj2&#39;],
+        &#39;files&#39;: [],
+        &#39;parent&#39;: &#39;~/images&#39;
+    }
+
+is sent to the client.
+</pre></div>
+</div>
 </div></blockquote>
-<p>A client might send the following job to the server:</p>
-<div class="highlight-javascript"><div class="highlight"><pre><span class="nx">job</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="nx">id</span> <span class="o">:</span> <span class="p">{</span>
-        <span class="nx">user_id</span> <span class="o">:</span> <span class="s1">&#39;Iggy&#39;</span><span class="p">,</span>
-        <span class="nx">session_id</span> <span class="o">:</span> <span class="s1">&#39;12&#39;</span><span class="p">,</span>
-        <span class="nx">request_id</span> <span class="o">:</span> <span class="mi">305</span>
-    <span class="p">},</span>
-    <span class="nx">module</span> <span class="o">:</span> <span class="s1">&#39;toyz.web.tasks&#39;</span><span class="p">,</span>
-    <span class="nx">task</span> <span class="o">:</span> <span class="s1">&#39;load_directory&#39;</span><span class="p">,</span>
-    <span class="nx">parameters</span> <span class="o">:</span> <span class="p">{</span>
-        <span class="nx">path</span><span class="o">:</span> <span class="s1">&#39;~/images&#39;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>In this case, after receiving the job, this function will import the <a href="#id1"><span class="problematic" id="id2">toyz.web.tasks_</span></a> module 
-(if it has not been imported already) and run the function 
-<tt class="docutils literal"><span class="pre">load_directory(toyz_settings,</span> <span class="pre">job['id'],job['parameters'])</span></tt>. If there are any errors in 
-loading the directory, a response of the form</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s">&#39;id&#39;</span> <span class="p">:</span> <span class="s">&#39;ERROR&#39;</span><span class="p">,</span>
-    <span class="s">&#39;error&#39;</span> <span class="p">:</span> <span class="s">&#39;Error message here for unable to lead directory&#39;</span><span class="p">,</span>
-    <span class="s">&#39;traceback&#39;</span> <span class="p">:</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exec</span><span class="p">()</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>is sent. If the directory is loaded correctly a rsponse of the form</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">response</span><span class="o">=</span><span class="p">{</span>
-    <span class="s">&#39;id&#39;</span><span class="p">:</span> <span class="s">&#39;directory&#39;</span><span class="p">,</span>
-    <span class="s">&#39;path&#39;</span><span class="p">:</span> <span class="s">&#39;~/images/proj1&#39;</span><span class="p">,</span>
-    <span class="s">&#39;shortcuts&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;user&#39;</span><span class="p">,</span> <span class="s">&#39;temp&#39;</span><span class="p">,</span> <span class="s">&#39;home&#39;</span><span class="p">],</span>
-    <span class="s">&#39;folders&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;proj1&#39;</span><span class="p">,</span> <span class="s">&#39;proj2&#39;</span><span class="p">],</span>
-    <span class="s">&#39;files&#39;</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="s">&#39;parent&#39;</span><span class="p">:</span> <span class="s">&#39;~/images&#39;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>is sent to the client.</p>
 </dd></dl>
 
 <dl class="function">
