@@ -313,7 +313,7 @@ def run_job(toyz_settings, job):
                 'traceback' : traceback.format_exec()
             }
         
-        is sent. If the directory is loaded correctly a rsponse of the form
+        is sent. If the directory is loaded correctly a response of the form
         
         .. code-block:: python
     
