@@ -254,7 +254,7 @@ def run_job(toyz_settings, job):
     when the job has completed.
     
     Parameters
-        toyz_settings: *:py:mod:`toyz.ToyzSettings`*
+        toyz_settings(:py:mod:`toyz.ToyzSettings`):
             - Settings for the application runnning the job (may be needed to load user info 
               or check permissions)
         job: *dict*
