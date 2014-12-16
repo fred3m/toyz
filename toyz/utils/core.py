@@ -214,7 +214,7 @@ def check_user_shortcuts(toyz_settings, user_id, shortcuts=None):
     Check that a user has all of the default shortcuts.
     
     Parameters
-        - toyz_settings ( :py:class:`toyz.utils.core.toyz_settings` ): Toyz Settings
+        - toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings` ): Toyz Settings
         - user_id (*string* ): User id to check for shortcuts
         - shortcuts (*dict*, optional): Dictionary of shortcuts for a user. Shortcuts
           are always of the form ``shortcut_name:path`` .
