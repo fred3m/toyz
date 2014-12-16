@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
 .. automodule:: toyz
+    :members:
 
 Indices and tables
 ==================
