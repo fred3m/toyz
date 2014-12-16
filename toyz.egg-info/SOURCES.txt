@@ -571,8 +571,8 @@ toyz/utils/__init__.py
 toyz/utils/__init__.pyc
 toyz/utils/core.py
 toyz/utils/core.pyc
-toyz/utils/db_utils.py
-toyz/utils/db_utils.pyc
+toyz/utils/db.py
+toyz/utils/db.pyc
 toyz/utils/errors.py
 toyz/utils/errors.pyc
 toyz/utils/file_access.py

@@ -13,7 +13,8 @@ import cPickle as pickle
 from collections import OrderedDict
 import multiprocessing
 
-from .errors import ToyzError, ToyzDbError, ToyzWebError, ToyzJobError, ToyzWarning
+from toyz.utils import db as db_utils
+from toyz.utils.errors import ToyzError, ToyzDbError, ToyzWebError, ToyzJobError, ToyzWarning
 
 # Path that toyz has been installed in
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),os.pardir))
@@ -128,12 +129,12 @@ def check_pwd(toyz_settings, user_id, pwd):
     """
     from passlib.context import CryptContext
     pwd_context = CryptContext(**toyz_settings.security.pwd_context)
-    users = load_users(toyz_settings)
+    users = db_utils.get_all_ids(toyz_settings.db, user_type='user_id')
     if user_id not in users:
         # Dummy check to prevent a timing attack to guess user names
         pwd_context.verify('foo', 'bar')
         return False
-    user_hash = users[user_id].pwd
+    user_hash = db_utils.get_param(toyz_settings.db, 'pwd', user_id=user_id)
     return pwd_context.verify(pwd, user_hash)
 
 def encrypt_pwd(toyz_settings, pwd):
@@ -206,71 +207,41 @@ def create_paths(paths):
         except OSError:
             if not os.path.isdir(path):
                 raise ToyzError("Problem creating new directory, check user permissions")
+
+def get_user_type(params):
+    if 'user_id' in params:
+        if 'group_id' in params:
+            raise ToyzError("Must specify either a user_id OR group_id but not both")
+        user = {'user_id': params['user_id']}
+    elif 'group_id' in params:
+        user = {'group_id': params['group_id']}
+    else:
+        raise ToyzError("Must specify either a user_id or group_id")
+    return user
+
+def check_user_shortcuts(toyz_settings, user_id, shortcuts=None):
+    """
+    Check that a user has all of the default shortcuts
+    """
+    modified = False
+    if shortcuts==None:
+        shortcuts = get_param(toyz_settings.db, 'shortcuts', user)
+    if 'user' not in shortcuts:
+        shortcuts['user'] = os.path.join(toyz_settings.config.root_path, 'users', user_id)
+        db_utils.update_param(toyz_settings.db, 'shortcuts', user_id=user_id, 
+            shortcuts={'user': shortcuts['user']})
+        create_paths([shortcuts['user']])
+        modified = True
+    if 'temp' not in shortcuts:
+        shortcuts['temp'] = os.path.join(shortcuts['user'], 'temp')
+        db_utils.update_param(toyz_settings.db, 'shortcuts', user_id=user_id, 
+            shortcuts={'temp': shortcuts['temp']})
+        create_paths([shortcuts['temp']])
+        modified = True
+    if modified:
+        db_utils.update_param(toyz_settings.db, 'shortcuts', user_id=user_id, shortcuts=shortcuts)
     
-def save_users(toyz_settings, users):
-    """
-    Save all users to the database (updates any changes since the last save).
-
-    Parameters
-    ----------
-    toyz_settings: ToyzSettings
-        - Settings for a toyz instance
-    users: dict of ToyzUsers
-        - Keys are the id's of the toyz users, values are ToyzUsers
-    """
-    db_module = importlib.import_module(toyz_settings.db.interface_name)
-    u_dict = {uid:u.__dict__ for uid,u in users.items()}
-    db_module.save_users(toyz_settings.db, u_dict)
-
-def save_user(toyz_settings, user):
-    """
-    Save a user to the database
-    """
-    save_users(toyz_settings, {user.user_id: user})
-
-def load_users(toyz_settings):
-    """
-    Load all users 
-    """
-    db_module = importlib.import_module(toyz_settings.db.interface_name)
-    users = db_module.load_users(toyz_settings.db)
-    users = {uid:ToyzUser(toyz_settings, **u) for uid, u in users.items()}
-    return users
-
-def load_groups(toyz_settings):
-    """
-    load all groups
-    """
-    db_module = importlib.import_module(toyz_settings.db.interface_name)
-    groups = db_module.load_groups(toyz_settings.db)
-    return groups
-
-def load_user(toyz_settings, user_id):
-    """
-    Load settings for a single user
-    """
-    db_module = importlib.import_module(toyz_settings.db.interface_name)
-    return ToyzUser(toyz_settings, **db_module.load_user(toyz_settings.db, user_id))
-
-def update_file_permissions(toyz_settings, user_type, user_id, paths):
-    """
-    Update the path permissions for a user or group. Any paths not listed for the user
-    will be removed from his/her permissions
-    """
-    user = load_user(toyz_settings, user_id)
-    db_module = importlib.import_module(toyz_settings.db.interface_name)
-    permissions = db_module.get_all_user_permissions(toyz_settings.db, user)
-    for path in permissions:
-        if path not in paths:
-            if user_type == 'user':
-                db_module.delete_user_path(toyz_settings.db, path)
-            elif user_type == 'group':
-                db_module.delete_group_path(toyz_settings.db, path)
-            else:
-                raise ToyzError(
-                    "Invalid user type for file permissions: must be 'user' or 'group'")
-    for path in paths:
-        file_access.update_file_permissions(db_settings, user, paths)
+    return shortcuts
 
 def run_job(toyz_settings, job):
     """
@@ -413,43 +384,6 @@ class ToyzClass:
     def __init__(self, dict_in):
         self.__dict__ = dict_in
 
-#TODO Currently ToyzJobQueue isn't used. If this isn't implemented later, remove
-class ToyzJobQueue:
-    """
-    An environment for a single user to run tasks.
-    """
-    def __init__(self, queue_name, process_count):
-        self.queue_name = queue_name
-        self.processes = []
-        self.queue = multiprocessing.Queue()
-        self.initialize()
-    
-    def initialize(self):
-        print('Initializing processes')
-        for p in range(process_count):
-            process = multiprocessing.Process(
-                name=queue_name+'-'+str(p),
-                target=self.job_worker,
-                args=(self.queue,)
-            )
-            process.daemon = True
-            process.start()
-            self.processes.append(process)
-    
-    def add_job(self, job):
-        self.queue.put(job)
-    
-    def close_env(self, interrupt_jobs=False):
-        self.queue.put({'close_env': True})
-    
-    def job_worker(self, queue):
-        msg = {}
-        while 'EXIT' not in msg:
-            msg = queue.get()
-            self.run_job(msg)
-            
-        print("{0} closed".format(multiprocessing.current_process().name))
-
 class ToyzSettings:
     def __init__(self, config_root_path=None):
         """
@@ -507,7 +441,6 @@ class ToyzSettings:
         config_root_path: string
             - Root path of the new Toyz instance
         """
-        import getpass
         from toyz.utils import file_access
     
         for key, val in default_settings.items():
@@ -524,115 +457,43 @@ class ToyzSettings:
         )
         create_paths([self.config.root_path, os.path.join(self.config.root_path, 'config')])
         
-        # Create users
-        # TODO: by default, there will be no login, so the next section should be
-        # removed once the code is working properly
-        admin_pwd = 'admin'
-        if get_bool(
-                "The default admin password is 'admin'. It is recommended that you change this "
-                "if multiple users will be accessing the web application.\n\n"
-                "change password? "):
-            admin_pwd = getpass.getpass("new password: ")
-        if self.security.user_login:
-            admin_pwd = encrypt_pwd(self, admin_pwd)
-        users = {
-            'admin':ToyzUser(
-                toyz_settings=self,
-                user_id='admin', 
-                pwd=admin_pwd, 
-                #groups=['admin']
-                )}
-        
-        # Create a database and folder permissions table
+        # Create database for toyz settings and permissions
         self.db.path = os.path.join(self.config.root_path, 
                                             self.db.db_path)
         create_paths(os.path.dirname(self.db.path))
-        db_module = importlib.import_module(self.db.interface_name)
-        db_module.create_database(self.db, users['admin'])
-        db_module.create_table(
-            db_settings=self.db,
-            user=users['admin'],
-            table_name='tbl_permissions',
-            columns=OrderedDict([
-                ('table_name', ['VARCHAR']),
-                ('permissions', ['VARCHAR'])
-            ]),
-            indices={'tbl_idx':('table_name',)},
-            users={'*':'', 'admin':'frw'}
-        )
-        db_module.create_table(
-            db_settings=self.db,
-            user=users['admin'],
-            table_name='users',
-            columns=OrderedDict([
-                ('user_id', ['VARCHAR']),
-                ('user_info', ['VARCHAR'])
-            ]),
-            indices={'users_idx':('user_id',)},
-            users={'*':'', 'admin':'frw'}
-        )
-        db_module.create_table(
-            db_settings=self.db,
-            user=users['admin'],
-            table_name='groups',
-            columns=OrderedDict([
-                ('group_id', ['VARCHAR']),
-                ('group_info', ['VARCHAR'])
-            ]),
-            indices={'group_idx':('group_id',)},
-            users={'*':'', 'admin':'frw'}
-        )
-        db_module.create_table(
-            db_settings=self.db,
-            user=users['admin'],
-            table_name='paths',
-            columns=OrderedDict([
-                ('path_id', ['INTEGER','PRIMARY','KEY','AUTOINCREMENT']),
-                ('path', ['VARCHAR']),
-                ('owner', ['VARCHAR']),
-            ]),
-            indices={'path_idx':('path',)},
-            users={'*':'frw', 'admin':'frw'}
-        )
-        db_module.create_table(
-            db_settings=self.db,
-            user=users['admin'],
-            table_name='user_paths',
-            columns=OrderedDict([
-                ('user_id', ['VARCHAR']),
-                ('path_id', ['INTEGER']),
-                ('permissions', ['VARCHAR']),
-            ]),
-            indices={'user_path_idx':('user_id',)},
-            users={'*':'frw', 'admin':'frw'}
-        )
-        db_module.create_table(
-            db_settings=self.db,
-            user=users['admin'],
-            table_name='group_paths',
-            columns=OrderedDict([
-                ('group_id', ['VARCHAR']),
-                ('path_id', ['INTEGER']),
-                ('permissions', ['VARCHAR']),
-            ]),
-            indices={'group_path_idx':('group_id',)},
-            users={'*':'frw', 'admin':'frw'}
-        )
-    
-        file_access.update_file_permissions(self.db, users['admin'], {
-            self.config.root_path: {
-                'users': {
-                    '*': ''
-                }
-            }
-        })
+        db_utils.create_toyz_database(self.db)
         
-        db_module.save_groups(db_settings=self.db, groups={'admin':{}, 'modify_toyz':{}})
+        # Create default users and groups
+        admin_pwd = 'admin'
+        if self.security.user_login:
+            admin_pwd = encrypt_pwd(self, admin_pwd)
+        db_utils.update_param(self.db, 'pwd', user_id='admin', pwd=admin_pwd)
+        db_utils.update_param(self.db, 'pwd', user_id='*', pwd='*')
+        db_utils.update_param(self.db, 'pwd', group_id='admin', pwd='')
+        db_utils.update_param(self.db, 'pwd', group_id='modify_toyz', pwd='')
         
-        save_users(self, users)
         self.save_settings()
         print("\nFirst Time Setup completed")
 
+class Toy:
+    """
+    A toy built on the toyz framework.
+    """
+    def __init__(self, toy, module=None, path=None, config=None, key=None):
+        self.name = toy
+        self.module = module
+        self.path = path
+        self.config = config
+        self.key = key
+        if self.config is None:
+            self.config = module.config
+        if self.key is None:
+            self.key = self.name
+    
+    def reload(self, module):
+        reload(self.name)
+
+#TODO Currently ToyzUser isn't used. If this isn't implemented later, remove
 class ToyzUser:
     """
     User logged into the Toyz web application
@@ -743,20 +604,39 @@ class ToyzUser:
             myStr += attr+':'+str(value)+'\n'
         return myStr
 
-class Toy:
+#TODO Currently ToyzJobQueue isn't used. If this isn't implemented later, remove
+class ToyzJobQueue:
     """
-    A toy built on the toyz framework.
+    An environment for a single user to run tasks.
     """
-    def __init__(self, toy, module=None, path=None, config=None, key=None):
-        self.name = toy
-        self.module = module
-        self.path = path
-        self.config = config
-        self.key = key
-        if self.config is None:
-            self.config = module.config
-        if self.key is None:
-            self.key = self.name
+    def __init__(self, queue_name, process_count):
+        self.queue_name = queue_name
+        self.processes = []
+        self.queue = multiprocessing.Queue()
+        self.initialize()
     
-    def reload(self, module):
-        reload(self.name)
+    def initialize(self):
+        print('Initializing processes')
+        for p in range(process_count):
+            process = multiprocessing.Process(
+                name=queue_name+'-'+str(p),
+                target=self.job_worker,
+                args=(self.queue,)
+            )
+            process.daemon = True
+            process.start()
+            self.processes.append(process)
+    
+    def add_job(self, job):
+        self.queue.put(job)
+    
+    def close_env(self, interrupt_jobs=False):
+        self.queue.put({'close_env': True})
+    
+    def job_worker(self, queue):
+        msg = {}
+        while 'EXIT' not in msg:
+            msg = queue.get()
+            self.run_job(msg)
+            
+        print("{0} closed".format(multiprocessing.current_process().name))

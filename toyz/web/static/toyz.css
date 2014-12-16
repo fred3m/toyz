@@ -30,3 +30,34 @@ ul {
     list-style:none;
     padding-left:0;
 }
+
+.file-dialog-path-div {
+    margin-bottom: 5px;
+}
+
+.file-dialog-div-lbl {
+    font-size: 125%;
+    font-weight: bold;
+    display:inline-block;
+}
+
+.file-dialog-div {
+    display:inline-block;
+    height: 80%;
+    width: 32%;
+    overflow: hidden;
+    float: left;
+}
+
+.file-dialog-select-div {
+    display:inline-block;
+    height:100%;
+    width:100%;
+    overflow:scroll;
+    float:left;
+}
+
+.file-dialog-select {
+    height: 90%;
+    width: 100%;
+}

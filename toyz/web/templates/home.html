@@ -48,12 +48,15 @@
             if(result.id == 'user_settings'){
                 var account_info = {
                     user_id: websocket.user_id,
-                    change_pwd: change_pwd
+                    change_pwd: change_pwd,
+                    file_dialog: file_dialog
                 };
                 var paths = new Array();
                 var toyz = new Array();
                 
+                result.file_dialog = file_dialog;
                 var my_params = Toyz.Console.Settings.getAccountSettings(account_info);
+                
                 if(result.hasOwnProperty('modules')){
                     my_params.approved_modules = Toyz.Console.Settings.getModuleSettings({
                         legend: 'Modules',
@@ -63,9 +66,11 @@
                 if(result.hasOwnProperty('toyz')){
                     my_params.approved_toyz = Toyz.Console.Settings.getToyzSettings({
                         legend: 'Toyz',
-                        param_name: 'toyz'
+                        param_name: 'toyz',
+                        file_dialog: file_dialog
                     });
                 };
+                
                 account_settings = Toyz.Gui.initParamList(
                     {
                         type:'div',
@@ -92,13 +97,12 @@
                     result.new_user = new_user;
                     result.new_group = new_user;
                     result.websocket = websocket;
-                    result.file_dialog = file_dialog;
                     
                     // Alphebetize user id's and group names in the select boxes
-                    result.user_order = Object.keys(result.users);
-                    result.group_order = Object.keys(result.groups);
-                    result.user_order.sort();
-                    result.group_order.sort();
+                    //result.user_order = Object.keys(result.users);
+                    //result.group_order = Object.keys(result.groups);
+                    result.users.sort();
+                    result.groups.sort();
                     
                     // Create the UI's
                     user_settings = Toyz.Console.Settings.getUserSettings(result, $user_div);
@@ -171,7 +175,7 @@
                 modal:true,
                 buttons:{
                     'Change':function(){
-                        websocket.sendTask({
+                        websocket.send_task({
                             module: 'toyz.web.tasks',
                             task: 'change_pwd',
                             parameters: {
@@ -215,7 +219,7 @@
                 modal:true,
                 buttons:{
                     'Add':function(){
-                        websocket.sendTask({
+                        websocket.send_task({
                             module: 'toyz.web.tasks',
                             task: 'add_new_user',
                             parameters: {
@@ -237,10 +241,12 @@
             initNewUser();
             $('#submit-account-settings').click(function(){
                 var params = account_settings.getParams(account_settings.params);
-                
-                websocket.sendTask({
+                params['user_id'] = websocket.user_id;
+                delete params['account'];
+                delete params['logout'];
+                websocket.send_task({
                     module: 'toyz.web.tasks',
-                    task: 'update_user_settings',
+                    task: 'save_user_infosend_task',
                     parameters: params
                 });
                 console.log('Parameters:',params);
@@ -249,7 +255,7 @@
             websocket=Toyz.Core.jobsocketInit({
                 receiveAction: rxMsg,
                 onopen: function(){
-                    websocket.sendTask({
+                    websocket.send_task({
                         module: 'toyz.web.tasks',
                         task: 'load_user_settings',
                         parameters: {}

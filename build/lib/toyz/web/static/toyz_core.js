@@ -40,7 +40,7 @@ Toyz.Core.MAX_ID=Math.pow(2,40);
 Toyz.Core.jobsocketInit=function(options){
     var jobsocket=$.extend(true,{
         ws:null,
-        sendTask:function(task,callback,passParams){
+        send_task:function(task,callback,passParams){
             if(jobsocket.ws.readyState==1 && jobsocket.session_id!=""){
                 task.id={
                     user_id:jobsocket.user_id,
@@ -130,7 +130,7 @@ Toyz.Core.jobsocketInit=function(options){
             console.log('session:',result);
             for(var i=0;i<jobsocket.queue.length;i++){
                 var task = jobsocket.queue[i];
-                jobsocket.sendTask(task.task, task.callback, task.passParams);
+                jobsocket.send_task(task.task, task.callback, task.passParams);
             };
         };
         if(result.hasOwnProperty('request_id') && jobsocket.requests.hasOwnProperty(result.request_id.toString())){
@@ -252,7 +252,181 @@ Toyz.Core.check4key=function(obj,keys,errorMsg){
 // After a file is selected the function "clickOpen" is called. By default this
 // function does nothing, so initiate or declare this later on to tell the
 // application what to do with the file. 
-Toyz.Core.initFileDialog=function(options){
+Toyz.Core.initFileDialog = function(options){
+    if(!options.hasOwnProperty('websocket')){
+        alert("A websocket must be specified to open a file dialog!");
+        return {};
+    };
+    
+    var $div = $('<div/>').prop('id','file-dialog').prop('title','Select file to open');
+    var $new_folder = $('<div/>').prop('title','New Folder Name');
+    var $path_outer_div = $('<div/>').addClass('file-dialog-path-div');
+    var $path_lbl = $('<lbl/>').addClass("file-dialog-div-lbl").html('current path: ');
+    var $path_div = $('<div/>').css('display', 'inline-block');
+    var shortcuts = Toyz.Core.initFileSelect('shortcuts');
+    var folders = Toyz.Core.initFileSelect('folders');
+    var files = Toyz.Core.initFileSelect('files');
+    
+    $('body').append($div);
+    $('body').append($new_folder);
+    $div.append($path_outer_div);
+    $path_outer_div.append($path_lbl); 
+    $path_outer_div.append($path_div);
+    $div.append(shortcuts.$div);
+    $div.append(folders.$div);
+    $div.append(files.$div);
+    
+    var file_dialog = {
+        $div: $div,
+        $path_div: $path_div,
+        shortcuts: shortcuts,
+        folders: folders,
+        files: files,
+        hist: [],
+        hist_index: 0,
+        parent_folder:'',
+        websocket: options.websocket,
+        new_folder: {
+            $div: $new_folder,
+            $input: $('<input/>').prop('size',80).appendTo($new_folder)
+        },
+        load_directory: function(path, callback, buttons){
+            if(file_dialog.hist.length==0){
+                file_dialog.hist.push(path);
+            }
+            console.log("loading:", path);
+            if(buttons){
+                file_dialog.$div.dialog({
+                    buttons:buttons
+                });
+            }else{
+                file_dialog.$div.dialog({
+                    buttons:file_dialog.default_buttons
+                });
+            };
+            file_dialog.websocket.send_task(
+                {
+                    module:"toyz.web.tasks",
+                    task:"load_directory",
+                    parameters:{
+                        path:path
+                    }
+                },
+                function(result){
+                    delete result.id;
+                    file_dialog.update(result);
+                    file_dialog.$div.dialog('open');
+                }
+            );
+            if(callback){
+                file_dialog.click_open=callback;
+            }
+        },
+        update:function(params){
+            file_dialog.path = params.path;
+            file_dialog.$path_div.html(params.path);
+            file_dialog.parent_folder = params.parent;
+            file_dialog.shortcuts.update(params.shortcuts);
+            file_dialog.folders.update(params.folders);
+            file_dialog.files.update(params.files);
+        },
+        click_open:function(){},
+        default_buttons:{
+            "Open":function(){
+                file_dialog.click_open();
+                $(this).dialog("close");
+            },
+            "New Folder":function(){
+                file_dialog.new_folder.$div.dialog('open');
+            },
+            "Cancel":function(){
+                $(this).dialog("close");
+            }
+        }
+    };
+    
+    // Set the onchange functions for shortcuts and folders
+    file_dialog.shortcuts.$select.change(function(){
+        var path = '$'+file_dialog.shortcuts.$select.val()+'$'
+        file_dialog.hist_index++;
+        file_dialog.hist = file_dialog.hist.splice(0,file_dialog.hist_index);
+        file_dialog.hist.push(path);
+        file_dialog.load_directory(path);
+    });
+    file_dialog.folders.$select.change(function(){
+        var path = file_dialog.path+file_dialog.folders.$select.val()
+        file_dialog.hist_index++;
+        file_dialog.hist = file_dialog.hist.splice(0,file_dialog.hist_index);
+        file_dialog.hist.push(path);
+        file_dialog.load_directory(path);
+    });
+    
+    // Navigation Buttons
+    var $up_btn = $('<button/>').html("\u21B0").click(function(){
+        file_dialog.load_directory(file_dialog.parent_folder);
+    });
+    var $back_btn = $('<button/>').html("\u25C0").click(function(){
+        if(file_dialog.hist_index>0){
+            file_dialog.hist_index--;
+            file_dialog.load_directory(file_dialog.hist[file_dialog.hist_index]);
+        }
+    });
+    var $fwd_btn = $('<button/>').html("\u25B6").click(function(){
+        if(file_dialog.hist_index<file_dialog.hist.length-1){
+            file_dialog.hist_index++;
+            file_dialog.load_directory(file_dialog.hist[file_dialog.hist_index]);
+        }
+    });
+    
+    file_dialog.$div.append($up_btn);
+    file_dialog.$div.append($back_btn);
+    file_dialog.$div.append($fwd_btn);
+    
+    file_dialog.$div.dialog({
+        resizable:true,
+        draggable:true,
+        width:600,
+        height:400,
+        autoOpen:false,
+        modal:true,
+        buttons:file_dialog.default_buttons,
+    }).css("font-size", "12px");
+    
+    return file_dialog;
+};
+
+Toyz.Core.initFileSelect = function(div_name){
+    var $file_div = $('<div/>').prop('id', div_name+'-div').addClass('file-dialog-div');
+    var $lbl_div = $('<div/>');
+    var $lbl = $('<lbl/>')
+        .addClass('file-dialog-div-lbl')
+        .html(div_name);
+    var $select_div = $('<div/>').addClass('file-dialog-select-div');
+    var $select = $('<select/>')
+        .prop('multiple', 'multiple')
+        .addClass('file-dialog-select');
+    $file_div.append($lbl_div);
+    $lbl_div.append($lbl);
+    $file_div.append($select_div);
+    $select_div.append($select);
+    var file_select = {
+        $div: $file_div,
+        $select: $select,
+        update: function(values){
+            file_select.$select.html('');
+            for(var i=0; i<values.length; i++){
+                var $option = $('<option/>')
+                    .html(values[i])
+                    .val(values[i]);
+                file_select.$select.append($option);
+            }
+        }
+    }
+    
+    return file_select;
+}
+
+Toyz.Core.oldinitFileDialog=function(options){
     if(!options.hasOwnProperty('element') || !options.hasOwnProperty('websocket')){
         alert("An html element and websocket must be specified to open a file dialog!");
         return {};
@@ -290,7 +464,7 @@ Toyz.Core.initFileDialog=function(options){
             };
             fileDialog.websocket.sendTask(
                 {
-                    module:"web_utils",
+                    module:"toyz.web.tasks",
                     task:"load_directory",
                     parameters:{
                         path:path
