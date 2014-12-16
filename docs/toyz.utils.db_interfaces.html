@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>toyz.utils.db_interfaces package &mdash; Toyz 0.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">Toyz 0.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="toyz-utils-db-interfaces-package">
+<h1>toyz.utils.db_interfaces package<a class="headerlink" href="#toyz-utils-db-interfaces-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-toyz.utils.db_interfaces.sqlite_interface">
+<span id="toyz-utils-db-interfaces-sqlite-interface-module"></span><h2>toyz.utils.db_interfaces.sqlite_interface module<a class="headerlink" href="#module-toyz.utils.db_interfaces.sqlite_interface" title="Permalink to this headline">¶</a></h2>
+<p>Interface to sqlite
+Copyright 2014 by Fred Moolekamp
+License: MIT</p>
+<dl class="function">
+<dt id="toyz.utils.db_interfaces.sqlite_interface.check_user_type">
+<tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">check_user_type</tt><big>(</big><em>param_type</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.check_user_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db_interfaces.sqlite_interface.create_toyz_database">
+<tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">create_toyz_database</tt><big>(</big><em>db_settings</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.create_toyz_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new toyz database</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db_interfaces.sqlite_interface.delete_param">
+<tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">delete_param</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>wildcards=False</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.delete_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db_interfaces.sqlite_interface.get_all_ids">
+<tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">get_all_ids</tt><big>(</big><em>db_settings</em>, <em>user_type</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.get_all_ids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db_interfaces.sqlite_interface.get_param">
+<tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">get_param</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>wildcards=False</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.get_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db_interfaces.sqlite_interface.get_path_info">
+<tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">get_path_info</tt><big>(</big><em>db_settings</em>, <em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.get_path_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db_interfaces.sqlite_interface.get_table_names">
+<tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">get_table_names</tt><big>(</big><em>db_settings</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.get_table_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all tables in the database. This is not a required part of the API but
+can be very useful for debugging purposes.</p>
+<dl class="docutils">
+<dt>db_settings: object</dt>
+<dd><ul class="first last simple">
+<li>Database settings</li>
+</ul>
+</dd>
+</dl>
+<dl class="docutils">
+<dt>tables: list</dt>
+<dd><ul class="first last simple">
+<li>List of table names in the current database</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db_interfaces.sqlite_interface.init">
+<tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">init</tt><big>(</big><em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Because some databases might need to have their connections initialized, every 
+database interface is require to have an init function, even if it is empty, that
+is called when the application is first opened</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db_interfaces.sqlite_interface.update_all_params">
+<tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">update_all_params</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.update_all_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db_interfaces.sqlite_interface.update_param">
+<tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">update_param</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.update_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-toyz.utils.db_interfaces">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-toyz.utils.db_interfaces" title="Permalink to this headline">¶</a></h2>
+<p>Common non-package specific utility functions</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">toyz.utils.db_interfaces package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-toyz.utils.db_interfaces.sqlite_interface">toyz.utils.db_interfaces.sqlite_interface module</a></li>
+<li><a class="reference internal" href="#module-toyz.utils.db_interfaces">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/toyz.utils.db_interfaces.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">Toyz 0.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Fred Moolekamp.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

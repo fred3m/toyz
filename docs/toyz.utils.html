@@ -1,0 +1,928 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>toyz.utils package &mdash; Toyz 0.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">Toyz 0.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="toyz-utils-package">
+<h1>toyz.utils package<a class="headerlink" href="#toyz-utils-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="toyz.utils.db_interfaces.html">toyz.utils.db_interfaces package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="toyz.utils.db_interfaces.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz.utils.db_interfaces.html#module-toyz.utils.db_interfaces.sqlite_interface">toyz.utils.db_interfaces.sqlite_interface module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz.utils.db_interfaces.html#module-toyz.utils.db_interfaces">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-toyz.utils.core">
+<span id="toyz-utils-core-module"></span><h2>toyz.utils.core module<a class="headerlink" href="#module-toyz.utils.core" title="Permalink to this headline">¶</a></h2>
+<p>Core classes and functions for Toyz
+Copyright 2014 by Fred Moolekamp
+License: MIT</p>
+<dl class="class">
+<dt id="toyz.utils.core.Toy">
+<em class="property">class </em><tt class="descclassname">toyz.utils.core.</tt><tt class="descname">Toy</tt><big>(</big><em>toy</em>, <em>module=None</em>, <em>path=None</em>, <em>config=None</em>, <em>key=None</em><big>)</big><a class="headerlink" href="#toyz.utils.core.Toy" title="Permalink to this definition">¶</a></dt>
+<dd><p>A toy built on the toyz framework.</p>
+<dl class="method">
+<dt id="toyz.utils.core.Toy.reload">
+<tt class="descname">reload</tt><big>(</big><em>module</em><big>)</big><a class="headerlink" href="#toyz.utils.core.Toy.reload" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.utils.core.ToyzClass">
+<em class="property">class </em><tt class="descclassname">toyz.utils.core.</tt><tt class="descname">ToyzClass</tt><big>(</big><em>dict_in</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzClass" title="Permalink to this definition">¶</a></dt>
+<dd><p>I often prefer to work with classes rather than dictionaries. To allow
+these objects to be pickled they must be as a defined class, so this is 
+simply a class that converts a dictionary into a class.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.utils.core.ToyzJobQueue">
+<em class="property">class </em><tt class="descclassname">toyz.utils.core.</tt><tt class="descname">ToyzJobQueue</tt><big>(</big><em>queue_name</em>, <em>process_count</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzJobQueue" title="Permalink to this definition">¶</a></dt>
+<dd><p>An environment for a single user to run tasks.</p>
+<dl class="method">
+<dt id="toyz.utils.core.ToyzJobQueue.add_job">
+<tt class="descname">add_job</tt><big>(</big><em>job</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzJobQueue.add_job" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="toyz.utils.core.ToyzJobQueue.close_env">
+<tt class="descname">close_env</tt><big>(</big><em>interrupt_jobs=False</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzJobQueue.close_env" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="toyz.utils.core.ToyzJobQueue.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzJobQueue.initialize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="toyz.utils.core.ToyzJobQueue.job_worker">
+<tt class="descname">job_worker</tt><big>(</big><em>queue</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzJobQueue.job_worker" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.utils.core.ToyzSettings">
+<em class="property">class </em><tt class="descclassname">toyz.utils.core.</tt><tt class="descname">ToyzSettings</tt><big>(</big><em>config_root_path=None</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzSettings" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="toyz.utils.core.ToyzSettings.first_time_setup">
+<tt class="descname">first_time_setup</tt><big>(</big><em>config_root_path</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzSettings.first_time_setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initial setup of the Toyz application and creation of files the first time it&#8217;s run.</p>
+<dl class="docutils">
+<dt>config_root_path: string</dt>
+<dd><ul class="first last simple">
+<li>Root path of the new Toyz instance</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.utils.core.ToyzSettings.load_settings">
+<tt class="descname">load_settings</tt><big>(</big><em>config_path</em>, <em>security_key=None</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzSettings.load_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load settings. If toyz_settings.security.encrypt_config is <cite>True</cite>, 
+the settings file will be decrypted (this requires a securiity key).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.utils.core.ToyzSettings.save_settings">
+<tt class="descname">save_settings</tt><big>(</big><em>security_key=None</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzSettings.save_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the toyz settings to disk. If toyz_settings.security.encrypt_config is <cite>True</cite>, 
+the settings file will be encrypted (this requires a security key).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.utils.core.ToyzUser">
+<em class="property">class </em><tt class="descclassname">toyz.utils.core.</tt><tt class="descname">ToyzUser</tt><big>(</big><em>toyz_settings</em>, <em>**user_settings</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzUser" title="Permalink to this definition">¶</a></dt>
+<dd><p>User logged into the Toyz web application</p>
+<dl class="method">
+<dt id="toyz.utils.core.ToyzUser.add_toyz">
+<tt class="descname">add_toyz</tt><big>(</big><em>toyz</em>, <em>paths</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzUser.add_toyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a toyz from a list of packages and/or a list of paths on the server</p>
+<dl class="docutils">
+<dt>toyz: list</dt>
+<dd><ul class="first simple">
+<li>elements are either names of packages built on the toyz framework or dictionaries,</li>
+</ul>
+<p class="last">where the keys are names to identify each package and the values are
+package names.</p>
+</dd>
+<dt>paths: dict of strings</dt>
+<dd><ul class="first last simple">
+<li>Keys are names to identify each toy</li>
+<li>Values are paths to modules that have not been packaged but fit the toyz framework</li>
+</ul>
+</dd>
+</dl>
+<p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.check4keys">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">check4keys</tt><big>(</big><em>myDict</em>, <em>keys</em><big>)</big><a class="headerlink" href="#toyz.utils.core.check4keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>check4key</p>
+<p>Checks a dictionary for a set of required keys</p>
+<dl class="docutils">
+<dt>myDict: dictionary</dt>
+<dd>-Dictionary to be searched</dd>
+<dt>keys: list</dt>
+<dd>-List of keys to search for in the dictionary</dd>
+</dl>
+<p>No returns but the function raises a JobError and lists all required keys missing 
+from the dictionary</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.check_instance">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">check_instance</tt><big>(</big><em>obj</em>, <em>instances</em><big>)</big><a class="headerlink" href="#toyz.utils.core.check_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if an object is an instance of another object</p>
+<dl class="docutils">
+<dt>obj: object</dt>
+<dd><ul class="first last simple">
+<li>Object to check</li>
+</ul>
+</dd>
+<dt>instances: list</dt>
+<dd><ul class="first last simple">
+<li>List of objects to crosscheck with obj</li>
+</ul>
+</dd>
+</dl>
+<dl class="docutils">
+<dt>is_instance: bool</dt>
+<dd><ul class="first last simple">
+<li>True if the obj is an instances of one of the objects in the list, false otherwise</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.check_pwd">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">check_pwd</tt><big>(</big><em>toyz_settings</em>, <em>user_id</em>, <em>pwd</em><big>)</big><a class="headerlink" href="#toyz.utils.core.check_pwd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check to see if a users password matches the one on file.</p>
+<dl class="docutils">
+<dt>users: list of toyz.ToyzUser</dt>
+<dd><ul class="first last simple">
+<li>Users for the current application</li>
+</ul>
+</dd>
+<dt>toyz_settings: toyz.ToyzSettings</dt>
+<dd><ul class="first last simple">
+<li>Settings for the current application</li>
+</ul>
+</dd>
+<dt>user_id: string</dt>
+<dd><ul class="first last simple">
+<li>Id of the user logging in</li>
+</ul>
+</dd>
+<dt>pwd: string</dt>
+<dd><ul class="first last simple">
+<li>password the user has entered</li>
+</ul>
+</dd>
+</dl>
+<dl class="docutils">
+<dt>valid_login: bool</dt>
+<dd><ul class="first last simple">
+<li>Return is True if the user name and password</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.check_user_shortcuts">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">check_user_shortcuts</tt><big>(</big><em>toyz_settings</em>, <em>user_id</em>, <em>shortcuts=None</em><big>)</big><a class="headerlink" href="#toyz.utils.core.check_user_shortcuts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that a user has all of the default shortcuts</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.create_paths">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">create_paths</tt><big>(</big><em>paths</em><big>)</big><a class="headerlink" href="#toyz.utils.core.create_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search for paths on the server. If a path does not exist, create the necessary directories.
+For example, if paths=[&#8216;~/Documents/images/2014-6-5_data/&#8217;] and only the path 
+&#8216;~/Documents&#8217; exists, both &#8216;~/Documents/images/&#8217; and &#8216;~/Documents/images/2014-6-5_data/&#8217;
+are created.</p>
+<dl class="docutils">
+<dt>paths: string or list of strings</dt>
+<dd>-If paths is a string, this is the path to search for and create. If paths is a list, 
+each one is a path to search for and create</dd>
+</dl>
+<blockquote>
+<div>-None</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.encrypt_pwd">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">encrypt_pwd</tt><big>(</big><em>toyz_settings</em>, <em>pwd</em><big>)</big><a class="headerlink" href="#toyz.utils.core.encrypt_pwd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the passlib module to create a hash for the given password</p>
+<dl class="docutils">
+<dt>toyz_settings: toyz.ToyzSettings</dt>
+<dd><ul class="first last simple">
+<li>Settings for the current application</li>
+</ul>
+</dd>
+<dt>pwd: string</dt>
+<dd><ul class="first last simple">
+<li>password the user has entered</li>
+</ul>
+</dd>
+</dl>
+<dl class="docutils">
+<dt>pwd_hash: string</dt>
+<dd><ul class="first last simple">
+<li>Password hash to be stored for the given password</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.get_bool">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">get_bool</tt><big>(</big><em>prompt</em><big>)</big><a class="headerlink" href="#toyz.utils.core.get_bool" title="Permalink to this definition">¶</a></dt>
+<dd><p>prompt a user for a boolean expression and repeat until a valid boolean
+has been entered.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.get_user_type">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">get_user_type</tt><big>(</big><em>params</em><big>)</big><a class="headerlink" href="#toyz.utils.core.get_user_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.normalize_path">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">normalize_path</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.core.normalize_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format bash symbols like <cite>~</cite>, <cite>.</cite>, <cite>..</cite> into a full absolute path</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.run_job">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">run_job</tt><big>(</big><em>toyz_settings</em>, <em>job</em><big>)</big><a class="headerlink" href="#toyz.utils.core.run_job" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
+and flagged as an ToyzError and sent back to the client who initiated the job. 
+All job functions will take exactly 3 parameters: id,params,websocket. The id is the 
+user, session, and request id information (see below), params is a dictionary of 
+parameters sent by the client, and websocket is the current websocket processing the job. 
+Each job is run as a new process, so any modules imported should be removed from memory 
+when the job has completed.</p>
+<dl class="docutils">
+<dt>toyz_settings: toyz.ToyzSettings</dt>
+<dd><ul class="first simple">
+<li>Settings for the application runnning the job (may be needed to load user info</li>
+</ul>
+<p class="last">or check permissions)</p>
+</dd>
+<dt>job: dictionary</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>The job received from the user. The following keys are required:</dt>
+<dd><dl class="first docutils">
+<dt>id: dictionary</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>dictionary that contains the following keys:</dt>
+<dd><dl class="first last docutils">
+<dt>user_id: string</dt>
+<dd><ul class="first last simple">
+<li>Unique identifier of the current user</li>
+</ul>
+</dd>
+<dt>session_id: string</dt>
+<dd><p class="first last">-Unique identifier of the current session</p>
+</dd>
+<dt>request_id: string</dt>
+<dd><p class="first last">-Unique identifier for the current request sent by the client</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>module: string</dt>
+<dd><ul class="first last simple">
+<li>Python module that contains the function called by the client</li>
+</ul>
+</dd>
+<dt>task: string</dt>
+<dd><ul class="first last simple">
+<li>Function called by the client</li>
+</ul>
+</dd>
+<dt>parameters: dictionary</dt>
+<dd><ul class="first last simple">
+<li>Dictionary of required and optional parameters passed to the function</li>
+</ul>
+</dd>
+</dl>
+<p>}
+comms: object</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>For now this is always a WebSocketHandler, used to send</li>
+</ul>
+<p>responses to the client. In a possible future environment where
+the web app and job app are separate programs connect via a db,
+this would be an object that writes to a table in the db, triggering
+an event on the web server that sends the message to the client</p>
+</div></blockquote>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Optional keys:</dt>
+<dd><dl class="first last docutils">
+<dt>batch: unknown</dt>
+<dd><ul class="first simple">
+<li>The presence of this key indicates that the job will be sent to an</li>
+</ul>
+<p class="last">external job application for processing in a queue (not yet implemented).
+When implemented this will either be a boolean flag (job[&#8216;batch&#8217;]=True for
+a batch job) or a string containing either the name of a queue or a priority
+level (low, medium, high, etc).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>There are no returns from the function but a dictionary is sent to the client.
+response: dictionary</p>
+<blockquote>
+<div><ul class="simple">
+<li>Response is either an empty dictionary or one that contains (at a minimum)</li>
+</ul>
+<p>the key &#8216;id&#8217;, which is used by the client to identify the type of response it is 
+receiving. Including the key <cite>request_completed</cite> with a <cite>True</cite> value tells the
+client that the current request has finished and may be removed from the queue.
+- An optional key &#8216;update_app&#8217; may be included in the response if any attributes
+of the main application have been changed and need to be updated. The value of the
+field is a list of attributes from the main application that need to be updated
+once the job has completed.</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>A client might send the following job to the server:</dt>
+<dd><dl class="first docutils">
+<dt>job = {</dt>
+<dd><dl class="first docutils">
+<dt>id <span class="classifier-delimiter">:</span> <span class="classifier">{</span></dt>
+<dd>userId : &#8216;Fred&#8217;,
+sessionId : &#8216;12&#8217;,
+requestId : 305</dd>
+</dl>
+<p>},
+module : &#8216;fitsviewer&#8217;,
+task : &#8216;loadHeader&#8217;,
+parameters : {</p>
+<blockquote>
+<div>fileId : &#8216;fhv66yugjgvj*^&amp;^$vjkvkfhfct%^%##$f$hgkjh&#8217;,
+frame : 0</div></blockquote>
+<p class="last">}</p>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+<p>In this case, after receiving the job, this function will import the &#8216;fitsviewer&#8217; module 
+(if it has not been imported already) and run the function 
+&#8216;loadHeader(job[&#8216;id&#8217;],job[&#8216;parameters&#8217;],self)&#8217;. If there are any errors in loading the header,
+a response of the form</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>response = {</dt>
+<dd>&#8216;id&#8217; : &#8216;ERROR&#8217;,
+&#8216;error&#8217; : &#8216;Error message here for unable to lead header&#8217;,
+&#8216;traceback&#8217; : traceback.format_exec()</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>is sent. If the header is loaded correctly a rsponse of the form</dt>
+<dd><dl class="first docutils">
+<dt>response = {</dt>
+<dd>&#8216;id&#8217; : &#8216;fitsHeader&#8217;,
+&#8216;fileId&#8217; : &#8216;fhv66yugjgvj*^&amp;^$vjkvkfhfct%^%##$f$hgkjh&#8217;,
+&#8216;frame&#8217; : 0,
+&#8216;header&#8217; : python_list,
+&#8216;request_completed&#8217;: True</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+<p>is sent to the client.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.str_2_bool">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">str_2_bool</tt><big>(</big><em>bool_str</em><big>)</big><a class="headerlink" href="#toyz.utils.core.str_2_bool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Case independent function to convert a string representation of a 
+boolean (true/false, yes/no) into a bool.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-toyz.utils.db">
+<span id="toyz-utils-db-module"></span><h2>toyz.utils.db module<a class="headerlink" href="#module-toyz.utils.db" title="Permalink to this headline">¶</a></h2>
+<p>Utilities that may be necessary for all database interfaces
+Copyright 2014 by Fred Moolekamp
+License: MIT</p>
+<dl class="function">
+<dt id="toyz.utils.db.check_chars">
+<tt class="descclassname">toyz.utils.db.</tt><tt class="descname">check_chars</tt><big>(</big><em>err_flag</em>, <em>*lists</em><big>)</big><a class="headerlink" href="#toyz.utils.db.check_chars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if every value in every list is alpha-numeric</p>
+<dl class="docutils">
+<dt>err_flag: boolean</dt>
+<dd><ul class="first simple">
+<li>If err_flag is True, an exception will be raised if the field is not alpha_numeric.</li>
+</ul>
+<p class="last">If err_flag is False, the function will return False</p>
+</dd>
+<dt>lists: lists</dt>
+<dd><ul class="first last simple">
+<li>Each list in lists must be a list of strings, each one a keyword to verify if it is alpha-numeric</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db.create_toyz_database">
+<tt class="descclassname">toyz.utils.db.</tt><tt class="descname">create_toyz_database</tt><big>(</big><em>db_settings</em><big>)</big><a class="headerlink" href="#toyz.utils.db.create_toyz_database" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db.db_func">
+<tt class="descclassname">toyz.utils.db.</tt><tt class="descname">db_func</tt><big>(</big><em>db_settings</em>, <em>func</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db.db_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function from a database outside of the database API</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db.delete_param">
+<tt class="descclassname">toyz.utils.db.</tt><tt class="descname">delete_param</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db.delete_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a parameter from the database</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db.get_all_ids">
+<tt class="descclassname">toyz.utils.db.</tt><tt class="descname">get_all_ids</tt><big>(</big><em>db_settings</em>, <em>user_type</em><big>)</big><a class="headerlink" href="#toyz.utils.db.get_all_ids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db.get_param">
+<tt class="descclassname">toyz.utils.db.</tt><tt class="descname">get_param</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db.get_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a parameter from the database.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db.get_path_info">
+<tt class="descclassname">toyz.utils.db.</tt><tt class="descname">get_path_info</tt><big>(</big><em>db_settings</em>, <em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.db.get_path_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db.init">
+<tt class="descclassname">toyz.utils.db.</tt><tt class="descname">init</tt><big>(</big><em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db.init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db.update_all_params">
+<tt class="descclassname">toyz.utils.db.</tt><tt class="descname">update_all_params</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db.update_all_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.db.update_param">
+<tt class="descclassname">toyz.utils.db.</tt><tt class="descname">update_param</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db.update_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update a parameter with a single value, list of values, or dictionary.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-toyz.utils.errors">
+<span id="toyz-utils-errors-module"></span><h2>toyz.utils.errors module<a class="headerlink" href="#module-toyz.utils.errors" title="Permalink to this headline">¶</a></h2>
+<p>Error classes for Toyz
+Copyright 2014 by Fred Moolekamp
+License: MIT</p>
+<dl class="exception">
+<dt id="toyz.utils.errors.Error">
+<em class="property">exception </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">Error</tt><a class="headerlink" href="#toyz.utils.errors.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="http://docs.python.org/library/exceptions.html#exceptions.Exception" title="(in Python v2.7)"><tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></a></p>
+<p>Error</p>
+<p>Base class for custom errors related to the running of Toyz</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="toyz.utils.errors.ToyzDbError">
+<em class="property">exception </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">ToyzDbError</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.utils.errors.ToyzDbError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.utils.errors.ToyzError" title="toyz.utils.errors.ToyzError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzError</span></tt></a></p>
+<p>ToyzError</p>
+<p>Class for errors initiating in the Toyz Database Interface</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="toyz.utils.errors.ToyzError">
+<em class="property">exception </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">ToyzError</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.utils.errors.ToyzError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.utils.errors.Error" title="toyz.utils.errors.Error"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.Error</span></tt></a></p>
+<p>ToyzError</p>
+<p>Class for custom errors related to the running of Toyz.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="toyz.utils.errors.ToyzJobError">
+<em class="property">exception </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">ToyzJobError</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.utils.errors.ToyzJobError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.utils.errors.ToyzError" title="toyz.utils.errors.ToyzError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzError</span></tt></a></p>
+<p>ToyzError</p>
+<p>Class for errors initiating in the Toyz Job Queue</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.utils.errors.ToyzWarning">
+<em class="property">class </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">ToyzWarning</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.utils.errors.ToyzWarning" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="toyz.utils.errors.ToyzWebError">
+<em class="property">exception </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">ToyzWebError</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.utils.errors.ToyzWebError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.utils.errors.ToyzError" title="toyz.utils.errors.ToyzError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzError</span></tt></a></p>
+<p>ToyzError</p>
+<p>Class for errors initiating in the Toyz Web Application</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-toyz.utils.file_access">
+<span id="toyz-utils-file-access-module"></span><h2>toyz.utils.file_access module<a class="headerlink" href="#module-toyz.utils.file_access" title="Permalink to this headline">¶</a></h2>
+<p>Utilities to access path and file permissions for the server
+Copyright 2014 by Fred Moolekamp
+License: MIT</p>
+<dl class="function">
+<dt id="toyz.utils.file_access.format_path">
+<tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">format_path</tt><big>(</big><em>path_info</em>, <em>user</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.format_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>When saving permissions for a path, creating and modify any required entries.</p>
+<dl class="docutils">
+<dt>path_info: dict</dt>
+<dd><ul class="first simple">
+<li>Permissions for a path</li>
+<li>Every path should have an <cite>owner</cite>, a dictionary of <cite>users</cite>, and a recursive flag.</li>
+<li>If <cite>recursive</cite> is set to True, all child directories will be given the</li>
+</ul>
+<p class="last">same permissions
+- Each users dict should have a &#8216;*&#8217; entry, which represents all users.</p>
+</dd>
+</dl>
+<p>user: ToyzUser</p>
+<dl class="docutils">
+<dt>path_info: dict</dt>
+<dd><ul class="first last simple">
+<li>Modified path_info with default included for any missing fields</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.file_access.get_all_parents">
+<tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">get_all_parents</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.get_all_parents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a list with all of the parent directories of the file or path</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.file_access.get_file_permissions">
+<tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">get_file_permissions</tt><big>(</big><em>db_settings</em>, <em>path</em>, <em>**user</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.get_file_permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all of the permissions for a given path</p>
+<dl class="docutils">
+<dt>db_settings: object</dt>
+<dd><ul class="first last simple">
+<li>Database settings</li>
+</ul>
+</dd>
+<dt>path: string</dt>
+<dd><ul class="first last simple">
+<li>Path to check for permissions</li>
+</ul>
+</dd>
+<dt>user: dict</dt>
+<dd><ul class="first last simple">
+<li>Key is either &#8216;user_id&#8217; or &#8216;group_id&#8217;, value is the user_id or group_id</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.file_access.get_parent_permissions">
+<tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">get_parent_permissions</tt><big>(</big><em>db_settings</em>, <em>path</em>, <em>**user</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.get_parent_permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the permissions of the given path. If it doesn&#8217;t have any permissions
+explicitely set, descend a tree and find the first parent directory with permissions set.</p>
+<dl class="docutils">
+<dt>db_settings: object</dt>
+<dd><ul class="first last simple">
+<li>Database settings</li>
+</ul>
+</dd>
+<dt>path: string</dt>
+<dd><ul class="first last simple">
+<li>Path to begin search for permissions</li>
+</ul>
+</dd>
+<dt>user: dict</dt>
+<dd><ul class="first last simple">
+<li>Key is either &#8216;user_id&#8217; or &#8216;group_id&#8217;, value is the user_id or group_id</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.file_access.get_path_tree">
+<tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">get_path_tree</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.get_path_tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all of the sub directories of path</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.file_access.get_roots">
+<tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">get_roots</tt><big>(</big><em>db_module</em>, <em>user</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.get_roots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the root path for each tree in the users directory structure. This is useful since not
+all of the users available paths may have a common directory.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.file_access.split_path">
+<tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">split_path</tt><big>(</big><em>path_in</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.split_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split a path into a list of its folders</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.file_access.update_file_permissions">
+<tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">update_file_permissions</tt><big>(</big><em>db_settings</em>, <em>user</em>, <em>paths</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.update_file_permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create or modify the permissions of a file or path. Only the admin or owner of a folder can
+change these. If a user is creating permissions for a new folder, that user must have
+execute permissions (&#8216;x&#8217;) to the parent directory the path is being created in. If a user
+has r, w, or x access he/she will automatically have f access, even if it is not explicitely given.
+By default, permissions are not recursive (child directories do not inherit permissions).</p>
+<dl class="docutils">
+<dt>db_settings: object</dt>
+<dd><ul class="first last simple">
+<li>Database settings</li>
+</ul>
+</dd>
+<dt>user: object</dt>
+<dd><ul class="first last simple">
+<li>Toyz user</li>
+</ul>
+</dd>
+<dt>paths: dict of dicts</dt>
+<dd><ul class="first last">
+<li><p class="first">The keys of the top level dictionary are the paths</p>
+</li>
+<li><dl class="first docutils">
+<dt>Each path has a dictionary with 1 mandatory and two optional keys:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>users: dict</dt>
+<dd><ul class="first simple">
+<li>permissions for the folder</li>
+<li>Each key is a user, with values for that users permisions</li>
+</ul>
+<dl class="last docutils">
+<dt>-Notes:</dt>
+<dd><ul class="first last simple">
+<li>&#8216;*&#8217; represents all users, and defaults to &#8216;&#8217; (no permissions)</li>
+<li>The admin account has &#8216;frwx&#8217; permissions for all paths unless explicitely forbidden</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>groups: dict</dt>
+<dd><ul class="first last simple">
+<li>Same as users but contains group permissions</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>owner: string, optional</dt>
+<dd><ul class="first last simple">
+<li>owner of the folder</li>
+<li>defaults to the user supplied above</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>recursive: boolean, optional</dt>
+<dd><ul class="first last simple">
+<li>whether or not the children of the folder will inherit permissions</li>
+<li>defaults to True</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Example:</dt>
+<dd><dl class="first docutils">
+<dt>paths = {</dt>
+<dd><dl class="first docutils">
+<dt>&#8216;~/toyz/folder1&#8217;: {</dt>
+<dd><dl class="first docutils">
+<dt>&#8216;users&#8217;: {</dt>
+<dd><p class="first last">&#8216;*&#8217;: &#8216;fr&#8217;,          # all unspecified users can find and read files from the path 
+&#8216;usr1&#8217;: &#8216;frwx       # usr1 has full access to the path</p>
+</dd>
+</dl>
+<p class="last">},
+&#8216;recursive&#8217;: True       # all sub-directories will be set to the same permissions</p>
+</dd>
+</dl>
+<p>},
+&#8216;~/toyz/folder1/secret.txt&#8217;: {</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>&#8216;users&#8217;: {</dt>
+<dd><p class="first last">&#8216;*&#8217;: &#8216;&#8217;,            # all unspecified users have no access to the file
+&#8216;admin&#8217;: &#8216;&#8217;         # even the admin user has no access to this file</p>
+</dd>
+</dl>
+<p>},
+&#8216;groups&#8217;: {</p>
+<blockquote>
+<div><p>&#8216;trusted&#8217;: &#8216;fr&#8217;     # all members of this group can find and read the file</p>
+</div></blockquote>
+<p>}
+&#8216;owner&#8217;: &#8216;usr2&#8217;         # usr2 will automatically have full access</p>
+</div></blockquote>
+<p class="last">}</p>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="docutils">
+<dt>invalid_paths: list</dt>
+<dd><ul class="first simple">
+<li>Paths that either don&#8217;t exist, or the user doesn&#8217;t have permission to change permissions.</li>
+</ul>
+<p class="last">There is no distinction between the two to prevent a user from attempting to guess someone
+else&#8217;s tree</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-toyz.utils.security">
+<span id="toyz-utils-security-module"></span><h2>toyz.utils.security module<a class="headerlink" href="#module-toyz.utils.security" title="Permalink to this headline">¶</a></h2>
+<p>Security Functions for Toyz
+Copyright 2014 by Fred Moolekamp
+License: MIT</p>
+<dl class="function">
+<dt id="toyz.utils.security.decrypt_pickle">
+<tt class="descclassname">toyz.utils.security.</tt><tt class="descname">decrypt_pickle</tt><big>(</big><em>app_settings</em>, <em>key</em><big>)</big><a class="headerlink" href="#toyz.utils.security.decrypt_pickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the provided key to decrypt the config file. Not yet supported</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.security.encrypt_pickle">
+<tt class="descclassname">toyz.utils.security.</tt><tt class="descname">encrypt_pickle</tt><big>(</big><em>app_settings</em><big>)</big><a class="headerlink" href="#toyz.utils.security.encrypt_pickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encrypt the app settings using a config file. Not yet supported</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-toyz.utils.third_party_settings">
+<span id="toyz-utils-third-party-settings-module"></span><h2>toyz.utils.third_party_settings module<a class="headerlink" href="#module-toyz.utils.third_party_settings" title="Permalink to this headline">¶</a></h2>
+<p>Settings for 3rd party web libraries
+Copyright 2014 by Fred Moolekamp
+License: MIT</p>
+</div>
+<div class="section" id="module-toyz.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-toyz.utils" title="Permalink to this headline">¶</a></h2>
+<p>Common non-package specific utility functions</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">toyz.utils package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-toyz.utils.core">toyz.utils.core module</a></li>
+<li><a class="reference internal" href="#module-toyz.utils.db">toyz.utils.db module</a></li>
+<li><a class="reference internal" href="#module-toyz.utils.errors">toyz.utils.errors module</a></li>
+<li><a class="reference internal" href="#module-toyz.utils.file_access">toyz.utils.file_access module</a></li>
+<li><a class="reference internal" href="#module-toyz.utils.security">toyz.utils.security module</a></li>
+<li><a class="reference internal" href="#module-toyz.utils.third_party_settings">toyz.utils.third_party_settings module</a></li>
+<li><a class="reference internal" href="#module-toyz.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/toyz.utils.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">Toyz 0.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Fred Moolekamp.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

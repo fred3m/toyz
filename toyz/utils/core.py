@@ -305,7 +305,7 @@ def run_job(toyz_settings, job):
     Example
     -------
     A client might send the following job to the server:
-        job = {
+        ``job = {
             id : {
                 userId : 'Fred',
                 sessionId : '12',
@@ -317,25 +317,25 @@ def run_job(toyz_settings, job):
                 fileId : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
                 frame : 0
             }
-        }
+        }``
 
     In this case, after receiving the job, this function will import the 'fitsviewer' module 
     (if it has not been imported already) and run the function 
     'loadHeader(job['id'],job['parameters'],self)'. If there are any errors in loading the header,
     a response of the form
-        response = {
+        ``response = {
             'id' : 'ERROR',
             'error' : 'Error message here for unable to lead header',
             'traceback' : traceback.format_exec()
-        }
+        }``
     is sent. If the header is loaded correctly a rsponse of the form
-        response = {
+        ``response = {
             'id' : 'fitsHeader',
             'fileId' : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
             'frame' : 0,
             'header' : python_list,
             'request_completed': True
-        }
+        }``
     is sent to the client.
     """
     # TODO: Eventually a job should be added to the jobs dictionary and removed after the response has been sent
