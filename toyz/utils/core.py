@@ -329,7 +329,7 @@ def run_job(toyz_settings, job):
     ``load_directory(toyz_settings, job['id'],job['parameters'])``. If there are any errors in 
     loading the directory, a response of the form
     
-    ..code-block:: python
+    .. code-block:: python
     
         response = {
             'id' : 'ERROR',
@@ -338,7 +338,7 @@ def run_job(toyz_settings, job):
         }
     is sent. If the directory is loaded correctly a rsponse of the form
     
-    ..code-block:: python
+    .. code-block:: python
     
         response={
             'id': 'directory',
