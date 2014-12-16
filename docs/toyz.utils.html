@@ -416,29 +416,22 @@ of the main application have been changed and need to be updated. The value of t
 field is a list of attributes from the main application that need to be updated
 once the job has completed.</p>
 </div></blockquote>
-<p>A client might send the following job to the server:
-.. code-block:: python</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>job = {</dt>
-<dd><dl class="first docutils">
-<dt>id <span class="classifier-delimiter">:</span> <span class="classifier">{</span></dt>
-<dd>userId : &#8216;Fred&#8217;,
-sessionId : &#8216;12&#8217;,
-requestId : 305</dd>
-</dl>
-<p>},
-module : &#8216;fitsviewer&#8217;,
-task : &#8216;loadHeader&#8217;,
-parameters : {</p>
-<blockquote>
-<div>fileId : &#8216;fhv66yugjgvj*^&amp;^$vjkvkfhfct%^%##$f$hgkjh&#8217;,
-frame : 0</div></blockquote>
-<p class="last">}</p>
-</dd>
-</dl>
-<p>}</p>
-</div></blockquote>
+<p>A client might send the following job to the server:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">job</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nb">id</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="n">userId</span> <span class="p">:</span> <span class="s">&#39;Fred&#39;</span><span class="p">,</span>
+        <span class="n">sessionId</span> <span class="p">:</span> <span class="s">&#39;12&#39;</span><span class="p">,</span>
+        <span class="n">requestId</span> <span class="p">:</span> <span class="mi">305</span>
+    <span class="p">},</span>
+    <span class="n">module</span> <span class="p">:</span> <span class="s">&#39;fitsviewer&#39;</span><span class="p">,</span>
+    <span class="n">task</span> <span class="p">:</span> <span class="s">&#39;loadHeader&#39;</span><span class="p">,</span>
+    <span class="n">parameters</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="n">fileId</span> <span class="p">:</span> <span class="s">&#39;fhv66yugjgvj*^&amp;^$vjkvkfhfct%^%##$f$hgkjh&#39;</span><span class="p">,</span>
+        <span class="n">frame</span> <span class="p">:</span> <span class="mi">0</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <p>In this case, after receiving the job, this function will import the &#8216;fitsviewer&#8217; module 
 (if it has not been imported already) and run the function 
 &#8216;loadHeader(job[&#8216;id&#8217;],job[&#8216;parameters&#8217;],self)&#8217;. If there are any errors in loading the header,

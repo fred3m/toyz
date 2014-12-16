@@ -246,9 +246,10 @@ def run_job(toyz_settings, job):
     """
     Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
     and flagged as an ToyzError and sent back to the client who initiated the job. 
-    All job functions will take exactly 3 parameters: id,params,websocket. The id is the 
-    user, session, and request id information (see below), params is a dictionary of 
-    parameters sent by the client, and websocket is the current websocket processing the job. 
+    All job functions will take exactly 3 parameters: toyz_settings, tid, params. The tid is the 
+    task id (user, session, and request id) information (see below), params is a dictionary of 
+    parameters sent by the client. 
+    
     Each job is run as a new process, so any modules imported should be removed from memory 
     when the job has completed.
 
@@ -256,7 +257,7 @@ def run_job(toyz_settings, job):
     ----------
     toyz_settings: toyz.ToyzSettings
         - Settings for the application runnning the job (may be needed to load user info 
-        or check permissions)
+          or check permissions)
     job: dictionary
         - The job received from the user. The following keys are required:
             id: dictionary
@@ -276,68 +277,75 @@ def run_job(toyz_settings, job):
             }
             comms: object
                 - For now this is always a WebSocketHandler, used to send
-                responses to the client. In a possible future environment where
-                the web app and job app are separate programs connect via a db,
-                this would be an object that writes to a table in the db, triggering
-                an event on the web server that sends the message to the client
+                  responses to the client. In a possible future environment where
+                  the web app and job app are separate programs connect via a db,
+                  this would be an object that writes to a table in the db, triggering
+                  an event on the web server that sends the message to the client
         - Optional keys:
             batch: unknown
                 - The presence of this key indicates that the job will be sent to an
-                external job application for processing in a queue (not yet implemented).
-                When implemented this will either be a boolean flag (job['batch']=True for
-                a batch job) or a string containing either the name of a queue or a priority
-                level (low, medium, high, etc).
+                  external job application for processing in a queue (not yet implemented).
+                  When implemented this will either be a boolean flag (job['batch']=True for
+                  a batch job) or a string containing either the name of a queue or a priority
+                  level (low, medium, high, etc).
 
     Returns
     -------
     There are no returns from the function but a dictionary is sent to the client.
     response: dictionary
         - Response is either an empty dictionary or one that contains (at a minimum) 
-        the key 'id', which is used by the client to identify the type of response it is 
-        receiving. Including the key `request_completed` with a `True` value tells the
-        client that the current request has finished and may be removed from the queue.
+          the key 'id', which is used by the client to identify the type of response it is 
+          receiving. Including the key `request_completed` with a `True` value tells the
+          client that the current request has finished and may be removed from the queue.
         - An optional key 'update_app' may be included in the response if any attributes
-        of the main application have been changed and need to be updated. The value of the
-        field is a list of attributes from the main application that need to be updated
-        once the job has completed.
+          of the main application have been changed and need to be updated. The value of the
+          field is a list of attributes from the main application that need to be updated
+          once the job has completed.
 
     Example
     -------
     A client might send the following job to the server:
     
-    .. code-block:: python
+    .. code-block:: javascript
     
         job = {
             id : {
-                userId : 'Fred',
-                sessionId : '12',
-                requestId : 305
+                user_id : 'Iggy',
+                session_id : '12',
+                request_id : 305
             },
-            module : 'fitsviewer',
-            task : 'loadHeader',
+            module : 'toyz.web.tasks',
+            task : 'load_directory',
             parameters : {
-                fileId : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
-                frame : 0
+                path: '~/images'
             }
         }
 
-    In this case, after receiving the job, this function will import the 'fitsviewer' module 
+    In this case, after receiving the job, this function will import the toyz.web.tasks_ module 
     (if it has not been imported already) and run the function 
-    'loadHeader(job['id'],job['parameters'],self)'. If there are any errors in loading the header,
-    a response of the form
-        ``response = {
+    ``load_directory(toyz_settings, job['id'],job['parameters'])``. If there are any errors in 
+    loading the directory, a response of the form
+    
+    ..code-block:: python
+    
+        response = {
             'id' : 'ERROR',
-            'error' : 'Error message here for unable to lead header',
+            'error' : 'Error message here for unable to lead directory',
             'traceback' : traceback.format_exec()
-        }``
-    is sent. If the header is loaded correctly a rsponse of the form
-        ``response = {
-            'id' : 'fitsHeader',
-            'fileId' : 'fhv66yugjgvj*^&^$vjkvkfhfct%^%##$f$hgkjh',
-            'frame' : 0,
-            'header' : python_list,
-            'request_completed': True
-        }``
+        }
+    is sent. If the directory is loaded correctly a rsponse of the form
+    
+    ..code-block:: python
+    
+        response={
+            'id': 'directory',
+            'path': '~/images/proj1',
+            'shortcuts': ['user', 'temp', 'home'],
+            'folders': ['proj1', 'proj2'],
+            'files': [],
+            'parent': '~/images'
+        }
+    
     is sent to the client.
     """
     # TODO: Eventually a job should be added to the jobs dictionary and removed after the response has been sent
