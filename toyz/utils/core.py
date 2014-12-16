@@ -259,17 +259,16 @@ def run_job(toyz_settings, job):
               or check permissions)
         job: *dict*
             - The job received from the user. Each job will contain the following keys:
-            - ``id``: Dictionary with unique values for the given job. These are the
+            - ``id`` (*dict*): Unique values for the given job. These are the
               **user_id**, the id of the user loaded from a secure cookie; the
               **session_id**, a unique identifier for the websocket; and the
               **request_id**, a unique identifier for the current request, sent from the client
-            - ``module``: Name of the Python module that contains the function called by the 
-              client. In order for a module to work for a user, he/she must either have
+            - ``module`` (*str*): Name of the Python module that contains the function called 
+              by the client. In order for a module to work for a user, he/she must either have
               permissions set to view the module or belong to a group with permissions set
               to view the module (including *all_users*).
-            - ``task``: Name of the function called by the client
-            - ``parameters``: Dictionary of required and optional parameters passed to the 
-               function.
+            - ``task`` (*str*): Name of the function called by the client
+            - ``parameters`` (*dict*): Required and optional parameters passed to the function.
     
     Returns
         result: *dict*
