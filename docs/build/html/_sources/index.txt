@@ -14,6 +14,8 @@ Contents:
 .. automodule:: toyz
     :members:
 
+.. automodapi:: toyz
+
 Indices and tables
 ==================
 
