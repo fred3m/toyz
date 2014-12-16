@@ -373,7 +373,7 @@ they are operating on groups or users.</p>
 <dl class="function">
 <dt id="toyz.utils.core.normalize_path">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">normalize_path</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.core.normalize_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format a path with bash symbols like <strong>~</strong> , <strong>.</strong> , <strong>..</strong> into a full absolute path. This
+<dd><p>Format a path with bash symbols like &#8216;<strong>~</strong>&#8216; , &#8216;<strong>.</strong>&#8216; , &#8216;<strong>..</strong>&#8216; into a full absolute path. This
 simply returns <tt class="docutils literal"><span class="pre">os.path.abspath(os.path.expanduser(path))</span></tt> .</p>
 </dd></dl>
 
@@ -381,7 +381,7 @@ simply returns <tt class="docutils literal"><span class="pre">os.path.abspath(os
 <dt id="toyz.utils.core.run_job">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">run_job</tt><big>(</big><em>toyz_settings</em>, <em>job</em><big>)</big><a class="headerlink" href="#toyz.utils.core.run_job" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
-and flagged as a :py:class:toyz.utils.core.`ToyzError` and sent back to the client who 
+and flagged as a <tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errorsToyzError</span></tt> and sent back to the client who 
 initiated the job.</p>
 <p>All job functions will take exactly 3 parameters: toyz_settings, tid, params. The <strong>tid</strong> 
 is the task id (<em>user</em>, <em>session</em>, and <em>request_id</em> ) information (see below), and 

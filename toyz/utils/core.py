@@ -242,12 +242,12 @@ def check_user_shortcuts(toyz_settings, user_id, shortcuts=None):
 def run_job(toyz_settings, job):
     """
     Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
-    and flagged as a :py:class:toyz.utils.errors.`ToyzError` and sent back to the client who 
+    and flagged as a :py:class:`toyz.utils.errors.ToyzError` and sent back to the client who 
     initiated the job. 
     
-    All job functions will take exactly 3 parameters: toyz_settings, tid, params. The **tid** 
-    is the task id (*user*, *session*, and *request_id* ) information (see below), and 
-    **params** is a dictionary of parameters sent by the client. 
+    All job functions will take exactly 3 parameters: **toyz_settings**, **tid**, **params**. 
+    The **tid** is the task id (*user*, *session*, and *request_id* ) information (see below), 
+    and **params** is a dictionary of parameters sent by the client. 
     
     Each job is run as a new process, so any modules imported should be removed from memory 
     when the job has completed.
