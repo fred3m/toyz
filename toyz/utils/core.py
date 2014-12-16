@@ -304,7 +304,9 @@ def run_job(toyz_settings, job):
     Example
     -------
     A client might send the following job to the server:
+    
     .. code-block:: python
+    
         job = {
             id : {
                 userId : 'Fred',
