@@ -207,10 +207,10 @@ def load_directory(toyz_settings, tid, params):
         admin=False
     for f in os.listdir(params['path']):
         if(f[0]!='.' or show_hidden):
+            f_path =os.path.join(params['path'],f)
             if admin:
                 permission = True
             else:
-                f_path =os.path.join(params['path'],f)
                 permissions = file_access.get_parent_permissions(toyz_settings.db,
                     f_path, user_id=tid['user_id'])
                 if permissions is None:
