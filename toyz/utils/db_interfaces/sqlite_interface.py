@@ -1,8 +1,9 @@
+# Copyright 2014 by Fred Moolekamp
+# License: MIT
 """
-Interface to sqlite
-Copyright 2014 by Fred Moolekamp
-License: MIT
+Database interface to sqlite
 """
+
 from __future__ import print_function, division
 
 import os
@@ -26,6 +27,10 @@ def init(**params):
     pass
 
 def check_user_type(param_type, params):
+    """
+    Set the user_type to either user_id or group_id depending on which
+    parameter is contained in ``params``
+    """
     required = db_utils.param_formats[param_type]['required']
     if 'user_type' in required and 'user_type' not in params:
         if 'user_id' in params:
@@ -39,6 +44,9 @@ def check_user_type(param_type, params):
     return params
 
 def update_param(db_settings, param_type, **params):
+    """
+    Update a parameter. See :py:mod:`toyz.utils.db` for more info.
+    """
     db = sqlite3.connect(db_settings.path)
     param_format = db_utils.param_formats[param_type]
     tbl = param_format['tbl']
@@ -90,6 +98,9 @@ def update_param(db_settings, param_type, **params):
     return total_changes
 
 def update_all_params(db_settings, param_type, **params):
+    """
+    Update all parameters. See :py:mod:`toyz.utils.db` for more info.
+    """
     params = check_user_type(param_type, params)
     param_format = db_utils.param_formats[param_type]
     tbl = param_format['tbl']
@@ -130,6 +141,9 @@ def update_all_params(db_settings, param_type, **params):
         return update_param(db_settings, param_type, **params) + deleted
 
 def get_param(db_settings, param_type, wildcards=False, **params):
+    """
+    Get a parameter from the database. See :py:mod:`toyz.utils.db` for more info.
+    """
     db = sqlite3.connect(db_settings.path)
     param_format = db_utils.param_formats[param_type]
     check_user_type(param_type, params)
@@ -178,6 +192,10 @@ def get_param(db_settings, param_type, wildcards=False, **params):
             return [r[0] for r in results]
 
 def delete_param(db_settings, param_type, wildcards=False, **params):
+    """
+    Delete a parameter entry from the database.
+    See :py:mod:`toyz.utils.db` for more info.
+    """
     db = sqlite3.connect(db_settings.path)
     check_user_type(param_type, params)
     param_format = db_utils.param_formats[param_type]
@@ -203,7 +221,9 @@ def delete_param(db_settings, param_type, wildcards=False, **params):
 
 def create_toyz_database(db_settings):
     """
-    Creates a new toyz database
+    Creates a new toyz database with all of the necessary tables needed.
+    
+    See :py:mod:`toyz.utils.db` for more info.
     """
     if os.path.isfile(db_settings.path):
         raise ToyzDbError("Database already exists")
@@ -264,6 +284,11 @@ def create_toyz_database(db_settings):
     print("New toyz database created at '{0}'".format(db_settings.path))
 
 def get_all_ids(db_settings, user_type):
+    """
+    Get all user_ids or group_ids depending on ``user_type``.
+    
+    See :py:mod:`toyz.utils.db` for more info.
+    """
     db = sqlite3.connect(db_settings.path)
     users = db.execute('select user_id from users where user_type=?;', (user_type,))
     users = users.fetchall()
@@ -271,6 +296,11 @@ def get_all_ids(db_settings, user_type):
     return [u[0] for u in users]
 
 def get_path_info(db_settings, path):
+    """
+    Get all of the users and permissions for a given path.
+    
+    See :py:mod:`toyz.utils.db` for more info.
+    """
     db = sqlite3.connect(db_settings.path)
     cursor = db.execute('select user_id, permissions, user_type from paths where path=?', (path,))
     all_info = cursor.fetchall()
@@ -290,14 +320,10 @@ def get_table_names(db_settings):
     can be very useful for debugging purposes.
     
     Parameters
-    ----------
-    db_settings: object
-        - Database settings
+        - db_settings (*object( ): Database settings
     
     Returns
-    -------
-    tables: list
-        - List of table names in the current database
+        tables (*list*): List of table names in the current database
     """
     try:
         db = sqlite3.connect(db_settings.path)

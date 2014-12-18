@@ -111,39 +111,47 @@
 </div>
 <div class="section" id="module-toyz.utils.db_interfaces.sqlite_interface">
 <span id="toyz-utils-db-interfaces-sqlite-interface-module"></span><h2>toyz.utils.db_interfaces.sqlite_interface module<a class="headerlink" href="#module-toyz.utils.db_interfaces.sqlite_interface" title="Permalink to this headline">¶</a></h2>
-<p>Interface to sqlite
-Copyright 2014 by Fred Moolekamp
-License: MIT</p>
+<p>Database interface to sqlite</p>
 <dl class="function">
 <dt id="toyz.utils.db_interfaces.sqlite_interface.check_user_type">
 <tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">check_user_type</tt><big>(</big><em>param_type</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.check_user_type" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Set the user_type to either user_id or group_id depending on which
+parameter is contained in <tt class="docutils literal"><span class="pre">params</span></tt></p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db_interfaces.sqlite_interface.create_toyz_database">
 <tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">create_toyz_database</tt><big>(</big><em>db_settings</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.create_toyz_database" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new toyz database</p>
+<dd><p>Creates a new toyz database with all of the necessary tables needed.</p>
+<p>See <a class="reference internal" href="toyz.utils.html#module-toyz.utils.db" title="toyz.utils.db"><tt class="xref py py-mod docutils literal"><span class="pre">toyz.utils.db</span></tt></a> for more info.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db_interfaces.sqlite_interface.delete_param">
 <tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">delete_param</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>wildcards=False</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.delete_param" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Delete a parameter entry from the database.
+See <a class="reference internal" href="toyz.utils.html#module-toyz.utils.db" title="toyz.utils.db"><tt class="xref py py-mod docutils literal"><span class="pre">toyz.utils.db</span></tt></a> for more info.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db_interfaces.sqlite_interface.get_all_ids">
 <tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">get_all_ids</tt><big>(</big><em>db_settings</em>, <em>user_type</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.get_all_ids" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get all user_ids or group_ids depending on <tt class="docutils literal"><span class="pre">user_type</span></tt>.</p>
+<p>See <a class="reference internal" href="toyz.utils.html#module-toyz.utils.db" title="toyz.utils.db"><tt class="xref py py-mod docutils literal"><span class="pre">toyz.utils.db</span></tt></a> for more info.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db_interfaces.sqlite_interface.get_param">
 <tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">get_param</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>wildcards=False</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.get_param" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get a parameter from the database. See <a class="reference internal" href="toyz.utils.html#module-toyz.utils.db" title="toyz.utils.db"><tt class="xref py py-mod docutils literal"><span class="pre">toyz.utils.db</span></tt></a> for more info.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db_interfaces.sqlite_interface.get_path_info">
 <tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">get_path_info</tt><big>(</big><em>db_settings</em>, <em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.get_path_info" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get all of the users and permissions for a given path.</p>
+<p>See <a class="reference internal" href="toyz.utils.html#module-toyz.utils.db" title="toyz.utils.db"><tt class="xref py py-mod docutils literal"><span class="pre">toyz.utils.db</span></tt></a> for more info.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db_interfaces.sqlite_interface.get_table_names">
@@ -151,18 +159,13 @@ License: MIT</p>
 <dd><p>Get a list of all tables in the database. This is not a required part of the API but
 can be very useful for debugging purposes.</p>
 <dl class="docutils">
-<dt>db_settings: object</dt>
+<dt>Parameters</dt>
 <dd><ul class="first last simple">
-<li>Database settings</li>
+<li>db_settings (<a href="#id1"><span class="problematic" id="id2">*</span></a>object( ): Database settings</li>
 </ul>
 </dd>
-</dl>
-<dl class="docutils">
-<dt>tables: list</dt>
-<dd><ul class="first last simple">
-<li>List of table names in the current database</li>
-</ul>
-</dd>
+<dt>Returns</dt>
+<dd>tables (<em>list</em>): List of table names in the current database</dd>
 </dl>
 </dd></dl>
 
@@ -177,12 +180,14 @@ is called when the application is first opened</p>
 <dl class="function">
 <dt id="toyz.utils.db_interfaces.sqlite_interface.update_all_params">
 <tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">update_all_params</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.update_all_params" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Update all parameters. See <a class="reference internal" href="toyz.utils.html#module-toyz.utils.db" title="toyz.utils.db"><tt class="xref py py-mod docutils literal"><span class="pre">toyz.utils.db</span></tt></a> for more info.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.db_interfaces.sqlite_interface.update_param">
 <tt class="descclassname">toyz.utils.db_interfaces.sqlite_interface.</tt><tt class="descname">update_param</tt><big>(</big><em>db_settings</em>, <em>param_type</em>, <em>**params</em><big>)</big><a class="headerlink" href="#toyz.utils.db_interfaces.sqlite_interface.update_param" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Update a parameter. See <a class="reference internal" href="toyz.utils.html#module-toyz.utils.db" title="toyz.utils.db"><tt class="xref py py-mod docutils literal"><span class="pre">toyz.utils.db</span></tt></a> for more info.</p>
+</dd></dl>
 
 </div>
 <div class="section" id="module-toyz.utils.db_interfaces">
