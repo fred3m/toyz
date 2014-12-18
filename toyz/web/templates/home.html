@@ -246,7 +246,7 @@
                 delete params['logout'];
                 websocket.send_task({
                     module: 'toyz.web.tasks',
-                    task: 'save_user_infosend_task',
+                    task: 'save_user_info',
                     parameters: params
                 });
                 console.log('Parameters:',params);

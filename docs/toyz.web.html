@@ -108,9 +108,7 @@
 </div>
 <div class="section" id="module-toyz.web.app">
 <span id="toyz-web-app-module"></span><h2>toyz.web.app module<a class="headerlink" href="#module-toyz.web.app" title="Permalink to this headline">¶</a></h2>
-<p>Runs the webserver for Toyz
-Copyright 2014 by Fred Moolekamp
-License: MIT</p>
+<p>Runs the webapp for Toyz</p>
 <dl class="class">
 <dt id="toyz.web.app.AuthHandler">
 <em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthHandler</tt><a class="headerlink" href="#toyz.web.app.AuthHandler" title="Permalink to this definition">¶</a></dt>
@@ -471,13 +469,34 @@ to view are accepted, all others return a <a class="reference internal" href="to
 </div>
 <div class="section" id="module-toyz.web.tasks">
 <span id="toyz-web-tasks-module"></span><h2>toyz.web.tasks module<a class="headerlink" href="#module-toyz.web.tasks" title="Permalink to this headline">¶</a></h2>
-<p>Job tasks sent from web client
-Copyright 2014 by Fred Moolekamp
-License: MIT</p>
+<p>While each toy may contain a large number of functions, only the functions located in the
+<tt class="docutils literal"><span class="pre">tasks.py</span></tt> file will be callable from the job queue.</p>
 <dl class="function">
 <dt id="toyz.web.tasks.add_new_user">
 <tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">add_new_user</tt><big>(</big><em>toyz_settings</em>, <em>tid</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.add_new_user" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a new user to the toyz application</p>
+<dd><p>Add a new user to the toyz application.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (see <em>params</em> below)</li>
+</ul>
+</dd>
+<dt>Params</dt>
+<dd><ul class="first last simple">
+<li>user_id (<em>string</em> ): Id of user to add</li>
+</ul>
+</dd>
+<dt>Response</dt>
+<dd><ul class="first last simple">
+<li>id: &#8216;notification&#8217;</li>
+<li>func: &#8216;add_new_user&#8217;</li>
+<li>msg: &#8216;User/Group added correctly&#8217;</li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -485,21 +504,29 @@ License: MIT</p>
 <tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">change_pwd</tt><big>(</big><em>toyz_settings</em>, <em>tid</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.change_pwd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change a users password.</p>
 <dl class="docutils">
-<dt>current_pwd: string</dt>
+<dt>Parameters</dt>
 <dd><ul class="first last simple">
-<li>Users current password. Must match the password on file or an exception is raised</li>
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (see <em>params</em> below)</li>
 </ul>
 </dd>
-<dt>new_pwd: string</dt>
+<dt>Params</dt>
 <dd><ul class="first last simple">
-<li>New password</li>
+<li>current_pwd (<em>string</em> ):  Users current password. Must match the password on 
+file or an exception is raised</li>
+<li>new_pwd (<em>string</em> ): New password</li>
+<li>confirm_pwd (<em>string</em> ): Confirmation of the the new password. If new_pwd and 
+confirm_pwd do not match, an exception is raised</li>
 </ul>
 </dd>
-<dt>confirm_pwd: string</dt>
-<dd><ul class="first simple">
-<li>Confirmation of the the new password. If new_pwd and confirm_pwd do not</li>
+<dt>Response</dt>
+<dd><ul class="first last simple">
+<li>id: &#8216;notification&#8217;</li>
+<li>func: &#8216;change_pwd&#8217;</li>
+<li>msg: &#8216;Password changed successfully&#8217;</li>
 </ul>
-<p class="last">match, an exception is raised</p>
 </dd>
 </dl>
 </dd></dl>
@@ -507,29 +534,155 @@ License: MIT</p>
 <dl class="function">
 <dt id="toyz.web.tasks.create_dir">
 <tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">create_dir</tt><big>(</big><em>app</em>, <em>id</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.create_dir" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Creates a new path on the server (if it does not already exist).</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (see <em>params</em> below)</li>
+</ul>
+</dd>
+<dt>Params</dt>
+<dd><ul class="first last simple">
+<li>path (<em>string</em> ): path to create on the server</li>
+</ul>
+</dd>
+<dt>Response</dt>
+<dd>id: &#8216;create_folder&#8217;,
+status (<em>string</em> ): &#8216;success&#8217;,
+path (<em>string</em> ): path created on the server</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.web.tasks.load_directory">
 <tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">load_directory</tt><big>(</big><em>toyz_settings</em>, <em>tid</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.load_directory" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Used by the file browser to load the folders and files in a given path.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (see <em>params</em> below)</li>
+</ul>
+</dd>
+<dt>Params</dt>
+<dd><ul class="first last simple">
+<li>path (<em>string</em> ): Path to search</li>
+</ul>
+</dd>
+<dt>Response</dt>
+<dd><ul class="first last simple">
+<li>id: &#8216;directory&#8217;</li>
+<li>path (<em>string</em> ): path passed to the function</li>
+<li>shortcuts (<em>dict</em> ): Dictionary of <tt class="docutils literal"><span class="pre">shortcut_name:</span> <span class="pre">shortcut_path</span></tt> &#8216;s for the user</li>
+<li>folders (<em>list</em> of strings): folders contained in the path</li>
+<li>files (<em>list</em> of strings): files contained in the path</li>
+<li>parent (<em>string</em> ): parent directory of current path</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.web.tasks.load_user_info">
 <tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">load_user_info</tt><big>(</big><em>toyz_settings</em>, <em>tid</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.load_user_info" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load info for a given user from the database</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (see <em>params</em> below)</li>
+</ul>
+</dd>
+<dt>Params</dt>
+<dd><ul class="first last simple">
+<li>user_id or group_id (<em>string</em> ): User or group to load parameters for</li>
+<li>user_attr (<em>list</em> ): List of user attributes to load</li>
+</ul>
+</dd>
+<dt>Response</dt>
+<dd><ul class="first last simple">
+<li>id: &#8216;user_info&#8217;</li>
+<li>Each attribute requested by the client is also returned as a key in the
+response</li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="toyz.web.tasks.load_user_settings">
 <tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">load_user_settings</tt><big>(</big><em>toyz_settings</em>, <em>tid</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.load_user_settings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load settings for a given user</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (<strong>None</strong> for this function)</li>
+</ul>
+</dd>
+<dt>Response for all users</dt>
+<dd><ul class="first last simple">
+<li>id: &#8216;user_settings&#8217;</li>
+<li>shortcuts (<em>dict</em> ): Dictionary of <tt class="docutils literal"><span class="pre">shortcut_name:</span> <span class="pre">shortcut_path</span></tt> &#8216;s for the user</li>
+<li>workspaces (<em>dict</em> ): Dictionary of <tt class="docutils literal"><span class="pre">workspace_name:</span> <span class="pre">workspace_settings</span></tt> for the
+user</li>
+</ul>
+</dd>
+<dt>Additional response keys for users in the <strong>modify_toyz</strong> group</dt>
+<dd><ul class="first last simple">
+<li>modules (<em>list</em> ): List of toyz modules the user can run</li>
+<li>toyz (<em>dict</em> ): Dictionary of <tt class="docutils literal"><span class="pre">toy_name:</span> <span class="pre">path_to_toy</span></tt> &#8216;s that the user can run</li>
+</ul>
+</dd>
+<dt>Additional reponse keys for admins</dt>
+<dd><ul class="first last simple">
+<li>config (<em>dict</em> ): Configuration settings for the application</li>
+<li>db (<em>dict</em> ): Database settings</li>
+<li>web (<em>dict</em>): Web settings</li>
+<li>security (<em>dict</em> ): Security settings</li>
+<li>users (<em>list</em> ): list of all users in the database</li>
+<li>groups (<em>list</em> ): list of all groups in the database</li>
+<li>user_settings (<em>dict</em> ): Settings for a specified user (initially the <em>admin</em>)</li>
+<li>group_settings (<em>dict</em> ): Settings for a specified group (initially the <em>admin</em> group)</li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="toyz.web.tasks.save_user_info">
 <tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">save_user_info</tt><big>(</big><em>toyz_settings</em>, <em>tid</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.save_user_info" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save user info</p>
+<dd><p>Save a users info. If any admin settings are being changed, ensures that the user
+is in the admin group.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (see <em>params</em> below)</li>
+</ul>
+</dd>
+</dl>
+<p>Params can be any settings the user has permission to set on the server.</p>
+<dl class="docutils">
+<dt>Response</dt>
+<dd><ul class="first last simple">
+<li>id: &#8216;notification&#8217;</li>
+<li>func: &#8216;save_user_info&#8217;</li>
+<li>msg: &#8216;Settings saved for &lt;user_id&gt;&#8217;</li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
