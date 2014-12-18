@@ -1,8 +1,11 @@
 """
-Settings for 3rd party web libraries
-Copyright 2014 by Fred Moolekamp
-License: MIT
+Settings for 3rd party web libraries, including jquery, jquery_ui, jquery_ui_themes.
+These are the defaults for any third party libraries, containing version information
+and a path to the source code.
 """
+# Copyright 2014 by Fred Moolekamp
+# License: MIT
+
 from __future__ import division, print_function
 
 import os

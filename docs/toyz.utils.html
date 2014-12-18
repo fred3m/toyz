@@ -626,58 +626,33 @@ in the database not contained in <tt class="docutils literal"><span class="pre">
 </div>
 <div class="section" id="module-toyz.utils.file_access">
 <span id="toyz-utils-file-access-module"></span><h2>toyz.utils.file_access module<a class="headerlink" href="#module-toyz.utils.file_access" title="Permalink to this headline">¶</a></h2>
-<p>Utilities to access path and file permissions for the server
-Copyright 2014 by Fred Moolekamp
-License: MIT</p>
-<dl class="function">
-<dt id="toyz.utils.file_access.format_path">
-<tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">format_path</tt><big>(</big><em>path_info</em>, <em>user</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.format_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>When saving permissions for a path, creating and modify any required entries.</p>
-<dl class="docutils">
-<dt>path_info: dict</dt>
-<dd><ul class="first simple">
-<li>Permissions for a path</li>
-<li>Every path should have an <cite>owner</cite>, a dictionary of <cite>users</cite>, and a recursive flag.</li>
-<li>If <cite>recursive</cite> is set to True, all child directories will be given the</li>
-</ul>
-<p class="last">same permissions
-- Each users dict should have a &#8216;*&#8217; entry, which represents all users.</p>
-</dd>
-</dl>
-<p>user: ToyzUser</p>
-<dl class="docutils">
-<dt>path_info: dict</dt>
-<dd><ul class="first last simple">
-<li>Modified path_info with default included for any missing fields</li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
+<p>Utilities to access path and file permissions for the server.</p>
 <dl class="function">
 <dt id="toyz.utils.file_access.get_all_parents">
 <tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">get_all_parents</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.get_all_parents" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a list with all of the parent directories of the file or path</p>
+<dd><p>Create a list with all of the parent directories of the file or path.</p>
+<p>For example <tt class="docutils literal"><span class="pre">/Users/penny/Documents</span></tt> would be returned as
+<tt class="docutils literal"><span class="pre">['/Users/penny/Documents',</span> <span class="pre">'/Users/penny',</span> <span class="pre">'/Users/']</span></tt></p>
 </dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.file_access.get_file_permissions">
 <tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">get_file_permissions</tt><big>(</big><em>db_settings</em>, <em>path</em>, <em>**user</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.get_file_permissions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get all of the permissions for a given path</p>
+<dd><p>Get all of the permissions for a given path. Returns <strong>None</strong> type if no permissions have
+been set.</p>
 <dl class="docutils">
-<dt>db_settings: object</dt>
+<dt>Parameters</dt>
 <dd><ul class="first last simple">
-<li>Database settings</li>
+<li>db_settings (<em>object</em> ): Database settings</li>
+<li>path (<em>string</em> ): Path to check for permissions</li>
+<li>user (<em>dict</em> ):  Key is either <strong>user_id</strong> or <strong>group_id</strong>, value is the <em>user_id</em> or 
+<em>group_id</em></li>
 </ul>
 </dd>
-<dt>path: string</dt>
+<dt>Return</dt>
 <dd><ul class="first last simple">
-<li>Path to check for permissions</li>
-</ul>
-</dd>
-<dt>user: dict</dt>
-<dd><ul class="first last simple">
-<li>Key is either &#8216;user_id&#8217; or &#8216;group_id&#8217;, value is the user_id or group_id</li>
+<li>permissions (<em>string</em> ): Permissions for the given user for the given path.
+Returns <strong>None</strong> if no permissions have been set.</li>
 </ul>
 </dd>
 </dl>
@@ -687,21 +662,21 @@ License: MIT</p>
 <dt id="toyz.utils.file_access.get_parent_permissions">
 <tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">get_parent_permissions</tt><big>(</big><em>db_settings</em>, <em>path</em>, <em>**user</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.get_parent_permissions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the permissions of the given path. If it doesn&#8217;t have any permissions
-explicitely set, descend a tree and find the first parent directory with permissions set.</p>
+explicitely set, descend a tree and find the first parent directory with permissions set.
+If no permissions can be found, <strong>None</strong> is returned.</p>
 <dl class="docutils">
-<dt>db_settings: object</dt>
+<dt>Parameters</dt>
 <dd><ul class="first last simple">
-<li>Database settings</li>
+<li>db_settings (<em>object</em> ): Database settings</li>
+<li>path (<em>string</em> ): Path to check for permissions</li>
+<li>user (<em>dict</em> ):  Key is either <strong>user_id</strong> or <strong>group_id</strong>, value is the <em>user_id</em> or 
+<em>group_id</em></li>
 </ul>
 </dd>
-<dt>path: string</dt>
+<dt>Return</dt>
 <dd><ul class="first last simple">
-<li>Path to begin search for permissions</li>
-</ul>
-</dd>
-<dt>user: dict</dt>
-<dd><ul class="first last simple">
-<li>Key is either &#8216;user_id&#8217; or &#8216;group_id&#8217;, value is the user_id or group_id</li>
+<li>permissions (<em>string</em> ): Permissions for the given user for the given path.
+Returns <strong>None</strong> if no permissions have been set for any parent paths.</li>
 </ul>
 </dd>
 </dl>
@@ -710,147 +685,15 @@ explicitely set, descend a tree and find the first parent directory with permiss
 <dl class="function">
 <dt id="toyz.utils.file_access.get_path_tree">
 <tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">get_path_tree</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.get_path_tree" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get all of the sub directories of path</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="toyz.utils.file_access.get_roots">
-<tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">get_roots</tt><big>(</big><em>db_module</em>, <em>user</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.get_roots" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the root path for each tree in the users directory structure. This is useful since not
-all of the users available paths may have a common directory.</p>
+<dd><p>Get all of the sub directories of path.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.file_access.split_path">
 <tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">split_path</tt><big>(</big><em>path_in</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.split_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Split a path into a list of its folders</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="toyz.utils.file_access.update_file_permissions">
-<tt class="descclassname">toyz.utils.file_access.</tt><tt class="descname">update_file_permissions</tt><big>(</big><em>db_settings</em>, <em>user</em>, <em>paths</em><big>)</big><a class="headerlink" href="#toyz.utils.file_access.update_file_permissions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create or modify the permissions of a file or path. Only the admin or owner of a folder can
-change these. If a user is creating permissions for a new folder, that user must have
-execute permissions (&#8216;x&#8217;) to the parent directory the path is being created in. If a user
-has r, w, or x access he/she will automatically have f access, even if it is not explicitely given.
-By default, permissions are not recursive (child directories do not inherit permissions).</p>
-<dl class="docutils">
-<dt>db_settings: object</dt>
-<dd><ul class="first last simple">
-<li>Database settings</li>
-</ul>
-</dd>
-<dt>user: object</dt>
-<dd><ul class="first last simple">
-<li>Toyz user</li>
-</ul>
-</dd>
-<dt>paths: dict of dicts</dt>
-<dd><ul class="first last">
-<li><p class="first">The keys of the top level dictionary are the paths</p>
-</li>
-<li><dl class="first docutils">
-<dt>Each path has a dictionary with 1 mandatory and two optional keys:</dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt>users: dict</dt>
-<dd><ul class="first simple">
-<li>permissions for the folder</li>
-<li>Each key is a user, with values for that users permisions</li>
-</ul>
-<dl class="last docutils">
-<dt>-Notes:</dt>
-<dd><ul class="first last simple">
-<li>&#8216;*&#8217; represents all users, and defaults to &#8216;&#8217; (no permissions)</li>
-<li>The admin account has &#8216;frwx&#8217; permissions for all paths unless explicitely forbidden</li>
-</ul>
-</dd>
-</dl>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>groups: dict</dt>
-<dd><ul class="first last simple">
-<li>Same as users but contains group permissions</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>owner: string, optional</dt>
-<dd><ul class="first last simple">
-<li>owner of the folder</li>
-<li>defaults to the user supplied above</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>recursive: boolean, optional</dt>
-<dd><ul class="first last simple">
-<li>whether or not the children of the folder will inherit permissions</li>
-<li>defaults to True</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>Example:</dt>
-<dd><dl class="first docutils">
-<dt>paths = {</dt>
-<dd><dl class="first docutils">
-<dt>&#8216;~/toyz/folder1&#8217;: {</dt>
-<dd><dl class="first docutils">
-<dt>&#8216;users&#8217;: {</dt>
-<dd><p class="first last">&#8216;*&#8217;: &#8216;fr&#8217;,          # all unspecified users can find and read files from the path 
-&#8216;usr1&#8217;: &#8216;frwx       # usr1 has full access to the path</p>
-</dd>
-</dl>
-<p class="last">},
-&#8216;recursive&#8217;: True       # all sub-directories will be set to the same permissions</p>
-</dd>
-</dl>
-<p>},
-&#8216;~/toyz/folder1/secret.txt&#8217;: {</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>&#8216;users&#8217;: {</dt>
-<dd><p class="first last">&#8216;*&#8217;: &#8216;&#8217;,            # all unspecified users have no access to the file
-&#8216;admin&#8217;: &#8216;&#8217;         # even the admin user has no access to this file</p>
-</dd>
-</dl>
-<p>},
-&#8216;groups&#8217;: {</p>
-<blockquote>
-<div><p>&#8216;trusted&#8217;: &#8216;fr&#8217;     # all members of this group can find and read the file</p>
-</div></blockquote>
-<p>}
-&#8216;owner&#8217;: &#8216;usr2&#8217;         # usr2 will automatically have full access</p>
-</div></blockquote>
-<p class="last">}</p>
-</dd>
-</dl>
-<p class="last">}</p>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-<dl class="docutils">
-<dt>invalid_paths: list</dt>
-<dd><ul class="first simple">
-<li>Paths that either don&#8217;t exist, or the user doesn&#8217;t have permission to change permissions.</li>
-</ul>
-<p class="last">There is no distinction between the two to prevent a user from attempting to guess someone
-else&#8217;s tree</p>
-</dd>
-</dl>
+<dd><p>Splits a path into a list of its folders.</p>
+<p>For example <tt class="docutils literal"><span class="pre">/Users/penny/Documents</span></tt> would
+be returned as <tt class="docutils literal"><span class="pre">['Users',</span> <span class="pre">'penny',</span> <span class="pre">'Documents']</span></tt></p>
 </dd></dl>
 
 </div>
@@ -874,9 +717,9 @@ License: MIT</p>
 </div>
 <div class="section" id="module-toyz.utils.third_party_settings">
 <span id="toyz-utils-third-party-settings-module"></span><h2>toyz.utils.third_party_settings module<a class="headerlink" href="#module-toyz.utils.third_party_settings" title="Permalink to this headline">¶</a></h2>
-<p>Settings for 3rd party web libraries
-Copyright 2014 by Fred Moolekamp
-License: MIT</p>
+<p>Settings for 3rd party web libraries, including jquery, jquery_ui, jquery_ui_themes.
+These are the defaults for any third party libraries, containing version information
+and a path to the source code.</p>
 </div>
 <div class="section" id="module-toyz.utils">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-toyz.utils" title="Permalink to this headline">¶</a></h2>

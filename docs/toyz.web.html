@@ -114,7 +114,8 @@ License: MIT</p>
 <dl class="class">
 <dt id="toyz.web.app.AuthHandler">
 <em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthHandler</tt><a class="headerlink" href="#toyz.web.app.AuthHandler" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>Subclass for all secure handlers.</p>
+<dl class="method">
 <dt id="toyz.web.app.AuthHandler.get_current_user">
 <tt class="descname">get_current_user</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.AuthHandler.get_current_user" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the name of the current user</p>
@@ -141,7 +142,8 @@ License: MIT</p>
 <dl class="method">
 <dt id="toyz.web.app.AuthLoginHandler.post">
 <tt class="descname">post</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.AuthLoginHandler.post" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the userId and password passed to the server from the client and check authentication</p>
+<dd><p>Load the user_id and password passed to the server from the client and 
+check authentication</p>
 </dd></dl>
 
 <dl class="method">
@@ -149,13 +151,9 @@ License: MIT</p>
 <tt class="descname">set_current_user</tt><big>(</big><em>user_id</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthLoginHandler.set_current_user" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a secure cookie to the client to keep the user logged into the system</p>
 <dl class="docutils">
-<dt>userId: string</dt>
-<dd><ul class="first last simple">
-<li>User id of the current user</li>
-</ul>
-</dd>
+<dt>Parameters</dt>
+<dd>user_id (<em>string</em> ): User id of the current user</dd>
 </dl>
-<p>None</p>
 </dd></dl>
 
 </dd></dl>
@@ -176,6 +174,7 @@ License: MIT</p>
 <dt id="toyz.web.app.AuthMainHandler">
 <em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthMainHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthMainHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#toyz.web.app.MainHandler" title="toyz.web.app.MainHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.MainHandler</span></tt></a></p>
+<p><a class="reference internal" href="#toyz.web.app.MainHandler" title="toyz.web.app.MainHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.MainHandler</span></tt></a> extensions when using secure cookies.</p>
 <dl class="method">
 <dt id="toyz.web.app.AuthMainHandler.get">
 <tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthMainHandler.get" title="Permalink to this definition">¶</a></dt>
@@ -187,6 +186,8 @@ License: MIT</p>
 <dt id="toyz.web.app.AuthStaticFileHandler">
 <em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthStaticFileHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthStaticFileHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#toyz.web.app.AuthHandler" title="toyz.web.app.AuthHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.AuthHandler</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">tornado.web.StaticFileHandler</span></tt></p>
+<p>Handles static files and checks for a secure user cookie and that the user
+has permission to view the file.</p>
 <dl class="method">
 <dt id="toyz.web.app.AuthStaticFileHandler.get">
 <tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthStaticFileHandler.get" title="Permalink to this definition">¶</a></dt>
@@ -204,6 +205,8 @@ License: MIT</p>
 <dt id="toyz.web.app.AuthToyzStaticFileHandler">
 <em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthToyzStaticFileHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthToyzStaticFileHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#toyz.web.app.AuthHandler" title="toyz.web.app.AuthHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.AuthHandler</span></tt></a>, <a class="reference internal" href="#toyz.web.app.ToyzStaticFileHandler" title="toyz.web.app.ToyzStaticFileHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.ToyzStaticFileHandler</span></tt></a></p>
+<p>Secure handler for all toyz added to the application. This handles security, such as making 
+sure the user has a registered cookie and that the user has acces to the requested files.</p>
 <dl class="method">
 <dt id="toyz.web.app.AuthToyzStaticFileHandler.get">
 <tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthToyzStaticFileHandler.get" title="Permalink to this definition">¶</a></dt>
@@ -226,16 +229,19 @@ License: MIT</p>
 <dt id="toyz.web.app.MainHandler">
 <em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">MainHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.MainHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#toyz.web.app.ToyzHandler" title="toyz.web.app.ToyzHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.ToyzHandler</span></tt></a></p>
-<p>Main Handler when user connects to <cite>localhost:8888/</cite></p>
+<p>Main Handler when user connects to <strong>localhost:8888/</strong> (or whatever port is used by the
+application).</p>
 <dl class="method">
 <dt id="toyz.web.app.MainHandler.get">
 <tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.MainHandler.get" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Render the main web page</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="toyz.web.app.MainHandler.get_template_path">
 <tt class="descname">get_template_path</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.MainHandler.get_template_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get the path for the main webpage</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="toyz.web.app.MainHandler.initialize">
@@ -249,6 +255,7 @@ License: MIT</p>
 <dt id="toyz.web.app.ToyzHandler">
 <em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">ToyzHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">tornado.web.RequestHandler</span></tt></p>
+<p><em>Not yet implemented</em></p>
 <dl class="method">
 <dt id="toyz.web.app.ToyzHandler.get_current_user">
 <tt class="descname">get_current_user</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzHandler.get_current_user" title="Permalink to this definition">¶</a></dt>
@@ -258,7 +265,7 @@ License: MIT</p>
 <dl class="method">
 <dt id="toyz.web.app.ToyzHandler.get_toyz_path">
 <tt class="descname">get_toyz_path</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzHandler.get_toyz_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given a toyz path, return the root path for the toy</p>
+<dd><p>Given a toyz path, return the root path for the toy.</p>
 </dd></dl>
 
 <dl class="method">
@@ -272,12 +279,12 @@ License: MIT</p>
 <dt id="toyz.web.app.ToyzStaticFileHandler">
 <em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">ToyzStaticFileHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzStaticFileHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#toyz.web.app.ToyzHandler" title="toyz.web.app.ToyzHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.ToyzHandler</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">tornado.web.StaticFileHandler</span></tt></p>
-<p>Secure handler for all toyz added to the application. This handles security, such as making 
-sure the user has a registered cookie and that the user has acces to the requested files.</p>
+<p>Handler for all toyz added to the application.</p>
 <dl class="method">
 <dt id="toyz.web.app.ToyzStaticFileHandler.get">
 <tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzStaticFileHandler.get" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Called when the application recieves a <strong>get</strong> command from the client.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -285,6 +292,9 @@ sure the user has a registered cookie and that the user has acces to the request
 <dt id="toyz.web.app.ToyzTemplateHandler">
 <em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">ToyzTemplateHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzTemplateHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#toyz.web.app.ToyzHandler" title="toyz.web.app.ToyzHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.ToyzHandler</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">tornado.web.RequestHandler</span></tt></p>
+<ul class="simple">
+<li>Not yet implemented*</li>
+</ul>
 <dl class="method">
 <dt id="toyz.web.app.ToyzTemplateHandler.get">
 <tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzTemplateHandler.get" title="Permalink to this definition">¶</a></dt>
@@ -307,35 +317,45 @@ sure the user has a registered cookie and that the user has acces to the request
 <dt id="toyz.web.app.ToyzWebApp">
 <em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">ToyzWebApp</tt><a class="headerlink" href="#toyz.web.app.ToyzWebApp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">tornado.web.Application</span></tt></p>
+<p>Web application that runs on the server. Along with setting up the Tornado web application,
+it also processes jobs sent to the server from clients.</p>
 <dl class="method">
 <dt id="toyz.web.app.ToyzWebApp.close_session">
 <tt class="descname">close_session</tt><big>(</big><em>session</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzWebApp.close_session" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Close a websocket session and delete any temporary files or directories
+created during the session. To help ensure all temp files are deleted (in
+case of a server or client error), if the user doesn&#8217;t have any open session 
+his/her <strong>temp</strong> directory is also deleted.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="toyz.web.app.ToyzWebApp.find_open_port">
 <tt class="descname">find_open_port</tt><big>(</big><em>port</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzWebApp.find_open_port" title="Permalink to this definition">¶</a></dt>
-<dd><p>Begin at <cite>port</cite> and search for an open port on the server</p>
+<dd><p>Begin at <tt class="docutils literal"><span class="pre">port</span></tt> and search for an open port on the server</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="toyz.web.app.ToyzWebApp.new_session">
 <tt class="descname">new_session</tt><big>(</big><em>user_id</em>, <em>websocket</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzWebApp.new_session" title="Permalink to this definition">¶</a></dt>
 <dd><p>Open a new websocket session for a given user</p>
-<p>user_id: ToyzUser
-websocket: WebSocketHandler</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd>user_id ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzUser" title="toyz.utils.core.ToyzUser"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzUser</span></tt></a> ): User id
+websocket (<a class="reference internal" href="#toyz.web.app.WebSocketHandler" title="toyz.web.app.WebSocketHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.WebSocketHandler</span></tt></a> ): new websocket opened</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="toyz.web.app.ToyzWebApp.process_job">
 <tt class="descname">process_job</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzWebApp.process_job" title="Permalink to this definition">¶</a></dt>
 <dd><p>Currently all jobs are run directly from the web app. Later a job server
-will be implemented that will maintain a queue of long duration jobs, so this 
+might be implemented that will maintain a queue of long duration jobs, so this 
 function will be used to tag the batch jobs and send them to the job application.</p>
 <dl class="docutils">
-<dt>msg: dict</dt>
+<dt>Parameters</dt>
 <dd><ul class="first last simple">
-<li>Message sent from web client (see core.run_job for the format of the msg)</li>
+<li>msg (<em>dict</em>): Message sent from web client (see 
+<a class="reference internal" href="toyz.utils.html#toyz.utils.core.run_job" title="toyz.utils.core.run_job"><tt class="xref py py-func docutils literal"><span class="pre">toyz.utils.core.run_job()</span></tt></a> for the format of the msg)</li>
 </ul>
 </dd>
 </dl>
@@ -344,12 +364,13 @@ function will be used to tag the batch jobs and send them to the job application
 <dl class="method">
 <dt id="toyz.web.app.ToyzWebApp.respond">
 <tt class="descname">respond</tt><big>(</big><em>response</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzWebApp.respond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Once a job has completed, included jobs run by an external job application, 
-send the response to the user. Also, updated any objects that need to be updated</p>
+<dd><p>Once a job has completed, including jobs run by an external job application, 
+send the response to the user. Also, update any objects that need to be updated.</p>
 <dl class="docutils">
-<dt>response: dict</dt>
+<dt>Parameters</dt>
 <dd><ul class="first last simple">
-<li>Message to send to the user. See <cite>core.run_job</cite> for the format of a response</li>
+<li>response (<em>dict</em> ): Message to send to the user.
+See <a class="reference internal" href="toyz.utils.html#toyz.utils.core.run_job" title="toyz.utils.core.run_job"><tt class="xref py py-func docutils literal"><span class="pre">toyz.utils.core.run_job()</span></tt></a> for the format of the msg.</li>
 </ul>
 </dd>
 </dl>
@@ -362,17 +383,20 @@ send the response to the user. Also, updated any objects that need to be updated
 job and parameters to the process. This function is actually a generator of a
 <cite>Future()</cite> object, so the exception <cite>tornado.gen.Return</cite> is raised to return
 the result.</p>
+<p>In the future this function will be modified to be threaded for certain
+types of web applications, allowing variables to be passed more easily and
+stored in work environments when that type of usage is prefereable.</p>
 <dl class="docutils">
-<dt>msg: dict</dt>
+<dt>Parameters</dt>
 <dd><ul class="first last simple">
-<li>Message sent from web client (see core.run_job for the format of the msg)</li>
+<li>msg (<em>dict</em>): Message sent from web client (see 
+<a class="reference internal" href="toyz.utils.html#toyz.utils.core.run_job" title="toyz.utils.core.run_job"><tt class="xref py py-func docutils literal"><span class="pre">toyz.utils.core.run_job()</span></tt></a> for the format of the msg)</li>
 </ul>
 </dd>
-</dl>
-<dl class="docutils">
-<dt>result: future containing a dictionary</dt>
+<dt>Returns</dt>
 <dd><ul class="first last simple">
-<li>Message to send back to the user. If there is no response, then <cite>result={}</cite></li>
+<li>result (<em>future</em> containing a <em>dict</em> ): Message to send back to the user. 
+If there is no response, then <tt class="docutils literal"><span class="pre">result={}</span></tt></li>
 </ul>
 </dd>
 </dl>
@@ -385,6 +409,14 @@ the result.</p>
 for example a user may change his/her password, a new user may be created,
 a setting may be changed, etc. When this happens the job notifies the application
 that something has changed and this function is called to reload the property.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>attr (<em>string</em> ): Name of attribute that needs to be updated. So far 
+only <strong>toyz_settings</strong> is supported</li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -397,73 +429,25 @@ that something has changed and this function is called to reload the property.</
 <dl class="method">
 <dt id="toyz.web.app.WebSocketHandler.on_close">
 <tt class="descname">on_close</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.WebSocketHandler.on_close" title="Permalink to this definition">¶</a></dt>
-<dd><p>on_close is called when the websocket is closed. Eventually this function will delete 
-all temporary files being used by the users current session and delete entries in global 
-variables such as openSessions, openFits, etc</p>
-<p>None</p>
-<p>None</p>
+<dd><p>Called when the websocket is closed. This function calls the applications
+<tt class="xref py py-func docutils literal"><span class="pre">-toyz.web.app.ToyzWebApp.close_session)()</span></tt> function.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="toyz.web.app.WebSocketHandler.on_message">
 <tt class="descname">on_message</tt><big>(</big><em>message</em><big>)</big><a class="headerlink" href="#toyz.web.app.WebSocketHandler.on_message" title="Permalink to this definition">¶</a></dt>
-<dd><p>on_message is called when the websocket recieves a message from the client. 
+<dd><p>Called when the websocket recieves a message from the client. 
 The user and session information is then extracted and processed before running the 
-job initiated by the client.</p>
+job initiated by the client. Only <tt class="docutils literal"><span class="pre">modules</span></tt> and <tt class="docutils literal"><span class="pre">toyz</span></tt> that the user has permission
+to view are accepted, all others return a <a class="reference internal" href="toyz.utils.html#toyz.utils.errors.ToyzJobError" title="toyz.utils.errors.ToyzJobError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzJobError</span></tt></a> .</p>
 <dl class="docutils">
-<dt>message: JSON unicode string</dt>
-<dd><ul class="first simple">
-<li>Websockets pass json objects from a client to the server. The input message is the</li>
-</ul>
-<p>json unicode string received by the server from the client that has not yet been 
-decoded.
-- The server expects all messages (after decoding from JSON) to be a dictionary with 
-the following keys:</p>
-<blockquote class="last">
-<div><dl class="docutils">
-<dt>id: dictionary</dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt>dictionary that contains the following keys:</dt>
-<dd><dl class="first last docutils">
-<dt>userId: string</dt>
+<dt>Parameters</dt>
 <dd><ul class="first last simple">
-<li>Unique identifier of the current user</li>
-</ul>
-</dd>
-<dt>sessionId: string</dt>
-<dd><p class="first last">-Unique identifier of the current session</p>
-</dd>
-<dt>requestId: string</dt>
-<dd><p class="first last">-Unique identifier for the current request sent by the client</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-<dt>module: string</dt>
-<dd><ul class="first last simple">
-<li>Python module that contains the function called by the client</li>
-</ul>
-</dd>
-<dt>task: string</dt>
-<dd><ul class="first last simple">
-<li>Function called by the client</li>
-</ul>
-</dd>
-<dt>parameters: dictionary</dt>
-<dd><ul class="first last simple">
-<li>Dictionary of required and optional parameters passed to the function</li>
+<li>message (<em>JSON unicode string</em> ): see(
+<a class="reference internal" href="toyz.utils.html#toyz.utils.core.run_job" title="toyz.utils.core.run_job"><tt class="xref py py-func docutils literal"><span class="pre">toyz.utils.core.run_job()</span></tt></a> for the format of the msg)</li>
 </ul>
 </dd>
 </dl>
-<p>}</p>
-</div></blockquote>
-</dd>
-</dl>
-<p>None</p>
 </dd></dl>
 
 <dl class="method">
@@ -471,8 +455,8 @@ the following keys:</p>
 <tt class="descname">open</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#toyz.web.app.WebSocketHandler.open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when a new websocket is opened</p>
 <dl class="docutils">
-<dt><a href="#id1"><span class="problematic" id="id2">*</span></a>args:</dt>
-<dd>Currently I don&#8217;t pass any arguments to this function</dd>
+<dt>Parameters</dt>
+<dd><a href="#id1"><span class="problematic" id="id2">*</span></a>args: Currently no arguments are passed to this function</dd>
 </dl>
 </dd></dl>
 
