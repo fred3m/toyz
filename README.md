@@ -2,7 +2,7 @@ Toyz for Data Analysis and Reduction
 ====================================
 
 What is Toyz?
-=============
+-------------
 Toyz was initially created as a way to view and interact with FITS images stored on a remote 
 server, as well as perform data reduction needed for my PhD. I couldn't find any easy to use
 and well documented astronomy tools for this task so I set out to create my own application.
@@ -19,12 +19,12 @@ development of toyz (think of it as a mission statement):
        it on his/her first day!
 
 Documentation
-=============
+-------------
 See the [documentation](http://fred3m.github.io/toyz/) for information on installing and
 getting started with Toyz.
 
 More Coming Soon
-================
+----------------
 This package is being converted from [astropyp](https://github.com/fred3m/astropyp) and 
 [astro_pypelines](https://github.com/fred3m/astro_pypelines) into a more complete 
 (and less specialized) data analysis package. This is an ongoing process and many
