@@ -1,0 +1,757 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>toyz.web package &mdash; Toyz 0.0.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> Toyz</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#what-is-toyz">What is Toyz?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#possible-use-cases">Possible Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#third-party-software">Third Party Software</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#first-time-setup">First Time Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#running-a-toyz-application">Running a Toyz Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#configuring-a-new-toyz-web-application">Configuring a New Toyz Web Application</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Toyz</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>toyz.web package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/toyz.web.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="toyz-web-package">
+<h1>toyz.web package<a class="headerlink" href="#toyz-web-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-toyz.web.app">
+<span id="toyz-web-app-module"></span><h2>toyz.web.app module<a class="headerlink" href="#module-toyz.web.app" title="Permalink to this headline">¶</a></h2>
+<p>Runs the webapp for Toyz</p>
+<dl class="class">
+<dt id="toyz.web.app.AuthHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthHandler</tt><a class="headerlink" href="#toyz.web.app.AuthHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subclass for all secure handlers.</p>
+<dl class="method">
+<dt id="toyz.web.app.AuthHandler.get_current_user">
+<tt class="descname">get_current_user</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.AuthHandler.get_current_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the name of the current user</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.web.app.AuthLoginHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthLoginHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthLoginHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.web.app.AuthHandler" title="toyz.web.app.AuthHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.AuthHandler</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">tornado.web.RequestHandler</span></tt></p>
+<dl class="method">
+<dt id="toyz.web.app.AuthLoginHandler.get">
+<tt class="descname">get</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.AuthLoginHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the login.html page to the client</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.AuthLoginHandler.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.AuthLoginHandler.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>When the handler is initialized, set the path to the template that needs to be rendered</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.AuthLoginHandler.post">
+<tt class="descname">post</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.AuthLoginHandler.post" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the user_id and password passed to the server from the client and 
+check authentication</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.AuthLoginHandler.set_current_user">
+<tt class="descname">set_current_user</tt><big>(</big><em>user_id</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthLoginHandler.set_current_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a secure cookie to the client to keep the user logged into the system</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd>user_id (<em>string</em> ): User id of the current user</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.web.app.AuthLogoutHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthLogoutHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthLogoutHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">tornado.web.RequestHandler</span></tt></p>
+<dl class="method">
+<dt id="toyz.web.app.AuthLogoutHandler.get">
+<tt class="descname">get</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.AuthLogoutHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear the users cookie and log them out</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.web.app.AuthMainHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthMainHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthMainHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.web.app.MainHandler" title="toyz.web.app.MainHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.MainHandler</span></tt></a></p>
+<p><a class="reference internal" href="#toyz.web.app.MainHandler" title="toyz.web.app.MainHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.MainHandler</span></tt></a> extensions when using secure cookies.</p>
+<dl class="method">
+<dt id="toyz.web.app.AuthMainHandler.get">
+<tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthMainHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.web.app.AuthStaticFileHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthStaticFileHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthStaticFileHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.web.app.AuthHandler" title="toyz.web.app.AuthHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.AuthHandler</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">tornado.web.StaticFileHandler</span></tt></p>
+<p>Handles static files and checks for a secure user cookie and that the user
+has permission to view the file.</p>
+<dl class="method">
+<dt id="toyz.web.app.AuthStaticFileHandler.get">
+<tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthStaticFileHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.AuthStaticFileHandler.validate_absolute_path">
+<tt class="descname">validate_absolute_path</tt><big>(</big><em>root</em>, <em>full_path</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthStaticFileHandler.validate_absolute_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that the user has permission to view the file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.web.app.AuthToyzStaticFileHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthToyzStaticFileHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthToyzStaticFileHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.web.app.AuthHandler" title="toyz.web.app.AuthHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.AuthHandler</span></tt></a>, <a class="reference internal" href="#toyz.web.app.ToyzStaticFileHandler" title="toyz.web.app.ToyzStaticFileHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.ToyzStaticFileHandler</span></tt></a></p>
+<p>Secure handler for all toyz added to the application. This handles security, such as making 
+sure the user has a registered cookie and that the user has acces to the requested files.</p>
+<dl class="method">
+<dt id="toyz.web.app.AuthToyzStaticFileHandler.get">
+<tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthToyzStaticFileHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.web.app.AuthToyzTemplateHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthToyzTemplateHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthToyzTemplateHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.web.app.AuthHandler" title="toyz.web.app.AuthHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.AuthHandler</span></tt></a>, <a class="reference internal" href="#toyz.web.app.ToyzTemplateHandler" title="toyz.web.app.ToyzTemplateHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.ToyzTemplateHandler</span></tt></a></p>
+<dl class="method">
+<dt id="toyz.web.app.AuthToyzTemplateHandler.get">
+<tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthToyzTemplateHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.web.app.MainHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">MainHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.MainHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.web.app.ToyzHandler" title="toyz.web.app.ToyzHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.ToyzHandler</span></tt></a></p>
+<p>Main Handler when user connects to <strong>localhost:8888/</strong> (or whatever port is used by the
+application).</p>
+<dl class="method">
+<dt id="toyz.web.app.MainHandler.get">
+<tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.MainHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Render the main web page</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.MainHandler.get_template_path">
+<tt class="descname">get_template_path</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.MainHandler.get_template_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the path for the main webpage</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.MainHandler.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>template_name</em>, <em>template_path</em><big>)</big><a class="headerlink" href="#toyz.web.app.MainHandler.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize handler</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.web.app.ToyzHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">ToyzHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">tornado.web.RequestHandler</span></tt></p>
+<p><em>Not yet implemented</em></p>
+<dl class="method">
+<dt id="toyz.web.app.ToyzHandler.get_current_user">
+<tt class="descname">get_current_user</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzHandler.get_current_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the name of the current user</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.ToyzHandler.get_toyz_path">
+<tt class="descname">get_toyz_path</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzHandler.get_toyz_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a toyz path, return the root path for the toy.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.ToyzHandler.get_user_id">
+<tt class="descname">get_user_id</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzHandler.get_user_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.web.app.ToyzStaticFileHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">ToyzStaticFileHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzStaticFileHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.web.app.ToyzHandler" title="toyz.web.app.ToyzHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.ToyzHandler</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">tornado.web.StaticFileHandler</span></tt></p>
+<p>Handler for all toyz added to the application.</p>
+<dl class="method">
+<dt id="toyz.web.app.ToyzStaticFileHandler.get">
+<tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzStaticFileHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the application recieves a <strong>get</strong> command from the client.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.web.app.ToyzTemplateHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">ToyzTemplateHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzTemplateHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.web.app.ToyzHandler" title="toyz.web.app.ToyzHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.ToyzHandler</span></tt></a>, <tt class="xref py py-class docutils literal"><span class="pre">tornado.web.RequestHandler</span></tt></p>
+<ul class="simple">
+<li>Not yet implemented*</li>
+</ul>
+<dl class="method">
+<dt id="toyz.web.app.ToyzTemplateHandler.get">
+<tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzTemplateHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.ToyzTemplateHandler.get_template_path">
+<tt class="descname">get_template_path</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzTemplateHandler.get_template_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.ToyzTemplateHandler.initialize">
+<tt class="descname">initialize</tt><big>(</big><em>**options</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzTemplateHandler.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize handler</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.web.app.ToyzWebApp">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">ToyzWebApp</tt><a class="headerlink" href="#toyz.web.app.ToyzWebApp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">tornado.web.Application</span></tt></p>
+<p>Web application that runs on the server. Along with setting up the Tornado web application,
+it also processes jobs sent to the server from clients.</p>
+<dl class="method">
+<dt id="toyz.web.app.ToyzWebApp.close_session">
+<tt class="descname">close_session</tt><big>(</big><em>session</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzWebApp.close_session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close a websocket session and delete any temporary files or directories
+created during the session. To help ensure all temp files are deleted (in
+case of a server or client error), if the user doesn&#8217;t have any open session 
+his/her <strong>temp</strong> directory is also deleted.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.ToyzWebApp.find_open_port">
+<tt class="descname">find_open_port</tt><big>(</big><em>port</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzWebApp.find_open_port" title="Permalink to this definition">¶</a></dt>
+<dd><p>Begin at <tt class="docutils literal"><span class="pre">port</span></tt> and search for an open port on the server</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.ToyzWebApp.new_session">
+<tt class="descname">new_session</tt><big>(</big><em>user_id</em>, <em>websocket</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzWebApp.new_session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a new websocket session for a given user</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd>user_id ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzUser" title="toyz.utils.core.ToyzUser"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzUser</span></tt></a> ): User id
+websocket (<a class="reference internal" href="#toyz.web.app.WebSocketHandler" title="toyz.web.app.WebSocketHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.WebSocketHandler</span></tt></a> ): new websocket opened</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.ToyzWebApp.process_job">
+<tt class="descname">process_job</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzWebApp.process_job" title="Permalink to this definition">¶</a></dt>
+<dd><p>Currently all jobs are run directly from the web app. Later a job server
+might be implemented that will maintain a queue of long duration jobs, so this 
+function will be used to tag the batch jobs and send them to the job application.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>msg (<em>dict</em>): Message sent from web client (see 
+<a class="reference internal" href="toyz.utils.html#toyz.utils.core.run_job" title="toyz.utils.core.run_job"><tt class="xref py py-func docutils literal"><span class="pre">toyz.utils.core.run_job()</span></tt></a> for the format of the msg)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.ToyzWebApp.respond">
+<tt class="descname">respond</tt><big>(</big><em>response</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzWebApp.respond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Once a job has completed, including jobs run by an external job application, 
+send the response to the user. Also, update any objects that need to be updated.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>response (<em>dict</em> ): Message to send to the user.
+See <a class="reference internal" href="toyz.utils.html#toyz.utils.core.run_job" title="toyz.utils.core.run_job"><tt class="xref py py-func docutils literal"><span class="pre">toyz.utils.core.run_job()</span></tt></a> for the format of the msg.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.ToyzWebApp.run_job">
+<tt class="descname">run_job</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzWebApp.run_job" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a job by opening a new process (possible on a new cpu) and passing the
+job and parameters to the process. This function is actually a generator of a
+<cite>Future()</cite> object, so the exception <cite>tornado.gen.Return</cite> is raised to return
+the result.</p>
+<p>In the future this function will be modified to be threaded for certain
+types of web applications, allowing variables to be passed more easily and
+stored in work environments when that type of usage is prefereable.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>msg (<em>dict</em>): Message sent from web client (see 
+<a class="reference internal" href="toyz.utils.html#toyz.utils.core.run_job" title="toyz.utils.core.run_job"><tt class="xref py py-func docutils literal"><span class="pre">toyz.utils.core.run_job()</span></tt></a> for the format of the msg)</li>
+</ul>
+</dd>
+<dt>Returns</dt>
+<dd><ul class="first last simple">
+<li>result (<em>future</em> containing a <em>dict</em> ): Message to send back to the user. 
+If there is no response, then <tt class="docutils literal"><span class="pre">result={}</span></tt></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.ToyzWebApp.update">
+<tt class="descname">update</tt><big>(</big><em>attr</em><big>)</big><a class="headerlink" href="#toyz.web.app.ToyzWebApp.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Certain properties of the application may be changed by an external job,
+for example a user may change his/her password, a new user may be created,
+a setting may be changed, etc. When this happens the job notifies the application
+that something has changed and this function is called to reload the property.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>attr (<em>string</em> ): Name of attribute that needs to be updated. So far 
+only <strong>toyz_settings</strong> is supported</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="toyz.web.app.WebSocketHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">WebSocketHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.WebSocketHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">tornado.websocket.WebSocketHandler</span></tt></p>
+<p>Websocket that handles jobs sent to the server from clients</p>
+<dl class="method">
+<dt id="toyz.web.app.WebSocketHandler.on_close">
+<tt class="descname">on_close</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.WebSocketHandler.on_close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the websocket is closed. This function calls the applications
+<tt class="xref py py-func docutils literal"><span class="pre">-toyz.web.app.ToyzWebApp.close_session)()</span></tt> function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.WebSocketHandler.on_message">
+<tt class="descname">on_message</tt><big>(</big><em>message</em><big>)</big><a class="headerlink" href="#toyz.web.app.WebSocketHandler.on_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the websocket recieves a message from the client. 
+The user and session information is then extracted and processed before running the 
+job initiated by the client. Only <tt class="docutils literal"><span class="pre">modules</span></tt> and <tt class="docutils literal"><span class="pre">toyz</span></tt> that the user has permission
+to view are accepted, all others return a <a class="reference internal" href="toyz.utils.html#toyz.utils.errors.ToyzJobError" title="toyz.utils.errors.ToyzJobError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzJobError</span></tt></a> .</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>message (<em>JSON unicode string</em> ): see(
+<a class="reference internal" href="toyz.utils.html#toyz.utils.core.run_job" title="toyz.utils.core.run_job"><tt class="xref py py-func docutils literal"><span class="pre">toyz.utils.core.run_job()</span></tt></a> for the format of the msg)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.WebSocketHandler.open">
+<tt class="descname">open</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#toyz.web.app.WebSocketHandler.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a new websocket is opened</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><a href="#id1"><span class="problematic" id="id2">*</span></a>args: Currently no arguments are passed to this function</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.web.app.init_web_app">
+<tt class="descclassname">toyz.web.app.</tt><tt class="descname">init_web_app</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.init_web_app" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the web application on the server</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-toyz.web.tasks">
+<span id="toyz-web-tasks-module"></span><h2>toyz.web.tasks module<a class="headerlink" href="#module-toyz.web.tasks" title="Permalink to this headline">¶</a></h2>
+<p>While each toy may contain a large number of functions, only the functions located in the
+<tt class="docutils literal"><span class="pre">tasks.py</span></tt> file will be callable from the job queue.</p>
+<dl class="function">
+<dt id="toyz.web.tasks.add_new_user">
+<tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">add_new_user</tt><big>(</big><em>toyz_settings</em>, <em>tid</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.add_new_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a new user to the toyz application.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (see <em>params</em> below)</li>
+</ul>
+</dd>
+<dt>Params</dt>
+<dd><ul class="first last simple">
+<li>user_id (<em>string</em> ): Id of user to add</li>
+</ul>
+</dd>
+<dt>Response</dt>
+<dd><ul class="first last simple">
+<li>id: &#8216;notification&#8217;</li>
+<li>func: &#8216;add_new_user&#8217;</li>
+<li>msg: &#8216;User/Group added correctly&#8217;</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.web.tasks.change_pwd">
+<tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">change_pwd</tt><big>(</big><em>toyz_settings</em>, <em>tid</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.change_pwd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change a users password.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (see <em>params</em> below)</li>
+</ul>
+</dd>
+<dt>Params</dt>
+<dd><ul class="first last simple">
+<li>current_pwd (<em>string</em> ):  Users current password. Must match the password on 
+file or an exception is raised</li>
+<li>new_pwd (<em>string</em> ): New password</li>
+<li>confirm_pwd (<em>string</em> ): Confirmation of the the new password. If new_pwd and 
+confirm_pwd do not match, an exception is raised</li>
+</ul>
+</dd>
+<dt>Response</dt>
+<dd><ul class="first last simple">
+<li>id: &#8216;notification&#8217;</li>
+<li>func: &#8216;change_pwd&#8217;</li>
+<li>msg: &#8216;Password changed successfully&#8217;</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.web.tasks.create_dir">
+<tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">create_dir</tt><big>(</big><em>app</em>, <em>id</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.create_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new path on the server (if it does not already exist).</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (see <em>params</em> below)</li>
+</ul>
+</dd>
+<dt>Params</dt>
+<dd><ul class="first last simple">
+<li>path (<em>string</em> ): path to create on the server</li>
+</ul>
+</dd>
+<dt>Response</dt>
+<dd>id: &#8216;create_folder&#8217;,
+status (<em>string</em> ): &#8216;success&#8217;,
+path (<em>string</em> ): path created on the server</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.web.tasks.load_directory">
+<tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">load_directory</tt><big>(</big><em>toyz_settings</em>, <em>tid</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.load_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used by the file browser to load the folders and files in a given path.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (see <em>params</em> below)</li>
+</ul>
+</dd>
+<dt>Params</dt>
+<dd><ul class="first last simple">
+<li>path (<em>string</em> ): Path to search</li>
+</ul>
+</dd>
+<dt>Response</dt>
+<dd><ul class="first last simple">
+<li>id: &#8216;directory&#8217;</li>
+<li>path (<em>string</em> ): path passed to the function</li>
+<li>shortcuts (<em>dict</em> ): Dictionary of <tt class="docutils literal"><span class="pre">shortcut_name:</span> <span class="pre">shortcut_path</span></tt> &#8216;s for the user</li>
+<li>folders (<em>list</em> of strings): folders contained in the path</li>
+<li>files (<em>list</em> of strings): files contained in the path</li>
+<li>parent (<em>string</em> ): parent directory of current path</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.web.tasks.load_user_info">
+<tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">load_user_info</tt><big>(</big><em>toyz_settings</em>, <em>tid</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.load_user_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load info for a given user from the database</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (see <em>params</em> below)</li>
+</ul>
+</dd>
+<dt>Params</dt>
+<dd><ul class="first last simple">
+<li>user_id or group_id (<em>string</em> ): User or group to load parameters for</li>
+<li>user_attr (<em>list</em> ): List of user attributes to load</li>
+</ul>
+</dd>
+<dt>Response</dt>
+<dd><ul class="first last simple">
+<li>id: &#8216;user_info&#8217;</li>
+<li>Each attribute requested by the client is also returned as a key in the
+response</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.web.tasks.load_user_settings">
+<tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">load_user_settings</tt><big>(</big><em>toyz_settings</em>, <em>tid</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.load_user_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load settings for a given user</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (<strong>None</strong> for this function)</li>
+</ul>
+</dd>
+<dt>Response for all users</dt>
+<dd><ul class="first last simple">
+<li>id: &#8216;user_settings&#8217;</li>
+<li>shortcuts (<em>dict</em> ): Dictionary of <tt class="docutils literal"><span class="pre">shortcut_name:</span> <span class="pre">shortcut_path</span></tt> &#8216;s for the user</li>
+<li>workspaces (<em>dict</em> ): Dictionary of <tt class="docutils literal"><span class="pre">workspace_name:</span> <span class="pre">workspace_settings</span></tt> for the
+user</li>
+</ul>
+</dd>
+<dt>Additional response keys for users in the <strong>modify_toyz</strong> group</dt>
+<dd><ul class="first last simple">
+<li>modules (<em>list</em> ): List of toyz modules the user can run</li>
+<li>toyz (<em>dict</em> ): Dictionary of <tt class="docutils literal"><span class="pre">toy_name:</span> <span class="pre">path_to_toy</span></tt> &#8216;s that the user can run</li>
+</ul>
+</dd>
+<dt>Additional reponse keys for admins</dt>
+<dd><ul class="first last simple">
+<li>config (<em>dict</em> ): Configuration settings for the application</li>
+<li>db (<em>dict</em> ): Database settings</li>
+<li>web (<em>dict</em>): Web settings</li>
+<li>security (<em>dict</em> ): Security settings</li>
+<li>users (<em>list</em> ): list of all users in the database</li>
+<li>groups (<em>list</em> ): list of all groups in the database</li>
+<li>user_settings (<em>dict</em> ): Settings for a specified user (initially the <em>admin</em>)</li>
+<li>group_settings (<em>dict</em> ): Settings for a specified group (initially the <em>admin</em> group)</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.web.tasks.save_user_info">
+<tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">save_user_info</tt><big>(</big><em>toyz_settings</em>, <em>tid</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.save_user_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a users info. If any admin settings are being changed, ensures that the user
+is in the admin group.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><ul class="first last simple">
+<li>toyz_settings ( <a class="reference internal" href="toyz.utils.html#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a>): Settings for the toyz 
+application</li>
+<li>tid (<em>string</em> ): Task ID of the client user running the task</li>
+<li>params (<em>dict</em> ): Any parameters sent by the client (see <em>params</em> below)</li>
+</ul>
+</dd>
+</dl>
+<p>Params can be any settings the user has permission to set on the server.</p>
+<dl class="docutils">
+<dt>Response</dt>
+<dd><ul class="first last simple">
+<li>id: &#8216;notification&#8217;</li>
+<li>func: &#8216;save_user_info&#8217;</li>
+<li>msg: &#8216;Settings saved for &lt;user_id&gt;&#8217;</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-toyz.web">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-toyz.web" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Fred Moolekamp.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
