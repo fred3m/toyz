@@ -121,14 +121,15 @@ ready to :ref:`run_first_toy` . Otherwise you will likely need to follow the nex
 Change Password
 ---------------
 When a new user is created, the default password is always their username, so all users
-(including and **ESPECIALLY** the **admin**) are highly recommended to change it to something
+(including and *ESPECIALLY* the **admin**) are highly recommended to change it to something
 more secure. To do this just click on the **change password** button in the
 **Account Settings** tab. Enter the current password and the new password twice.
 
 Add New Users and Groups
 ------------------------
-Click on the **User Settings** tab. Scroll down (if necessary) and click on the **new_user**
-button, then enter the name of a new user. 
+Click on the **User Settings** tab. Scroll down (if necessary) and click on the **new user**
+button, then enter the name of a new user. Similarly you go to the **Group Settings** tab and
+do the same for new groups.
 
 Modify Permissions for Users and Groups
 ---------------------------------------
@@ -147,5 +148,5 @@ sharing, or a data analysis toy shared by a research group.
 Configuraton Settings
 ---------------------
 There are additional settings that are currently hard coded in the application and cannot be
-changed, only view, in the config settings menu. All other settings cannot be displayed at
+changed, only viewed, in the config settings menu. All other settings cannot be displayed at
 this time.
