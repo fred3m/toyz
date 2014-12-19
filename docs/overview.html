@@ -1,0 +1,243 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Overview &mdash; Toyz 0.0.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Install" href="install.html"/>
+        <link rel="prev" title="Toyz for Data Reduction and Analysis" href="index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> Toyz</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-toyz">What is Toyz?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#possible-use-cases">Possible Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#third-party-software">Third Party Software</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#first-time-setup">First Time Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#running-a-toyz-application">Running a Toyz Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#configuring-a-new-toyz-web-application">Configuring a New Toyz Web Application</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Toyz</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Overview</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/overview.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-is-toyz">
+<h2>What is Toyz?<a class="headerlink" href="#what-is-toyz" title="Permalink to this headline">¶</a></h2>
+<p>Toyz was initially created as a way to view and interact with FITS images stored on a remote
+server, as well as perform data reduction needed for my PhD. I couldn&#8217;t find any easy to use
+and well documented astronomy tools for this task so I set out to create my own application.</p>
+<p>In a nutshell Toyz is a web application framework designed to meet the needs of &#8220;Big Data&#8221;
+scientists by allowing them to interact with their data via a web browser and run
+scripts on a remote server that stores their data (and perhaps a gpu cluster).
+There are a few simple ideas that have been (and will continue to be) essential to the
+development of toyz (think of it as a mission statement):</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>It should be easy to install with as few dependencies as possible</li>
+<li>It should take up a minimal amount of disk space</li>
+<li>It should be well documented and easy to user</li>
+<li>An undergraduate summer REU student should be able to start analyzing data with
+it on his/her first day!</li>
+</ol>
+</div></blockquote>
+<p>Toyz uses a python <a class="reference external" href="http://www.tornadoweb.org/en/stable/">Tornado</a> web application that
+can run scripts in any language, provided they are either wrapped in python or can be
+run from a shell statement. Some basic tools are included in the Toyz package but it has
+been designed to be completely customizable by users to suit their needs.</p>
+<p>On the client side a simple framework has been created to allow users to easily create UI&#8217;s
+with a minimal amount of javascript experience. In theory Toyz can be run from any modern
+web browser (Firefox, Chrome, Opera, Safari) with no install necessary on the client machine.</p>
+</div>
+<div class="section" id="possible-use-cases">
+<h2>Possible Use Cases<a class="headerlink" href="#possible-use-cases" title="Permalink to this headline">¶</a></h2>
+<p>The primary use case Toyz was designed for was a group of researchers accessing a large set of
+shared data that is impractical to store on their local machines while allowing them to interact
+with the data as if it was installed locally, however toyz can easily be installed on a
+laptop or desktop computer.</p>
+<p>In addition the code has been designed for more advanced scenarios. For example, a class on
+data analysis in some subject (for example observational astronomy). Each member of the class
+can be given an account in the toyz application that will be accessible only to them, where
+they can store their data and any files generated from their data reduction. This even includes
+simulations that can be run on the server, allowing teachers to use a mugh larger set of tools to
+instruct their class without the hassle of having 30 students trying to install software on
+30 different machines with various operating systems and configurations.</p>
+<p>Another scenario is a much larger collaboration, where researchers are sharing data and analysis]
+with collaborators located all over the world. Toyz includes workspaces that allow for multiple
+plots (whose points are all connected) to be shared between users and groups, or for a single
+user to save his/her workspace for future analysis.</p>
+</div>
+<div class="section" id="third-party-software">
+<h2>Third Party Software<a class="headerlink" href="#third-party-software" title="Permalink to this headline">¶</a></h2>
+<p>Creating toyz was only possible due to the open source community, including other projects on
+github.</p>
+<dl class="docutils">
+<dt>The third party codes currently used in toyz are:</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="http://lodev.org/lodepng/">loadpng</a></li>
+<li><a class="reference external" href="http://jquery.com/">jquery</a></li>
+<li><a class="reference external" href="http://jqueryui.com/">jquery UI</a></li>
+<li><a class="reference external" href="http://almende.github.io/chap-links-library/js/graph3d/doc/">Graph 3d</a></li>
+<li><a class="reference external" href="https://developers.google.com/chart/interactive/docs/reference">Google visual</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="install.html" class="btn btn-neutral float-right" title="Install"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Toyz for Data Reduction and Analysis"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Fred Moolekamp.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

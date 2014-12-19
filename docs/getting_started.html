@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Getting Started &mdash; Toyz 0.0.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html"/>
+        <link rel="prev" title="Install" href="install.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> Toyz</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#what-is-toyz">What is Toyz?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#possible-use-cases">Possible Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#third-party-software">Third Party Software</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#first-time-setup">First Time Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-toyz-application">Running a Toyz Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuring-a-new-toyz-web-application">Configuring a New Toyz Web Application</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Toyz</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Getting Started</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/getting_started.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="first-time-setup">
+<span id="id1"></span><h2>First Time Setup<a class="headerlink" href="#first-time-setup" title="Permalink to this headline">¶</a></h2>
+<p>Once you have installed toyz (see <a class="reference internal" href="install.html#install"><em>Install</em></a> for instructions on installation)
+you are ready to setup your local toyz application.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can have more than one instance of a toyz application installed on the same system, and
+even multiple instances running at the same time on different ports.</p>
+</div>
+<p>From any directory type on the computer hosting the application enter:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">toyz</span>
+</pre></div>
+</div>
+<p>and you will be promped to setup toyz for the fist time.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>The default directory is in your python library but it is not advised to install toyz there.
+If you choose to install here you will lose all of your settings and users when you
+update or re-install toyz.</p>
+<p class="last">A better installation directory would be <tt class="docutils literal"><span class="pre">~/toyz</span></tt> .</p>
+</div>
+<p>Once the first time setup has been completed the application will notify you:</p>
+<div class="highlight-python"><div class="highlight"><pre>Server is running on port XXXX
+</pre></div>
+</div>
+<p>where <strong>XXXX</strong> is the port that toyz is using.</p>
+<p>To exit the toyz application at any time just type <tt class="docutils literal"><span class="pre">CTRL</span> <span class="pre">+</span> <span class="pre">c</span></tt> .</p>
+</div>
+<div class="section" id="running-a-toyz-application">
+<h2>Running a Toyz Application<a class="headerlink" href="#running-a-toyz-application" title="Permalink to this headline">¶</a></h2>
+<p>There are a number of different ways to initialize a Toyz web application, and even more ways
+to connect to a running application. At this time it is recommended that you run Toyz behind a
+firewall because we haven&#8217;t sufficiently vetted the security of the application. Below are some
+of the possible ways to initialize and connect to a toyz application.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Unless you are running toyz from the default path, you must always run toyz from the
+folder you specified during the first time setup, otherwise toyz won&#8217;t be able to find
+your saved settings and will once again prompt you for a first time setup.</p>
+</div>
+<div class="section" id="remote-server-behind-a-firewall">
+<h3>Remote server behind a firewall<a class="headerlink" href="#remote-server-behind-a-firewall" title="Permalink to this headline">¶</a></h3>
+<p>This is the recommended method to run a Toyz Application. In this case you can use port
+forwarding to connect to the remote server, for example, from your local terminal:</p>
+<div class="highlight-python"><div class="highlight"><pre>ssh -L&lt;local_port&gt;:localhost:&lt;remote_port&gt; &lt;username&gt;@&lt;hostname&gt;
+</pre></div>
+</div>
+<p>where <strong>local_port</strong> is the port on the local machine, <strong>remote port</strong> is the port on the
+remote machine, <strong>username</strong> is your username on the server and <strong>hostname</strong> is the server you
+are connecting to. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>ssh -L8888:localhost:8888 johndoe@myserver.com
+</pre></div>
+</div>
+<p>Now navigate to the path where you installed your toyz instance in
+<a class="reference internal" href="#first-time-setup"><em>First Time Setup</em></a> and type:</p>
+<div class="highlight-python"><div class="highlight"><pre>toyz --port=&lt;remote_port&gt;
+</pre></div>
+</div>
+<p>where <strong>remote_port</strong> is the port you specified above. Now open up the browser of your choice
+and enter:</p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8888
+</pre></div>
+</div>
+<p>or replace <strong>8888</strong> with the port your application is currently running on. This should bring you
+to a login screen.</p>
+</div>
+<div class="section" id="connecting-to-a-toyz-server-running-on-a-local-or-remote-network">
+<h3>Connecting to a Toyz Server Running on a local (or remote) network<a class="headerlink" href="#connecting-to-a-toyz-server-running-on-a-local-or-remote-network" title="Permalink to this headline">¶</a></h3>
+<p>If a toyz instance is running on a networked computer, registered
+users can log on to the application by entering in their browser:</p>
+<div class="highlight-python"><div class="highlight"><pre>hostname:port
+</pre></div>
+</div>
+<p>where <strong>hostname</strong> is the name of the server hosting the application and <strong>port</strong> is the port
+specified when the application was lauched. For example enter:</p>
+<div class="highlight-python"><div class="highlight"><pre>physics.pas.rochester.edu:8888
+</pre></div>
+</div>
+<p>in the browser address bar.</p>
+</div>
+<div class="section" id="local-machine">
+<h3>Local Machine<a class="headerlink" href="#local-machine" title="Permalink to this headline">¶</a></h3>
+<p>If you are just running toyz on your local machine run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">toyz</span> <span class="o">--</span><span class="n">port</span><span class="o">=</span><span class="mi">8888</span>
+</pre></div>
+</div>
+<p>where you can replace <strong>8888</strong> with the port you would prefer to use.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The default port is <strong>8888</strong> so it is possible to simply run <tt class="docutils literal"><span class="pre">toyz</span></tt> from the terminal</p>
+</div>
+<p>Now open up the browser of your choice and enter:</p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8888
+</pre></div>
+</div>
+<p>or replace <strong>8888</strong> with the port your application is currently running on. This should bring you
+to a login screen.</p>
+</div>
+</div>
+<div class="section" id="configuring-a-new-toyz-web-application">
+<h2>Configuring a New Toyz Web Application<a class="headerlink" href="#configuring-a-new-toyz-web-application" title="Permalink to this headline">¶</a></h2>
+<p>The first time you log on to Toyz the only account will be the <strong>admin</strong> account, with the
+default password &#8216;<strong>admin</strong>&#8216;. By default security is turned on so you will be prompted to
+enter &#8216;<strong>admin</strong>&#8216; for both the name and password.</p>
+<p>If you are the only user (for example this is installed on your local machine) you are probably
+ready to <em class="xref std std-ref">run_first_toy</em> . Otherwise you will likely need to follow the next few steps
+(a more thorough coverage of Toyz settings is given in <em class="xref std std-ref">toyz_settings</em>).</p>
+<div class="section" id="change-password">
+<h3>Change Password<a class="headerlink" href="#change-password" title="Permalink to this headline">¶</a></h3>
+<p>When a new user is created, the default password is always their username, so all users
+(including and <strong>ESPECIALLY</strong> the <strong>admin</strong>) are highly recommended to change it to something
+more secure. To do this just click on the <strong>change password</strong> button in the
+<strong>Account Settings</strong> tab. Enter the current password and the new password twice.</p>
+</div>
+<div class="section" id="add-new-users-and-groups">
+<h3>Add New Users and Groups<a class="headerlink" href="#add-new-users-and-groups" title="Permalink to this headline">¶</a></h3>
+<p>Click on the <strong>User Settings</strong> tab. Scroll down (if necessary) and click on the <strong>new_user</strong>
+button, then enter the name of a new user.</p>
+</div>
+<div class="section" id="modify-permissions-for-users-and-groups">
+<h3>Modify Permissions for Users and Groups<a class="headerlink" href="#modify-permissions-for-users-and-groups" title="Permalink to this headline">¶</a></h3>
+<p>By default all users are given permission to run
+scripts on the <strong>toyz.web.tasks</strong> module and have access to their own personal directory
+created on the server. Members of the <strong>admin</strong> group (including the <strong>admin</strong> account)
+automatically have permissions for all of the files and directories that the user running
+the web application has access to.</p>
+<p>If you have just created new accounts, refresh the page and choose a new user from the
+dropdown box to add them to any groups or to give them permission to any additional
+directories or python modules, or toyz installed on the server.
+For example, there may be a shared <strong>images</strong>  directory that all students in a class are
+sharing, or a data analysis toy shared by a research group.</p>
+</div>
+<div class="section" id="configuraton-settings">
+<h3>Configuraton Settings<a class="headerlink" href="#configuraton-settings" title="Permalink to this headline">¶</a></h3>
+<p>There are additional settings that are currently hard coded in the application and cannot be
+changed, only view, in the config settings menu. All other settings cannot be displayed at
+this time.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="install.html" class="btn btn-neutral" title="Install"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Fred Moolekamp.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

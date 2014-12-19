@@ -488,6 +488,7 @@ def init_web_app():
     
     # Continuous loop to wait for incomming connections
     print("Server is running on port", toyz_app.toyz_settings.web.port)
+    print("Type CTRL-c at any time to quit the application")
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == "__main__":
