@@ -15,10 +15,10 @@ endif
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
+ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) docs/source
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
-GH_SOURCES = docs/source docs/Makefile toyz
+GH_PAGES_SOURCES = docs/source Makefile toyz
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
 
@@ -178,16 +178,12 @@ pseudoxml:
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
 gh-pages:
 	git checkout gh-pages
-	rm -rf build _sources _static
+	rm -rf $(GH_PAGES_SOURCES) build _sources _static
 	git checkout master $(GH_PAGES_SOURCES)
 	git reset HEAD
 	make html
-	@echo "Made html"
-	-mv -fv build/html/* ./
-	@echo "mv build COMPLETED"
+	mv -fv build/html/* ./
 	rm -rf $(GH_PAGES_SOURCES) build
-	@echo "built"
 	git add -A
-	@echo "Before git commands"
 	git ci -m "Generated gh-pages for `git log master -1 --pretty=short --abbrev-commit`" && git push origin gh-pages ; git checkout master
 	@echo "gh-pages updated"
