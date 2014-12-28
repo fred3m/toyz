@@ -1,8 +1,8 @@
 """
-Error classes for Toyz
-Copyright 2014 by Fred Moolekamp
-License: MIT
+Error classes used in Toyz.
 """
+# Copyright 2014 by Fred Moolekamp
+# License: MIT
 
 import traceback
 
@@ -12,16 +12,12 @@ Error types used in Toyz
 
 class Error(Exception):
     """
-    Error
-    
     Base class for custom errors related to the running of Toyz
     """
     pass
 
 class ToyzError(Error):
     """
-    ToyzError
-    
     Class for custom errors related to the running of Toyz.
     """
     def __init__(self,msg):
@@ -32,29 +28,32 @@ class ToyzError(Error):
 
 class ToyzDbError(ToyzError):
     """
-    ToyzError
-    
     Class for errors initiating in the Toyz Database Interface
     """
     pass
 
 class ToyzWebError(ToyzError):
     """
-    ToyzError
-    
     Class for errors initiating in the Toyz Web Application
     """
     pass
 
 class ToyzJobError(ToyzError):
     """
-    ToyzError
-    
     Class for errors initiating in the Toyz Job Queue
     """
     pass
 
+class ToyzIoError(ToyzError):
+    """
+    Class for I/O Errors
+    """
+    pass
+
 class ToyzWarning:
+    """
+    Class for warnings
+    """
     def __init__(self, msg):
         print('Warning: {0}'.format(msg))
 

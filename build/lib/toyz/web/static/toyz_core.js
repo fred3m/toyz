@@ -167,7 +167,41 @@ Toyz.Core.Logger=function(element){
 Toyz.Core.loadedScripts={};
 
 // Load js and css dependencies in order
-Toyz.Core.loadDependencies=function(dependencies,callback,params){
+Toyz.Core.load_dependencies=function(toyz_dependencies, dependencies, callback, params){
+    var core_dependencies = {
+        jQuery_ui:{
+            url:"/static/third_party/jquery-ui-1.11.2/jquery-ui.js",
+            isloaded:'$.ui',
+            wait:true
+        },
+        jQuery_ui_css:{
+            url:'/static/third_party/jquery-ui-themes-1.11.0/themes/redmond/jquery-ui.css',
+            wait:false
+        },
+        toyz_gui: {
+            url: "/static/web/static/toyz_gui.js",
+            wait: true
+        },
+        toyz_css: {
+            url: "/static/web/static/toyz.css",
+            wait: false
+        },
+        toyz_visual: {
+            url: "/static/web/static/toyz_visual.js",
+            wait: true
+        }
+    }
+    
+    // Get parameters for any core dependencies that are loaded
+    if(toyz_dependencies.indexOf('all') > -1){
+        dependencies = $.extend(true, dependencies, core_dependencies);
+    } else {
+        for(var i=0; i<toyz_dependencies.length; i++){
+            var dependency = toyz_dependencies[i];
+            dependencies[dependency] = core_dependencies[dependency];
+        };
+    }
+    
     //console.log('dependencies',dependencies);
     for(d in dependencies){
         if(dependencies[d].wait){
@@ -182,6 +216,7 @@ Toyz.Core.loadDependencies=function(dependencies,callback,params){
             if(!window[dependency.isloaded]){
                 var script=document.createElement('script');
                 script.src=dependency.url;
+                console.log('loading:', script.src);
                 script.async=false;
                 script.addEventListener('load', function(d,dependencies,callback,params) {
                     return function(){

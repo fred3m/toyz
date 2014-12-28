@@ -119,21 +119,23 @@ class AuthStaticFileHandler(AuthHandler, tornado.web.StaticFileHandler):
     """
     @tornado.web.authenticated
     def get(self, path):
+        print('loading', path)
         tornado.web.StaticFileHandler.get(self, path)
     
     def validate_absolute_path(self, root, full_path):
         """
         Check that the user has permission to view the file
         """
-        print('root:{0}, full_path:{1}'.format(root, full_path))
-        permissions = file_acces.get_parent_permissions(
-            self.application.db_settings, full_path, user_id=self.get_current_user())
+        #print('root:{0}, full_path:{1}\n\n'.format(root, full_path))
+        permissions = file_access.get_parent_permissions(
+            self.application.toyz_settings.db, full_path, 
+            user_id=self.get_current_user().strip('"'))
         if 'r' in permissions or 'x' in permissions:
             absolute_path = tornado.web.StaticFileHandler.validate_absolute_path(
                     self, root, full_path)
         else:
             absolute_path = None
-        print('Absoulte path:', absolute_path)
+        #print('Absoulte path:', absolute_path)
         return absolute_path
 
 class AuthLoginHandler(AuthHandler, tornado.web.RequestHandler):
@@ -191,6 +193,24 @@ class AuthLogoutHandler(tornado.web.RequestHandler):
         self.clear_cookie("user")
         self.redirect(self.get_argument("next", "/"))
 
+class WorkspaceHandler(ToyzHandler):
+    def initialize(self, ):
+        self.template_path = os.path.join(core.ROOT_DIR, 'web', 'templates')
+    def get(self, workspace):
+        """
+        Load the workspace
+        """
+        print('workspace:', workspace)
+        self.render('workspace.html')
+    
+    def get_template_path(self):
+        return self.template_path
+
+class AuthWorkspaceHandler(AuthHandler, WorkspaceHandler):
+    @tornado.web.authenticated
+    def get(self, workspace):
+        WorkspaceHandler.get(self, workspace)
+        
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     """
     Websocket that handles jobs sent to the server from clients
@@ -298,11 +318,13 @@ class ToyzWebApp(tornado.web.Application):
             static_handler = AuthStaticFileHandler
             toyz_static_handler = AuthToyzStaticFileHandler
             toyz_template_handler = AuthToyzTemplateHandler
+            workspace_handler = AuthWorkspaceHandler
         else:
             main_handler = MainHandler
             static_handler = tornado.web.StaticFileHandler
             toyz_static_handler = ToyzStaticFileHandler
             toyz_template_handler = ToyzTemplateHandler
+            workspace_handler = WorkspaceHandler
         
         self.user_sessions = {}
         
@@ -318,7 +340,8 @@ class ToyzWebApp(tornado.web.Application):
             }),
             (r"/auth/login/", AuthLoginHandler),
             (r"/auth/logout/", AuthLogoutHandler),
-            #(r"/static/(.*)", static_handler, {'path': core.ROOT_DIR}),
+            (r"/static/(.*)", static_handler, {'path': core.ROOT_DIR}),
+            (r"/workspace/(.*)", workspace_handler),
             (r"/file/(.*)", static_handler, {'path': file_path}),
             (r"/toyz/static/(.*)", toyz_static_handler),
             (r"/toyz/template/(.*)", toyz_template_handler),

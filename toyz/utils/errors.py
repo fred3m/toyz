@@ -44,6 +44,12 @@ class ToyzJobError(ToyzError):
     """
     pass
 
+class ToyzIoError(ToyzError):
+    """
+    Class for I/O Errors
+    """
+    pass
+
 class ToyzWarning:
     """
     Class for warnings

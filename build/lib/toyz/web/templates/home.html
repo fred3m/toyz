@@ -27,7 +27,7 @@
             <div id='job-queue'>Job Queue has not yet been added to Toyz</div>
             <div id='toyz-list'>
                 <p>Eventually this will show all toyz loaded on the server</p>
-                <a href='/workspace'>Workspace</a>
+                <a href='/workspace/'>New workspace</a>
             </div>
         </div>
         <div id='dialogs'></div>
@@ -246,7 +246,7 @@
                 delete params['logout'];
                 websocket.send_task({
                     module: 'toyz.web.tasks',
-                    task: 'save_user_infosend_task',
+                    task: 'save_user_info',
                     parameters: params
                 });
                 console.log('Parameters:',params);

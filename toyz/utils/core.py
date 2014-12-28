@@ -166,6 +166,20 @@ def check4keys(myDict,keys):
     if error!="":
         raise ToyzError("Missing parameters: "+error)
 
+def is_number(str_in):
+    try:
+        float(str_in)
+        return True
+    except ValueError:
+        return False
+
+def is_int(str_in):
+    try:
+        int(str_in)
+        return True
+    except ValueError:
+        return False
+
 def create_paths(paths):
     """                                                                         
     Search for paths on the server. If a path does not exist, create the necessary directories.

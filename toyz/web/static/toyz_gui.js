@@ -133,7 +133,7 @@ Toyz.Gui.buildParamDiv = function(param, $div){
     // Special types of parameters may also be used, for example
     // a path with a button to open a file dialog
     if(param.hasOwnProperty('file_dialog')){
-        console.log('file dialog:', param);
+        //console.log('file dialog:', param);
         if(!param.hasOwnProperty('css')){
             param.$input.prop('size',80);
         };
@@ -143,12 +143,12 @@ Toyz.Gui.buildParamDiv = function(param, $div){
             .css('margin-left','5px');
         $btn.click(function(param) {
             return function(){
-                var file_dir = '$project$';
+                var file_dir = '$user$';
                 if(param.$input.val() != ''){
                     file_dir = param.$input.val();
                 };
                 param.file_dialog.load_directory(file_dir,function(){
-                    param.$input.val(file_dialog.path+file_dialog.files.$select.val());
+                    param.$input.val(param.file_dialog.path+param.file_dialog.files.$select.val());
                 });
             }
         }(param));
@@ -164,6 +164,7 @@ Toyz.Gui.buildParamDiv = function(param, $div){
 // $parent: jquery object that is the parent for the new parameter
 // key: name of the parameter
 Toyz.Gui.initParams=function(param, $parent, key){
+    //console.log('param:', key, param);
     // The default type of a parameter is an input
     if(!param.hasOwnProperty('type')){
         param.type = 'input';
@@ -215,6 +216,7 @@ Toyz.Gui.initParams=function(param, $parent, key){
             };
         };
         if(param.type == 'conditional'){
+            //console.log('conditional ',key,'found')
             var pKey;
             var pVal;
             for(var p in param.selector){
@@ -251,14 +253,39 @@ Toyz.Gui.initParams=function(param, $parent, key){
                 newSet.old_display = newSet.$div.css('display');
                 newSet.$div.css('display','none');
             };
-        
+            
             var keyVal = Toyz.Gui.val(selector.$input);
+            //console.log('conditional:',key,'selector:', selector, keyVal)
             var selected = param.paramSets[keyVal];
             selected.$div.css('display', selected.$div.css('display', selected.old_display));
         }else{
             for(var key in param.params){
                 param.params[key] = Toyz.Gui.initParams(param.params[key], $div, key);
             };
+            for(var key in param.optional){
+                var legend = param.optional[key].lbl;
+                //delete param.optional[key].lbl;
+                var opt_param = {
+                    type: 'conditional',
+                    selector: {},
+                    paramSets: {
+                        true: {
+                            type: 'div',
+                            params: {}
+                        },
+                        false: {type:'div', params:{}}
+                    }
+                }
+                opt_param.selector['use_'+key] = {
+                    lbl: 'set '+ key,
+                    prop: {
+                        type: 'checkbox',
+                        checked: false
+                    }
+                }
+                opt_param.paramSets[true].params[key] = param.optional[key]
+                param.params[key] = Toyz.Gui.initParams(opt_param, $div, key);
+            }
         };
         
         $parent.append(param.$div);
@@ -445,21 +472,27 @@ Toyz.Gui.initParamList=function(pList,options){
         // Load the values of every parameter in the list
         getParams:function(paramDiv){
             // Extract only the parameters that are visible (in the case of conditional or optional parameters)
+            //console.log('paramDiv:', paramDiv);
+            
             var params = {};
             //console.log('paramDiv:',paramDiv);
             if(paramDiv.type == 'conditional'){
                 var pKey;
-                for(var param in paramDiv.params){
-                    if(paramDiv.params.hasOwnProperty(param)){
+                for(var param in paramDiv.selector){
+                    if(paramDiv.selector.hasOwnProperty(param)){
                         pKey = param;
                     };
                 };
                 var subset = param_list.getParams(
-                    paramDiv.paramSets[Toyz.Gui.val(paramDiv.params[pKey].$input)]
+                    paramDiv.paramSets[Toyz.Gui.val(paramDiv.selector[pKey].$input)]
                 );
                 for(var subParam in subset){
                     params[subParam] = subset[subParam];
                 };
+                if(!params.hasOwnProperty('conditions')){
+                    params['conditions'] = {};
+                }
+                params['conditions'][pKey] = Toyz.Gui.val(paramDiv.selector[pKey].$input);
             };
             for(var param_name in paramDiv.params){
                 var param = paramDiv.params[param_name];

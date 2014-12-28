@@ -1,8 +1,12 @@
+
+# Job tasks sent from web client
+# Copyright 2014 by Fred Moolekamp
+# License: MIT
 """
-Job tasks sent from web client
-Copyright 2014 by Fred Moolekamp
-License: MIT
+While each toy may contain a large number of functions, only the functions located in the
+``tasks.py`` file will be callable from the job queue.
 """
+
 from __future__ import print_function, division
 import importlib
 import os
@@ -15,6 +19,32 @@ from toyz.utils.errors import ToyzJobError
 def load_user_settings(toyz_settings, tid, params):
     """
     Load settings for a given user
+    
+    Parameters
+        - toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings`): Settings for the toyz 
+          application
+        - tid (*string* ): Task ID of the client user running the task
+        - params (*dict* ): Any parameters sent by the client (**None** for this function)
+    
+    Response for all users
+        - id: 'user_settings'
+        - shortcuts (*dict* ): Dictionary of ``shortcut_name: shortcut_path`` 's for the user
+        - workspaces (*dict* ): Dictionary of ``workspace_name: workspace_settings`` for the
+          user
+    
+    Additional response keys for users in the **modify_toyz** group
+        - modules (*list* ): List of toyz modules the user can run
+        - toyz (*dict* ): Dictionary of ``toy_name: path_to_toy`` 's that the user can run
+    
+    Additional reponse keys for admins
+        - config (*dict* ): Configuration settings for the application
+        - db (*dict* ): Database settings
+        - web (*dict*): Web settings
+        - security (*dict* ): Security settings
+        - users (*list* ): list of all users in the database
+        - groups (*list* ): list of all groups in the database
+        - user_settings (*dict* ): Settings for a specified user (initially the *admin*)
+        - group_settings (*dict* ): Settings for a specified group (initially the *admin* group)
     """
     dbs = toyz_settings.db
     old_shortcuts = db_utils.get_param(dbs, 'shortcuts', user_id=tid['user_id'])
@@ -27,6 +57,7 @@ def load_user_settings(toyz_settings, tid, params):
     
     groups = db_utils.get_param(toyz_settings.db, 'groups', user_id=tid['user_id'])
     
+    # Only allow administrators to modify user settings
     if tid['user_id']=='admin' or 'admin' in groups:
         all_users = db_utils.get_all_ids(dbs, 'user_id')
         all_groups = db_utils.get_all_ids(dbs, 'group_id')
@@ -54,6 +85,7 @@ def load_user_settings(toyz_settings, tid, params):
             'group_settings': group_settings
         })
     
+    # Only allow power users to modify toyz they have access to
     if 'modify_toyz' in groups or 'admin' in groups or tid['user_id'] == 'admin':
         response.update({
             'modules': db_utils.get_param(dbs, 'modules', user_id=tid['user_id']),
@@ -65,6 +97,21 @@ def load_user_settings(toyz_settings, tid, params):
 def load_user_info(toyz_settings, tid, params):
     """
     Load info for a given user from the database
+    
+    Parameters
+        - toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings`): Settings for the toyz 
+          application
+        - tid (*string* ): Task ID of the client user running the task
+        - params (*dict* ): Any parameters sent by the client (see *params* below)
+    
+    Params
+        - user_id or group_id (*string* ): User or group to load parameters for
+        - user_attr (*list* ): List of user attributes to load
+    
+    Response
+        - id: 'user_info'
+        - Each attribute requested by the client is also returned as a key in the
+          response
     """
     user = core.get_user_type(params)
     if 'user_id' in user:
@@ -86,7 +133,21 @@ def load_user_info(toyz_settings, tid, params):
 
 def save_user_info(toyz_settings, tid, params):
     """
-    Save user info
+    Save a users info. If any admin settings are being changed, ensures that the user
+    is in the admin group.
+    
+    Parameters
+        - toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings`): Settings for the toyz 
+          application
+        - tid (*string* ): Task ID of the client user running the task
+        - params (*dict* ): Any parameters sent by the client (see *params* below)
+    
+    Params can be any settings the user has permission to set on the server.
+    
+    Response
+        - id: 'notification'
+        - func: 'save_user_info'
+        - msg: 'Settings saved for <user_id>'
     """
     groups = db_utils.get_param(toyz_settings.db, 'groups', user_id=tid['user_id'])
     # check that user is in the admin group
@@ -125,7 +186,21 @@ def save_user_info(toyz_settings, tid, params):
 
 def add_new_user(toyz_settings, tid, params):
     """
-    Add a new user to the toyz application
+    Add a new user to the toyz application.
+    
+    Parameters
+        - toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings`): Settings for the toyz 
+          application
+        - tid (*string* ): Task ID of the client user running the task
+        - params (*dict* ): Any parameters sent by the client (see *params* below)
+    
+    Params
+        - user_id (*string* ): Id of user to add
+    
+    Response
+        - id: 'notification'
+        - func: 'add_new_user'
+        - msg: 'User/Group added correctly'
     """
     user = core.get_user_type(params)
     pwd = core.encrypt_pwd(toyz_settings, params['user_id'])
@@ -146,15 +221,23 @@ def change_pwd(toyz_settings, tid, params):
     """
     Change a users password.
     
+    Parameters
+        - toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings`): Settings for the toyz 
+          application
+        - tid (*string* ): Task ID of the client user running the task
+        - params (*dict* ): Any parameters sent by the client (see *params* below)
+    
     Params
-    ------
-    current_pwd: string
-        - Users current password. Must match the password on file or an exception is raised
-    new_pwd: string
-        - New password
-    confirm_pwd: string
-        - Confirmation of the the new password. If new_pwd and confirm_pwd do not
-        match, an exception is raised
+        - current_pwd (*string* ):  Users current password. Must match the password on 
+          file or an exception is raised
+        - new_pwd (*string* ): New password
+        - confirm_pwd (*string* ): Confirmation of the the new password. If new_pwd and 
+          confirm_pwd do not match, an exception is raised
+    
+    Response
+        - id: 'notification'
+        - func: 'change_pwd'
+        - msg: 'Password changed successfully'
     """
     core.check4keys(params, ['current_pwd', 'new_pwd', 'confirm_pwd'])
     if core.check_pwd(toyz_settings, tid['user_id'], params['current_pwd']):
@@ -171,11 +254,30 @@ def change_pwd(toyz_settings, tid, params):
         'id': 'notification',
         'func': 'change_pwd',
         'msg': 'Password changed successfully',
-        'update_app': 'users'
     }
     return response
 
 def load_directory(toyz_settings, tid, params):
+    """
+    Used by the file browser to load the folders and files in a given path.
+    
+    Parameters
+        - toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings`): Settings for the toyz 
+          application
+        - tid (*string* ): Task ID of the client user running the task
+        - params (*dict* ): Any parameters sent by the client (see *params* below)
+    
+    Params
+        - path (*string* ): Path to search
+    
+    Response
+        - id: 'directory'
+        - path (*string* ): path passed to the function
+        - shortcuts (*dict* ): Dictionary of ``shortcut_name: shortcut_path`` 's for the user
+        - folders (*list* of strings): folders contained in the path
+        - files (*list* of strings): files contained in the path
+        - parent (*string* ): parent directory of current path
+    """
     core.check4keys(params,['path'])
     show_hidden=False
     # If the path is contained in a set of dollar signs (for example `$images$`) then 
@@ -238,10 +340,100 @@ def load_directory(toyz_settings, tid, params):
     return response
 
 def create_dir(app, id, params):
+    """
+    Creates a new path on the server (if it does not already exist).
+    
+    Parameters
+        - toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings`): Settings for the toyz 
+          application
+        - tid (*string* ): Task ID of the client user running the task
+        - params (*dict* ): Any parameters sent by the client (see *params* below)
+    
+    Params
+        - path (*string* ): path to create on the server
+    
+    Response
+        id: 'create_folder',
+        status (*string* ): 'success',
+        path (*string* ): path created on the server
+    """
     core.create_dirs(params['path'])
     response = {
         'id': 'create folder',
         'status': 'success',
         'path': params['path']
     }
+    return response
+
+def get_io_info(app, id, params):
+    """
+    Get I/O settings for different packages (pure python, numpy, pandas, etc)
+    """
+    import toyz.utils.io as io
+    
+    param_sets = {}
+    for key, val in io.io_modules.items():
+        param_sets[key] = {
+            'type': 'div',
+            'params': {
+                'all': {
+                    'type': 'div',
+                    'params': val['all']
+                },
+                'file_types': {
+                    'type': 'conditional',
+                    'selector': {
+                        'file_type': {
+                            'lbl': 'file type',
+                            'type': 'select',
+                            'options': val['file_types'].keys()
+                        }
+                    },
+                    'paramSets': val['file_types']
+                }
+            }
+        }
+    
+    info = {
+        'type': 'div',
+        'params': {
+            'io_info': {
+                'type': 'conditional',
+                'selector': {
+                    'io_module': {
+                        'type': 'select',
+                        'lbl': 'I/O module to use',
+                        'options': io.io_modules.keys()
+                    }
+                },
+                'paramSets': param_sets
+            }
+        }
+    }
+    
+    response = {
+        'id': 'io_info',
+        'io_info': info
+    }
+    
+    return response
+
+def load_data_file(app, id, params):
+    """
+    Load a data file given a set of parameters from the browser, initialized by
+    ``get_io_info``.
+    """
+    import toyz.utils.io as io
+    
+    columns, data = io.load_data_file(
+        params['io_module'],
+        params['file_type'], 
+        params['file_options'])
+    
+    response = {
+        'id': 'data_file',
+        'columns': columns,
+        'data': data
+    }
+    
     return response

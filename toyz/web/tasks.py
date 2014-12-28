@@ -364,3 +364,76 @@ def create_dir(app, id, params):
         'path': params['path']
     }
     return response
+
+def get_io_info(app, id, params):
+    """
+    Get I/O settings for different packages (pure python, numpy, pandas, etc)
+    """
+    import toyz.utils.io as io
+    
+    param_sets = {}
+    for key, val in io.io_modules.items():
+        param_sets[key] = {
+            'type': 'div',
+            'params': {
+                'all': {
+                    'type': 'div',
+                    'params': val['all']
+                },
+                'file_types': {
+                    'type': 'conditional',
+                    'selector': {
+                        'file_type': {
+                            'lbl': 'file type',
+                            'type': 'select',
+                            'options': val['file_types'].keys()
+                        }
+                    },
+                    'paramSets': val['file_types']
+                }
+            }
+        }
+    
+    info = {
+        'type': 'div',
+        'params': {
+            'io_info': {
+                'type': 'conditional',
+                'selector': {
+                    'io_module': {
+                        'type': 'select',
+                        'lbl': 'I/O module to use',
+                        'options': io.io_modules.keys()
+                    }
+                },
+                'paramSets': param_sets
+            }
+        }
+    }
+    
+    response = {
+        'id': 'io_info',
+        'io_info': info
+    }
+    
+    return response
+
+def load_data_file(app, id, params):
+    """
+    Load a data file given a set of parameters from the browser, initialized by
+    ``get_io_info``.
+    """
+    import toyz.utils.io as io
+    
+    columns, data = io.load_data_file(
+        params['io_module'],
+        params['file_type'], 
+        params['file_options'])
+    
+    response = {
+        'id': 'data_file',
+        'columns': columns,
+        'data': data
+    }
+    
+    return response

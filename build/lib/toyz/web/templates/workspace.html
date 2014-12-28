@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title>New Workspace</title>
+        <script src="/static/third_party/jquery-2.1.0.min.js" type="text/javascript"></script>
+        <script src="/static/web/static/toyz_core.js" type="text/javascript"></script>
+        <script src="/static/web/static/workspace.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <div id='ws-div'></div>
+        <div id='ws-data-div'></div>
+        <div id="file-dialog"></div>
+        <script>
+        var $workspace_div = $('#ws-div');
+        var $ws_data_div = $('#ws-data-div');
+        var workspace;
+        
+        window.onload = function(){
+            workspace = Toyz.Workspace.init({
+                $parent: $ws_data_div
+            });
+        }
+        </script>
+    </body>
+</html>

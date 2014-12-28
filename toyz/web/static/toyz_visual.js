@@ -2,7 +2,7 @@
 // Copyright 2014 by Fred Moolekamp
 // License: MIT
 
-Toyz.namespace('Toyz.Gui');
+Toyz.namespace('Toyz.Visual');
 
 // Canvas with multiple layers
 Toyz.Visual.initMultiCanvas=function(div,options){

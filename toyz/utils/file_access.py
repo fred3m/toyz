@@ -77,6 +77,11 @@ def get_file_permissions(db_settings, path, **user):
         - permissions (*string* ): Permissions for the given user for the given path.
           Returns **None** if no permissions have been set.
     """
+    # If the user is an admin, automatically grant him/her full permission
+    print('user:', user)
+    for user_type, user_id in user.items():
+        if user_id == 'admin':
+            return 'frwx'
     permissions = None
     path_info = db_utils.get_path_info(db_settings, path)
     if path_info is not None:
@@ -90,6 +95,8 @@ def get_file_permissions(db_settings, path, **user):
                 # Combine all group permissions to take the most permissive
                 # permissions of the combined groups
                 groups = db_utils.get_param(db_settings, 'groups', **user)
+                if 'admin' in groups:
+                    return 'frwx'
                 group_permissions = ''.join([p for g,p in path_info['groups'] if g in groups])
                 if '*' in path_info['users']:
                     all_permissions = path_info['users']['*']
@@ -118,6 +125,7 @@ def get_parent_permissions(db_settings, path, **user):
         - permissions (*string* ): Permissions for the given user for the given path.
           Returns **None** if no permissions have been set for any parent paths.
     """
+    print('made it to parents')
     parents = get_all_parents(path)
     # Sometimes the `path` will really be a path and filename, so the first parent is
     # the actual path. This makes sure that we always check for the path as well as 
