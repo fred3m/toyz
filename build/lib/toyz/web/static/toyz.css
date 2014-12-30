@@ -1,3 +1,11 @@
+html, body
+{
+    min-height: 100%;
+    min-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 .paramDiv-default{
     display:block;
 }
@@ -15,7 +23,6 @@
 }
 
 .custom-menu {
-
     position: absolute;
     background-color:#C0C0C0;
     border: 1px solid black;

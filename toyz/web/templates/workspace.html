@@ -9,17 +9,22 @@
     </head>
     <body>
         <div id='ws-div'></div>
-        <div id='ws-data-div'></div>
-        <div id="file-dialog"></div>
         <script>
         var $workspace_div = $('#ws-div');
-        var $ws_data_div = $('#ws-data-div');
         var workspace;
         
         window.onload = function(){
+            $workspace_div.height(window.innerHeight);
+            $workspace_div.width(window.innerWidth);
+            $(window).resize(function(){
+                $workspace_div.height(window.innerHeight);
+                $workspace_div.width(window.innerWidth);
+            })
             workspace = Toyz.Workspace.init({
-                $parent: $ws_data_div
+                $parent: $workspace_div
             });
+            
+            console.log('workspace-div SIZE:', $workspace_div.height(), $workspace_div.width());
         }
         </script>
     </body>

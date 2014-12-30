@@ -226,7 +226,7 @@ io_modules = {
                             'type': 'Number'
                         }
                     },
-                    'columns': {'lbl': 'columns'}, #
+                    'columns': {'lbl': 'columns'},
                     # 'iterator': Not supported (or necessary)
                     # 'chunksize': Not supported (or necessary)
                     # 'auto_close': Not supported (or necessary)
@@ -269,10 +269,8 @@ def load_dict(dict_str, str_ok=False):
 
 def load_list(csv, str_ok=False):
     if csv[0] == '[' and csv[-1] == ']':
-        import ast
-        my_list = ast.literal_eval(csv)
-    else:
-        my_list = csv.split(',')
+        csv = csv[1:-1]
+    my_list = csv.split(',')
     for n, val in enumerate(my_list):
         if core.is_number(val):
             if core.is_int(val):

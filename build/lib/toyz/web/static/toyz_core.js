@@ -163,89 +163,67 @@ Toyz.Core.Logger=function(element){
     };
 };
 
-// Keep track of which scripts have been dynamically loaded
-Toyz.Core.loadedScripts={};
+// Dynamically load a list of scripts
+Toyz.Core.load_js = function(scripts, callback){
+    var script = scripts[0];
+    if(scripts.length>0){
+        console.log('loading', script);
+        scripts.shift();
+        var load_js = Toyz.Core.load_js.bind(undefined, scripts, callback);
+        $.getScript(script, load_js);
+    }else{
+        callback();
+    }
+};
+
+// Dynamically load a list of style sheets
+Toyz.Core.load_css = function(styles, callback){
+    var style = styles[0];
+    if(styles.length>0){
+        console.log('loading', style);
+        styles.shift();
+        var load_css = Toyz.Core.load_css.bind(undefined, styles, callback);
+        $.getCSS(style, load_css);
+    }else{
+        callback();
+    }
+}
 
 // Load js and css dependencies in order
-Toyz.Core.load_dependencies=function(toyz_dependencies, dependencies, callback, params){
-    var core_dependencies = {
-        jQuery_ui:{
-            url:"/static/third_party/jquery-ui-1.11.2/jquery-ui.js",
-            isloaded:'$.ui',
-            wait:true
-        },
-        jQuery_ui_css:{
-            url:'/static/third_party/jquery-ui-themes-1.11.0/themes/redmond/jquery-ui.css',
-            wait:false
-        },
-        toyz_gui: {
-            url: "/static/web/static/toyz_gui.js",
-            wait: true
-        },
-        toyz_css: {
-            url: "/static/web/static/toyz.css",
-            wait: false
-        },
-        toyz_visual: {
-            url: "/static/web/static/toyz_visual.js",
-            wait: true
-        }
+Toyz.Core.load_dependencies=function(dependencies, callback){
+    var core_js = [
+        "/static/third_party/jquery-ui-1.11.2/jquery-ui.js",
+        "/static/web/static/toyz_gui.js",
+        "/static/web/static/toyz_visual.js",
+        "/static/third_party/jquery-contextMenu/jquery.contextMenu.js",
+        "/static/third_party/jquery-contextMenu/jquery.ui.position.js"
+    ]
+    
+    var core_css = [
+        '/static/third_party/jquery-ui-themes-1.11.0/themes/redmond/jquery-ui.css',
+        "/static/web/static/toyz.css",
+        "/static/third_party/jquery-contextMenu/jquery.contextMenu.css"
+    ]
+    
+    var scripts = [];
+    var style_sheets = [];
+    
+    if(dependencies.hasOwnProperty('core') && dependencies.core){
+        scripts = core_js;
+        style_sheets = core_css;
+    }
+    if(dependencies.hasOwnProperty('js')){
+        scripts = scripts.concat(dependencies.js);
+    }
+    if(dependencies.hasOwnProperty('css')){
+        style_sheets = style_sheets.concat(dependencies.css);
     }
     
-    // Get parameters for any core dependencies that are loaded
-    if(toyz_dependencies.indexOf('all') > -1){
-        dependencies = $.extend(true, dependencies, core_dependencies);
-    } else {
-        for(var i=0; i<toyz_dependencies.length; i++){
-            var dependency = toyz_dependencies[i];
-            dependencies[dependency] = core_dependencies[dependency];
-        };
-    }
+    // Call the load_css function with the callback function and style sheets when
+    // all scripts have loaded
+    var css_callback = Toyz.Core.load_css.bind(undefined, style_sheets, callback);
     
-    //console.log('dependencies',dependencies);
-    for(d in dependencies){
-        if(dependencies[d].wait){
-            Toyz.Core.loadedScripts[d]=false;
-        }
-    };
-    for(d in dependencies){
-        var dependency=dependencies[d];
-        //console.log('dependency',dependency);
-        var ext=dependency.url.split('.').pop();
-        if(ext=='js'){
-            if(!window[dependency.isloaded]){
-                var script=document.createElement('script');
-                script.src=dependency.url;
-                console.log('loading:', script.src);
-                script.async=false;
-                script.addEventListener('load', function(d,dependencies,callback,params) {
-                    return function(){
-                        //console.log('dependencies',dependencies);
-                        Toyz.Core.loadedScripts[d]=true;
-                        var all_loaded=true;
-                        for(dep in dependencies){
-                            if(Toyz.Core.loadedScripts[dep]==false){
-                                all_loaded=false;
-                                break;
-                            }
-                        };
-                        //console.log('loaded:',Toyz.Core.loadedScripts);
-                        if(all_loaded){
-                            //console.log('all loaded');
-                            return callback(params);
-                        }
-                    }
-                }(d,dependencies,callback,params), false);
-                document.head.appendChild(script);
-            }
-        }else if(ext=='css'){
-            $('<link>')
-                .appendTo('head')
-                .attr({type:'text/css',rel:'stylesheet'})
-                .attr('href',dependency.url);
-        }
-    };
-    //return callback(params);
+    Toyz.Core.load_js(scripts, css_callback);
 };
 
 // Makes a deep copy of a JSON object
@@ -655,5 +633,120 @@ Toyz.Core.buildInteractiveTable=function(dataArray,table){
         }
     }
 };
+
+// jquery-getCSS by Dave Furero
+// https://github.com/furf/jquery-getCSS
+(function (window, document, jQuery) {
+
+  var head = document.getElementsByTagName('head')[0],
+      loadedCompleteRegExp = /loaded|complete/,
+      callbacks = {},
+      callbacksNb = 0,
+      timer;
+
+  jQuery.getCSS = function (url, options, callback) {
+
+    if (jQuery.isFunction(options)) {
+      callback = options;
+      options  = {};
+    }
+
+    var link = document.createElement('link');
+
+    link.rel   = 'stylesheet';
+    link.type  = 'text/css';
+    link.media = options.media || 'screen';
+    link.href  = url;
+
+    if (options.charset) {
+      link.charset = options.charset;
+    }
+
+    if (options.title) {
+      callback = (function (callback) {
+        return function () {
+          link.title = options.title;
+          callback(link, "success");
+        };
+      })(callback);
+    }
+
+    // onreadystatechange
+    if (link.readyState) {
+
+      link.onreadystatechange = function () {
+        if (loadedCompleteRegExp.test(link.readyState)) {
+          link.onreadystatechange = null;
+          callback(link, "success");
+        }
+      };
+
+    // If onload is available, use it
+    } else if (link.onload === null /* exclude Webkit => */ && link.all) {
+      link.onload = function () {
+        link.onload = null;
+        callback(link, "success");
+      };
+
+    // In any other browser, we poll
+    } else {
+
+      callbacks[link.href] = function () {
+        callback(link, "success");
+      };
+
+      if (!callbacksNb++) {
+        // poll(cssPollFunction);
+
+        timer = window.setInterval(function () {
+
+          var callback,
+              stylesheet,
+              stylesheets = document.styleSheets,
+              href,
+              i = stylesheets.length;
+
+          while (i--) {
+            stylesheet = stylesheets[i];
+            if ((href = stylesheet.href) && (callback = callbacks[href])) {
+              try {
+                // We store so that minifiers don't remove the code
+                callback.r = stylesheet.cssRules;
+                // Webkit:
+                // Webkit browsers don't create the stylesheet object
+                // before the link has been loaded.
+                // When requesting rules for crossDomain links
+                // they simply return nothing (no exception thrown)
+                // Gecko:
+                // NS_ERROR_DOM_INVALID_ACCESS_ERR thrown if the stylesheet is not loaded
+                // If the stylesheet is loaded:
+                //  * no error thrown for same-domain
+                //  * NS_ERROR_DOM_SECURITY_ERR thrown for cross-domain
+                throw 'SECURITY';
+              } catch(e) {
+                // Gecko: catch NS_ERROR_DOM_SECURITY_ERR
+                // Webkit: catch SECURITY
+                if (/SECURITY/.test(e)) {
+
+                  // setTimeout(callback, 0);
+                  callback(link, "success");
+
+                  delete callbacks[href];
+
+                  if (!--callbacksNb) {
+                    timer = window.clearInterval(timer);
+                  }
+
+                }
+              }
+            }
+          }
+        }, 13);
+      }
+    }
+    head.appendChild(link);
+  };
+
+})(window, window.document, window.jQuery);
 
 console.log('toyz_core.js loaded');

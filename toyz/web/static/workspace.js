@@ -6,7 +6,8 @@ Toyz.namespace('Toyz.Workspace');
 
 Toyz.Workspace.init = function(params){
     var workspace = {
-        $div: $('<div/>'),
+        $div: $('<div/>').addClass("workspace-div context-menu-one box menu-injected"),
+        $parent: params.$parent,
         rx_msg: function(result){
             console.log('msg received:', result);
             if(result.id == 'io_info'){
@@ -22,19 +23,19 @@ Toyz.Workspace.init = function(params){
                         if(obj.hasOwnProperty(key) && typeof obj[key]==='object'){
                             obj[key] = set_file_dialogs(obj[key]);
                         }
-                    }
+                    };
                     if(obj.hasOwnProperty('file_dialog')){
                         obj['file_dialog'] = workspace.file_dialog;
-                    }
+                    };
                     return obj;
-                }
+                };
                 param_div = set_file_dialogs(param_div);
                 
                 workspace.$open_data_div.dialog({
-                    resizable:true,
-                    draggable:true,
-                    autoOpen:true,
-                    modal:true,
+                    resizable: true,
+                    draggable: true,
+                    autoOpen: false,
+                    modal: true,
                     width: 'auto',
                     height: '300',
                     buttons: {
@@ -75,7 +76,6 @@ Toyz.Workspace.init = function(params){
                     at: "center",
                     of: window
                 });
-                console.log(workspace.open_data_gui);
             }
         },
         dependencies_onload: function(){
@@ -88,7 +88,38 @@ Toyz.Workspace.init = function(params){
                 module: 'toyz.web.tasks',
                 task: 'get_io_info',
                 parameters: {}
-            })
+            });
+            
+            // Create context menu
+            $.contextMenu({
+                selector: '.context-menu-one', 
+                callback: function(key, options) {
+                    var m = "clicked: " + key;
+                    window.console && console.log(m) || alert(m); 
+                },
+                items: {
+                    "new": {
+                        name: "new",
+                        items: {
+                            "tile": {name: "tile"},
+                            "source": {name: "source", callback: function(){
+                                return workspace.$open_data_div.dialog('open')}
+                            }
+                        }
+                    },
+                    "sources": {name: "Data Sources", callback: function(){
+                    }},
+                    "tiles": {name:"Tiles", callback: function(){
+                    }},
+                    "sep1": "--------------",
+                    "load_ws": {name: "Load Workspace"},
+                    "save_ws": {name: "Save Workspace"},
+                    "save_ws_as": {name: "Save Workspace as"},
+                    "logout": {name: "Logout", callback: function(){
+                        window.location = '/auth/logout/';
+                    }}
+                }
+            });
         },
     };
     
@@ -98,12 +129,9 @@ Toyz.Workspace.init = function(params){
     });
     
     Toyz.Core.load_dependencies(
-        core_dependencies=['all'],
         dependencies={
-            workspace_css: {
-                url: "static/web/static/workspace.css",
-                wait: false
-            }
+            core: true,
+            css: ["/static/web/static/workspace.css"]
         }, 
         callback=workspace.dependencies_onload
     );
