@@ -231,6 +231,17 @@ sure the user has a registered cookie and that the user has acces to the request
 </dd></dl>
 
 <dl class="class">
+<dt id="toyz.web.app.AuthWorkspaceHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">AuthWorkspaceHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthWorkspaceHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.web.app.AuthHandler" title="toyz.web.app.AuthHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.AuthHandler</span></tt></a>, <a class="reference internal" href="#toyz.web.app.WorkspaceHandler" title="toyz.web.app.WorkspaceHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.WorkspaceHandler</span></tt></a></p>
+<dl class="method">
+<dt id="toyz.web.app.AuthWorkspaceHandler.get">
+<tt class="descname">get</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.AuthWorkspaceHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="toyz.web.app.MainHandler">
 <em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">MainHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.MainHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#toyz.web.app.ToyzHandler" title="toyz.web.app.ToyzHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.ToyzHandler</span></tt></a></p>
@@ -467,6 +478,28 @@ to view are accepted, all others return a <a class="reference internal" href="to
 
 </dd></dl>
 
+<dl class="class">
+<dt id="toyz.web.app.WorkspaceHandler">
+<em class="property">class </em><tt class="descclassname">toyz.web.app.</tt><tt class="descname">WorkspaceHandler</tt><big>(</big><em>application</em>, <em>request</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#toyz.web.app.WorkspaceHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.web.app.ToyzHandler" title="toyz.web.app.ToyzHandler"><tt class="xref py py-class docutils literal"><span class="pre">toyz.web.app.ToyzHandler</span></tt></a></p>
+<dl class="method">
+<dt id="toyz.web.app.WorkspaceHandler.get">
+<tt class="descname">get</tt><big>(</big><em>workspace</em><big>)</big><a class="headerlink" href="#toyz.web.app.WorkspaceHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the workspace</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.WorkspaceHandler.get_template_path">
+<tt class="descname">get_template_path</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.WorkspaceHandler.get_template_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="toyz.web.app.WorkspaceHandler.initialize">
+<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.WorkspaceHandler.initialize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="function">
 <dt id="toyz.web.app.init_web_app">
 <tt class="descclassname">toyz.web.app.</tt><tt class="descname">init_web_app</tt><big>(</big><big>)</big><a class="headerlink" href="#toyz.web.app.init_web_app" title="Permalink to this definition">¶</a></dt>
@@ -561,6 +594,19 @@ application</li>
 status (<em>string</em> ): &#8216;success&#8217;,
 path (<em>string</em> ): path created on the server</dd>
 </dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.web.tasks.get_io_info">
+<tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">get_io_info</tt><big>(</big><em>app</em>, <em>id</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.get_io_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get I/O settings for different packages (pure python, numpy, pandas, etc)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.web.tasks.load_data_file">
+<tt class="descclassname">toyz.web.tasks.</tt><tt class="descname">load_data_file</tt><big>(</big><em>app</em>, <em>id</em>, <em>params</em><big>)</big><a class="headerlink" href="#toyz.web.tasks.load_data_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a data file given a set of parameters from the browser, initialized by
+<tt class="docutils literal"><span class="pre">get_io_info</span></tt>.</p>
 </dd></dl>
 
 <dl class="function">

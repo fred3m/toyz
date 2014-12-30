@@ -59,3 +59,5 @@ The third party codes currently used in toyz are:
     - `jquery UI <http://jqueryui.com/>`_
     - `Graph 3d <http://almende.github.io/chap-links-library/js/graph3d/doc/>`_
     - `Google visual <https://developers.google.com/chart/interactive/docs/reference>`_
+    - `jQuery contextMenu <http://medialize.github.io/jQuery-contextMenu/index.html>`_
+    - `jQuery getCss <https://github.com/furf/jquery-getCSS>`_

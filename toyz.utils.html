@@ -377,6 +377,16 @@ they are operating on groups or users.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="toyz.utils.core.is_int">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">is_int</tt><big>(</big><em>str_in</em><big>)</big><a class="headerlink" href="#toyz.utils.core.is_int" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.is_number">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">is_number</tt><big>(</big><em>str_in</em><big>)</big><a class="headerlink" href="#toyz.utils.core.is_number" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="toyz.utils.core.normalize_path">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">normalize_path</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.core.normalize_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Format a path with bash symbols like &#8216;<strong>~</strong>&#8216; , &#8216;<strong>.</strong>&#8216; , &#8216;<strong>..</strong>&#8216; into a full absolute path. This
@@ -607,6 +617,13 @@ in the database not contained in <tt class="docutils literal"><span class="pre">
 <em class="property">exception </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">ToyzError</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.utils.errors.ToyzError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#toyz.utils.errors.Error" title="toyz.utils.errors.Error"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.Error</span></tt></a></p>
 <p>Class for custom errors related to the running of Toyz.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="toyz.utils.errors.ToyzIoError">
+<em class="property">exception </em><tt class="descclassname">toyz.utils.errors.</tt><tt class="descname">ToyzIoError</tt><big>(</big><em>msg</em><big>)</big><a class="headerlink" href="#toyz.utils.errors.ToyzIoError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#toyz.utils.errors.ToyzError" title="toyz.utils.errors.ToyzError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzError</span></tt></a></p>
+<p>Class for I/O Errors</p>
 </dd></dl>
 
 <dl class="exception">
