@@ -34,5 +34,5 @@ and [astro_pypelines](https://github.com/fred3m/astro_pypelines)
 you will be able to use a preview of the package 
 as applied to astronomy.
 
-The goal is for the main interface to be completed by the end of 2014 while the astronomy 
-tools should be ready in January or February.
+The goal is for the main interface to be completed by mid January (2015) while the astronomy 
+tools should be ready sometime in February.
