@@ -302,6 +302,7 @@ def load_unknown(str_in, single_ok=False):
     return val_out
 
 def load_data_file(io_module, file_type, file_options, io_modules=None):
+    meta = ''
     if io_module == 'python':
         sep = file_options['sep']
         del file_options['sep']
@@ -372,5 +373,5 @@ def load_data_file(io_module, file_type, file_options, io_modules=None):
             "io_module not found in toyz.utils.io.io_modules.\n"
             "Please specify a set of alternative io_modules or check your module name")
     
-    return columns, data
+    return columns, data, meta
                 

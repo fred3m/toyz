@@ -339,7 +339,7 @@ def load_directory(toyz_settings, tid, params):
     #print('path info:', response)
     return response
 
-def create_dir(app, id, params):
+def create_dir(toyz_settings, tid, params):
     """
     Creates a new path on the server (if it does not already exist).
     
@@ -365,7 +365,7 @@ def create_dir(app, id, params):
     }
     return response
 
-def get_io_info(app, id, params):
+def get_io_info(toyz_settings, tid, params):
     """
     Get I/O settings for different packages (pure python, numpy, pandas, etc)
     """
@@ -418,14 +418,14 @@ def get_io_info(app, id, params):
     
     return response
 
-def load_data_file(app, id, params):
+def load_data_file(toyz_settings, tid, params):
     """
     Load a data file given a set of parameters from the browser, initialized by
     ``get_io_info``.
     """
     import toyz.utils.io as io
     
-    columns, data = io.load_data_file(
+    columns, data, meta = io.load_data_file(
         params['io_module'],
         params['file_type'], 
         params['file_options'])
@@ -433,7 +433,51 @@ def load_data_file(app, id, params):
     response = {
         'id': 'data_file',
         'columns': columns,
-        'data': data
+        'data': data,
+        'meta': meta
+    }
+    
+    print('response', response)
+    
+    return response
+
+def save_workspace(toyz_settings, tid, params):
+    """
+    Save a workspace for later use
+    """
+    core.check4keys(params, ['workspaces', 'overwrite'])
+    workspaces = db_utils.get_param(toyz_settings.db, 'workspaces', user_id=tid['user_id'])
+    work_id = params['workspaces'].keys()[0]
+    if work_id in workspaces and params['overwrite'] is False:
+        response = {
+            'id': 'verify',
+            'func': 'save_workspace'
+        }
+    else:
+        db_utils.update_param(toyz_settings.db, 'workspaces', 
+            workspaces=params['workspaces'], user_id=tid['user_id'])
+        response = {
+            'id': 'notification',
+            'msg': 'Workspace saved successfully',
+            'func': 'save_workspace'
+        }
+    
+    return response
+
+def load_workspace(toyz_settings, tid, params):
+    """
+    Load a workspace
+    """
+    core.check4keys(params, ['work_id'])
+    workspaces = db_utils.get_param(toyz_settings.db, 'workspaces', user_id=tid['user_id'])
+    if params['work_id'] not in workspaces:
+        raise ToyzJobError("{0} not found in workspaces".format(params['work_id']))
+    
+    response = {
+        'id': 'workspace',
+        'work_id': params['work_id'],
+        'settings': workspaces[params['work_id']]
     }
     
     return response
+    

@@ -12,6 +12,8 @@
         <script>
         var $workspace_div = $('#ws-div');
         var workspace;
+        var $rclick = $("<div id='instructions' ><center><font size='20' color='#FFFF66'>"
+                        +"Right-click below to begin</font></center></div>");
         
         window.onload = function(){
             $workspace_div.height(window.innerHeight);
@@ -24,6 +26,11 @@
                 $parent: $workspace_div
             });
             
+            // Clear instructions to right-click after the user has done so
+            workspace.$div.append($rclick);
+            workspace.$div.on('contextmenu', function(){
+                $rclick.remove();
+            });
             console.log('workspace-div SIZE:', $workspace_div.height(), $workspace_div.width());
         }
         </script>

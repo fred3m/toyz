@@ -229,8 +229,9 @@ Toyz.Gui.initParams=function(param, $parent, key){
             if(!selector.hasOwnProperty('type')){
                 selector.type = 'input';
             };
-        
-            selector = Toyz.Gui.buildParamDiv(selector,$div);
+            
+            //selector = Toyz.Gui.buildParamDiv(selector,$div);
+            selector = Toyz.Gui.initParams(selector,$div,pKey);
             pVal = Toyz.Gui.val(selector.$input);
             selector.old_val = pVal;
             selector.$input.change(function(selector,param){
@@ -424,10 +425,7 @@ Toyz.Gui.initParamList=function(pList,options){
             if(param.type == 'custom'){
                 params[param_name] = param.getVal();
             }else if(param.type=='div' || param.type=='conditional'){
-                var subset = param_list.getParams(param);
-                for(subParam in subset){
-                    params[subParam] = subset[subParam];
-                }
+                params = $.extend(true, params, param_list.getParams(param));
             }else if(param.type == 'list'){
                 if(param.format == 'dict'){
                     params[param_name] = {};
@@ -474,7 +472,7 @@ Toyz.Gui.initParamList=function(pList,options){
             // Extract only the parameters that are visible (in the case of conditional or optional parameters)
             //console.log('paramDiv:', paramDiv);
             
-            var params = {};
+            var params = {conditions:{}};
             //console.log('paramDiv:',paramDiv);
             if(paramDiv.type == 'conditional'){
                 var pKey;
@@ -483,15 +481,13 @@ Toyz.Gui.initParamList=function(pList,options){
                         pKey = param;
                     };
                 };
+                params.conditions[pKey] = Toyz.Gui.val(paramDiv.selector[pKey].$input);
                 var subset = param_list.getParams(
                     paramDiv.paramSets[Toyz.Gui.val(paramDiv.selector[pKey].$input)]
                 );
                 for(var subParam in subset){
                     params[subParam] = subset[subParam];
                 };
-                if(!params.hasOwnProperty('conditions')){
-                    params['conditions'] = {};
-                }
                 params['conditions'][pKey] = Toyz.Gui.val(paramDiv.selector[pKey].$input);
             };
             for(var param_name in paramDiv.params){
@@ -546,19 +542,43 @@ Toyz.Gui.initParamList=function(pList,options){
             };
         },
         // Given a set of parameter values, set the appropriate fields for each parameter
-        setParams: function(param, param_values){
-            //console.log('param:',param);
+        setParams: function(param, param_values, set_all){
+            if(set_all===undefined){
+                throw 'set_all must be specified';
+            };
+            //console.log('param_values:', param_values);
             if(param.type == 'div'){
                 for(p in param.params){
-                    param_list.setParams(param.params[p], param_values);
+                    param_list.setParams(param.params[p], param_values, set_all);
+                };
+                for(p in param.optional){
+                    param_list.setParams(param.optional[p], param_values.conditions, set_all);
                 };
             }else if (param.type == 'conditional'){
                 // There will only be one entry here, but we don't know its name
+                var pKey;
                 for(p in param.selector){
-                    param_list.setParams(param.params[p], param_values);
+                    if(param.selector.hasOwnProperty(p)){
+                        pKey=p;
+                    };
                 };
-                for(p in param.paramSets){
-                    param_list.setParams(param.paramSets[p], param_values);
+                param_list.setParams(param.selector[pKey], param_values.conditions, set_all);
+                var selected = Toyz.Gui.val(param.selector[pKey].$input);
+                
+                // only set conditional values that are selected, unless select_all is true
+                if(set_all){
+                    for(p in param.paramSets){
+                        param_list.setParams(param.paramSets[p], param_values, true);
+                    };
+                }else if(param.paramSets.hasOwnProperty(selected)){
+                    param_list.setParams(param.paramSets[selected], param_values, false);
+                }else{
+                };
+                
+                for(p in param.optional){
+                    if(param.optional.hasOwnProperty(p)){
+                        param_list.setParams(param.optional[p], param_values.conditions, set_all);
+                    };
                 };
             }else if(param.type == 'list'){
                 if(param_values.hasOwnProperty(param.name)){
@@ -590,7 +610,7 @@ Toyz.Gui.initParamList=function(pList,options){
                         for(var i=0; i<param_values[param.name].length; i++){
                             param.buttons.add.$input.click();
                             for(item_key in param_values[key][i]){
-                                param_list.setParams(param.items[i], param_values[key][i]);
+                                param_list.setParams(param.items[i],param_values[key][i],set_all);
                             }
                         }
                     };
@@ -605,7 +625,7 @@ Toyz.Gui.initParamList=function(pList,options){
     
     if(options.hasOwnProperty('default')){
         console.log('default:',options.default)
-        param_list.setParams(param_list.params, options.default);
+        param_list.setParams(param_list.params, options.default, true);
     };
     
     return param_list;

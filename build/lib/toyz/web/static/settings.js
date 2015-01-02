@@ -76,7 +76,8 @@ Toyz.Console.Settings.getUserSettings = function(params, $user_div){
                                     console.log('call_back result:',result);
                                     user_settings.setParams(
                                         user_settings.params, 
-                                        result
+                                        result,
+                                        true
                                     );
                                 }
                             )
@@ -231,7 +232,8 @@ Toyz.Console.Settings.getGroupSettings = function(params, $group_div){
                                     console.log('call_back result:',result);
                                     group_settings.setParams(
                                         group_settings.params, 
-                                        result
+                                        result,
+                                        true
                                     );
                                 }
                             )

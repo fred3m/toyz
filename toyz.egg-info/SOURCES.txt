@@ -36,7 +36,6 @@ docs/source/toyz.utils.rst
 docs/source/toyz.web.rst
 scripts/README.rst
 scripts/toyz
-toyz/.DS_Store
 toyz/__init__.py
 toyz/__init__.pyc
 toyz/version.py
@@ -46,7 +45,6 @@ toyz.egg-info/SOURCES.txt
 toyz.egg-info/dependency_links.txt
 toyz.egg-info/not-zip-safe
 toyz.egg-info/top_level.txt
-toyz/third_party/.DS_Store
 toyz/third_party/jquery-2.1.0.min.js
 toyz/third_party/graph3d-1.2/CHANGELOG
 toyz/third_party/graph3d-1.2/LICENSE
@@ -619,14 +617,12 @@ toyz/utils/security.pyc
 toyz/utils/third_party_settings.py
 toyz/utils/db_interfaces/__init__.py
 toyz/utils/db_interfaces/sqlite_interface.py
-toyz/web/.DS_Store
 toyz/web/__init__.py
 toyz/web/__init__.pyc
 toyz/web/app.py
 toyz/web/app.pyc
 toyz/web/tasks.py
 toyz/web/tasks.pyc
-toyz/web/static/.DS_Store
 toyz/web/static/.Rhistory
 toyz/web/static/astro_tools.js
 toyz/web/static/settings.js
@@ -636,7 +632,6 @@ toyz/web/static/toyz_gui.js
 toyz/web/static/toyz_visual.js
 toyz/web/static/workspace.css
 toyz/web/static/workspace.js
-toyz/web/static/images/.DS_Store
 toyz/web/static/images/striped_bg.png
 toyz/web/templates/home.html
 toyz/web/templates/image-viewer.html
