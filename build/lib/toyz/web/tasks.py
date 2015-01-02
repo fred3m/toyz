@@ -114,10 +114,13 @@ def load_user_info(toyz_settings, tid, params):
           response
     """
     user = core.get_user_type(params)
-    if 'user_id' in user:
-        fields = ['groups', 'paths', 'modules', 'toyz']
-    else:
-        fields = ['users', 'paths', 'modules', 'toyz']
+    
+    #if 'user_id' in user:
+    #    fields = ['groups', 'paths', 'modules', 'toyz']
+    #else:
+    #    fields = ['users', 'paths', 'modules', 'toyz']
+    
+    fields = params['user_attr']
     
     response = {
         'id': 'user_info'

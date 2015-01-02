@@ -145,7 +145,91 @@ Toyz.Workspace.init = function(params){
         $new_data_div: $('<div/>')
             .prop('title', 'Open Data File')
             .addClass('open-dialog'),
+        $ws_dropdown_div: $('<div/>').prop('title', 'Load Workspace'), 
         params: $.extend(true,{},params),
+        dependencies_onload: function(){
+            console.log('all_dependencies_loaded');
+            workspace.file_dialog = Toyz.Core.initFileDialog({
+                websocket: workspace.websocket
+            });
+            
+            workspace.websocket.send_task({
+                module: 'toyz.web.tasks',
+                task: 'get_io_info',
+                parameters: {}
+            });
+            
+            if(!workspace.params.hasOwnProperty('data_sources')){
+                workspace.params.data_sources = {};
+            };
+            workspace.data_sources=Toyz.Workspace.init_data_dialog(workspace);
+            
+            workspace.$ws_dropdown_input = $('<select/>');
+            
+            workspace.$ws_dropdown_div.append(workspace.$ws_dropdown_input);
+            workspace.$ws_dropdown_div.dialog({
+                resizable: true,
+                draggable: true,
+                autoOpen: false,
+                modal: false,
+                width: 'auto',
+                height: 'auto',
+                buttons: {
+                    Load: function(){
+                        work_id = workspace.$ws_dropdown_input.val();
+                        workspace.websocket.send_task(
+                            {
+                                module: 'toyz.web.tasks',
+                                task: 'load_workspace',
+                                parameters: {work_id: work_id}
+                            },
+                            workspace.update_workspace
+                        );
+                        workspace.$ws_dropdown_div.dialog('close');
+                    },
+                    Cancel: function(){
+                        workspace.$ws_dropdown_div.dialog('close');
+                    }
+                }
+            });
+            
+            // Create context menu
+            $.contextMenu({
+                selector: '.context-menu-one', 
+                callback: function(key, options) {
+                    var m = "clicked: " + key;
+                    console.log(m, options);
+                    workspace[key]();
+                },
+                items: {
+                    "new": {
+                        name: "new",
+                        items: {
+                            "tile": {name: "tile", callback: function(){}},
+                            "source": {name: "source", callback: function(){
+                                workspace.data_sources.editing = '';
+                                workspace.$new_data_div.dialog('open')}
+                            }
+                        }
+                    },
+                    "sources": {name: "Data Sources", callback: function(){
+                        workspace.data_sources.$div.dialog('open');
+                    }},
+                    "tiles": {name:"Tiles", callback: function(){
+                    }},
+                    "sep1": "--------------",
+                    "load_workspace": {name: "Load Workspace"},
+                    "save_workspace": {name: "Save Workspace"},
+                    "save_ws_as": {name: "Save Workspace as", callback: function(){
+                        workspace.save_ws_as();
+                    }},
+                    "share_workspace": {name: "Share Workspace"},
+                    "logout": {name: "Logout", callback: function(){
+                        window.location = '/auth/logout/';
+                    }}
+                }
+            });
+        },
         rx_msg: function(result){
             console.log('msg received:', result);
             if(result.id == 'io_info'){
@@ -201,60 +285,6 @@ Toyz.Workspace.init = function(params){
                 });
             }
         },
-        dependencies_onload: function(){
-            console.log('all_dependencies_loaded');
-            workspace.file_dialog = Toyz.Core.initFileDialog({
-                websocket: workspace.websocket
-            });
-            
-            workspace.websocket.send_task({
-                module: 'toyz.web.tasks',
-                task: 'get_io_info',
-                parameters: {}
-            });
-            
-            if(!workspace.params.hasOwnProperty('data_sources')){
-                workspace.params.data_sources = {};
-            };
-            workspace.data_sources=Toyz.Workspace.init_data_dialog(workspace);
-            
-            // Create context menu
-            $.contextMenu({
-                selector: '.context-menu-one', 
-                callback: function(key, options) {
-                    var m = "clicked: " + key;
-                    console.log(m, options);
-                    workspace[key]();
-                },
-                items: {
-                    "new": {
-                        name: "new",
-                        items: {
-                            "tile": {name: "tile", callback: function(){}},
-                            "source": {name: "source", callback: function(){
-                                workspace.data_sources.editing = '';
-                                workspace.$new_data_div.dialog('open')}
-                            }
-                        }
-                    },
-                    "sources": {name: "Data Sources", callback: function(){
-                        workspace.data_sources.$div.dialog('open');
-                    }},
-                    "tiles": {name:"Tiles", callback: function(){
-                    }},
-                    "sep1": "--------------",
-                    "load_workspace": {name: "Load Workspace"},
-                    "save_workspace": {name: "Save Workspace"},
-                    "save_ws_as": {name: "Save Workspace as", callback: function(){
-                        workspace.save_ws_as();
-                    }},
-                    "share_workspace": {name: "Share Workspace"},
-                    "logout": {name: "Logout", callback: function(){
-                        window.location = '/auth/logout/';
-                    }}
-                }
-            });
-        },
         save_workspace: function(params){
             if(workspace.name===undefined){
                 workspace.save_ws_as();
@@ -293,14 +323,26 @@ Toyz.Workspace.init = function(params){
             workspace.save_workspace({overwrite:false});
         },
         load_workspace: function(){
-            var work_id = prompt("workspace name");
             workspace.websocket.send_task(
                 {
                     module: 'toyz.web.tasks',
-                    task: 'load_workspace',
-                    parameters: {work_id: work_id}
+                    task: 'load_user_info',
+                    parameters:{
+                        user_id: workspace.websocket.user_id,
+                        user_attr: ['workspaces'],
+                    }
                 },
-                workspace.update_workspace
+                function(result){
+                    console.log('workspaces', result.workspaces);
+                    workspace.$ws_dropdown_input.empty();
+                    for(var key in result.workspaces){
+                        var opt = $('<option/>')
+                            .val(key)
+                            .text(key);
+                        workspace.$ws_dropdown_input.append(opt);
+                    }
+                    workspace.$ws_dropdown_div.dialog('open');
+                }
             )
         },
         update_workspace: function(result){
