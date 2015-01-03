@@ -72,6 +72,7 @@ Toyz.Core.jobsocketInit=function(options){
                     var task_id = task.id.request_id.toString();
                     jobsocket.requests[task_id]={func:callback,params:params};
                 };
+                console.log('sending', task);
                 jobsocket.ws.send(JSON.stringify(task));
             }else if(jobsocket.ws.readyState>1){
                 // Websocket is closed, warn user the first time

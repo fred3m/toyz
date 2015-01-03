@@ -4,6 +4,38 @@
 
 Toyz.namespace('Toyz.Workspace');
 
+Toyz.Workspace.contextMenu_items = function(workspace){
+    var items = {
+        "new": {
+            name: "new",
+            items: {
+                "tile": {name: "tile", callback: workspace.new_tile},
+                "source": {name: "source", callback: function(){
+                    workspace.data_sources.editing = '';
+                    workspace.$new_data_div.dialog('open')}
+                }
+            }
+        },
+        "sources": {name: "Data Sources", callback: function(){
+            workspace.data_sources.$div.dialog('open');
+        }},
+        "sep1": "--------------",
+        "load_workspace": {name: "Load Workspace"},
+        "save_workspace": {name: "Save Workspace", callback: function(){
+            workspace.save_workspace();
+        }},
+        "save_ws_as": {name: "Save Workspace as", callback: function(){
+            workspace.save_ws_as();
+        }},
+        "share_workspace": {name: "Share Workspace"},
+        "logout": {name: "Logout", callback: function(){
+            window.location = '/auth/logout/';
+        }}
+    }
+    
+    return items;
+};
+
 Toyz.Workspace.init_data_dialog = function(workspace, sources){
     sources = {} || sources;
     var params = workspace.params.data_sources;
@@ -228,33 +260,9 @@ Toyz.Workspace.init = function(params){
             $.contextMenu({
                 selector: '.context-menu-one', 
                 callback: function(key, options) {
-                    workspace[key]();
+                    workspace[key](options);
                 },
-                items: {
-                    "new": {
-                        name: "new",
-                        items: {
-                            "tile": {name: "tile", callback: workspace.new_tile},
-                            "source": {name: "source", callback: function(){
-                                workspace.data_sources.editing = '';
-                                workspace.$new_data_div.dialog('open')}
-                            }
-                        }
-                    },
-                    "sources": {name: "Data Sources", callback: function(){
-                        workspace.data_sources.$div.dialog('open');
-                    }},
-                    "sep1": "--------------",
-                    "load_workspace": {name: "Load Workspace"},
-                    "save_workspace": {name: "Save Workspace"},
-                    "save_ws_as": {name: "Save Workspace as", callback: function(){
-                        workspace.save_ws_as();
-                    }},
-                    "share_workspace": {name: "Share Workspace"},
-                    "logout": {name: "Logout", callback: function(){
-                        window.location = '/auth/logout/';
-                    }}
-                }
+                items: Toyz.Workspace.contextMenu_items(workspace)
             });
             
             //create tile context menu
@@ -263,10 +271,11 @@ Toyz.Workspace.init = function(params){
                 callback: function(key, options){
                     workspace[key](options);
                 },
-                items: {
-                    "edit_tile": {name:"Edit"},
-                    "remove_tile": {name:"Remove"}
-                }
+                items: $.extend(true, {
+                    "edit_tile": {name:"Edit Tile"},
+                    "remove_tile": {name:"Remove Tile"},
+                    "tile_sep": "--------------"
+                }, Toyz.Workspace.contextMenu_items(workspace))
             })
         },
         rx_msg: function(result){
@@ -338,7 +347,8 @@ Toyz.Workspace.init = function(params){
                     overwrite: true
                 };
                 ws_dict.workspaces[workspace.name] = {
-                    sources: sources
+                    sources: sources,
+                    tiles: workspace.save_tiles()
                 }
                 params = $.extend(true,ws_dict,params);
                 workspace.websocket.send_task(
@@ -388,16 +398,19 @@ Toyz.Workspace.init = function(params){
         update_workspace: function(result){
             workspace.name = result.work_id;
             workspace.data_sources.update_sources(result.settings.sources, replace=true);
+            workspace.tiles = workspace.load_tiles(result.settings.tiles);
+            console.log('workspace tiles:',workspace.tiles);
         },
         share_workspace: function(){
         },
         new_tile: function(){
             var my_idx = (workspace.tile_index++).toString();
-            var my_id = 'tile-div'+my_idx;
             var inner_id = 'tile-'+my_idx;
+            var my_id = 'tile-div'+my_idx;
             var $inner_div = $('<div/>')
                 .prop('id',inner_id)
                 .addClass('ws-inner-div context-menu-tile box menu-injected');
+            
             
             var $div = $('<div/>')
                 .prop('id',my_id)
@@ -416,7 +429,7 @@ Toyz.Workspace.init = function(params){
                 .css({
                     position: 'absolute',
                     top: Math.floor(window.innerHeight/2),
-                    left: Math.floor(window.innerWidth/2)
+                    left: Math.floor(window.innerWidth/2),
                 });
             $div.append($inner_div);
             workspace.$div.append($div);
@@ -430,6 +443,8 @@ Toyz.Workspace.init = function(params){
                 save: function(){},
                 update: function(){}
             }
+            
+            return workspace.tiles[inner_id];
         },
         remove_tile: function(options){
             var my_id = options.$trigger.prop('id');
@@ -442,6 +457,34 @@ Toyz.Workspace.init = function(params){
         },
         edit_tile: function(options){
             workspace.tile_dialog.edit(options.$trigger.prop('id'))
+        },
+        save_tiles: function(){
+            var tiles = {};
+            for(var tile_id in workspace.tiles){
+                var tile = workspace.tiles[tile_id];
+                tiles[tile_id] = {
+                    tile_id: tile_id,
+                    top: tile.$div.offset().top,
+                    left: tile.$div.offset().left,
+                    width: tile.$div.width(),
+                    height: tile.$div.height()
+                };
+            };
+            return tiles;
+        },
+        load_tiles: function(tiles){
+            var new_tiles = {};
+            for(var tile_id in tiles){
+                new_tiles[tile_id] = workspace.new_tile();
+                new_tiles[tile_id].$div.css({
+                    top: tiles[tile_id].top,
+                    left: tiles[tile_id].left,
+                    width: tiles[tile_id].width,
+                    height: tiles[tile_id].height
+                });
+                // Code here to modify the new tiles type and properties
+            };
+            return new_tiles;
         }
     };
     
