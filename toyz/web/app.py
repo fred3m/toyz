@@ -54,7 +54,7 @@ class ToyzHandler(tornado.web.RequestHandler):
         """
         return self.get_secure_cookie("user")
     
-    def get_user_id():
+    def get_user_id(self):
         user_id = self.get_current_user().strip('"')
         return user_id
 
@@ -193,7 +193,7 @@ class AuthLogoutHandler(tornado.web.RequestHandler):
         self.clear_cookie("user")
         self.redirect(self.get_argument("next", "/"))
 
-class WorkspaceHandler(ToyzHandler):
+class ToyzWorkspaceHandler(ToyzHandler):
     def initialize(self, ):
         self.template_path = os.path.join(core.ROOT_DIR, 'web', 'templates')
     def get(self, workspace):
@@ -206,10 +206,28 @@ class WorkspaceHandler(ToyzHandler):
     def get_template_path(self):
         return self.template_path
 
-class AuthWorkspaceHandler(AuthHandler, WorkspaceHandler):
+class AuthToyzWorkspaceHandler(AuthHandler, ToyzWorkspaceHandler):
     @tornado.web.authenticated
     def get(self, workspace):
-        WorkspaceHandler.get(self, workspace)
+        ToyzWorkspaceHandler.get(self, workspace)
+
+class ToyzCoreJsHandler(ToyzHandler):
+    def initialize(self, ):
+        self.template_path = os.path.join(core.ROOT_DIR, 'web', 'templates')
+    def get(self):
+        """
+        Load the core javascript files
+        """
+        print('user=', self.get_user_id())
+        self.render('toyz_core.js')
+    
+    def get_template_path(self):
+        return self.template_path
+
+class AuthToyzCoreJsHandler(AuthHandler, ToyzCoreJsHandler):
+    @tornado.web.authenticated
+    def get(self):
+        ToyzCoreJsHandler.get(self)
         
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     """
@@ -318,13 +336,15 @@ class ToyzWebApp(tornado.web.Application):
             static_handler = AuthStaticFileHandler
             toyz_static_handler = AuthToyzStaticFileHandler
             toyz_template_handler = AuthToyzTemplateHandler
-            workspace_handler = AuthWorkspaceHandler
+            workspace_handler = AuthToyzWorkspaceHandler
+            core_handler = AuthToyzCoreJsHandler
         else:
             main_handler = MainHandler
             static_handler = tornado.web.StaticFileHandler
             toyz_static_handler = ToyzStaticFileHandler
             toyz_template_handler = ToyzTemplateHandler
-            workspace_handler = WorkspaceHandler
+            workspace_handler = ToyzWorkspaceHandler
+            core_hanfler = ToyzCoreHandler
         
         self.user_sessions = {}
         
@@ -345,11 +365,11 @@ class ToyzWebApp(tornado.web.Application):
             (r"/file/(.*)", static_handler, {'path': file_path}),
             (r"/toyz/static/(.*)", toyz_static_handler),
             (r"/toyz/template/(.*)", toyz_template_handler),
+            (r"/toyz_core.js", core_handler),
             (r"/job", WebSocketHandler),
         ]
         
         settings={
-            #'static_path': core.ROOT_DIR,
             'cookie_secret': self.toyz_settings.web.cookie_secret,
             'login_url':'/auth/login/'
         }

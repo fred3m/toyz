@@ -627,7 +627,6 @@ toyz/web/static/.Rhistory
 toyz/web/static/astro_tools.js
 toyz/web/static/settings.js
 toyz/web/static/toyz.css
-toyz/web/static/toyz_core.js
 toyz/web/static/toyz_gui.js
 toyz/web/static/toyz_visual.js
 toyz/web/static/workspace.js
@@ -636,4 +635,5 @@ toyz/web/templates/home.html
 toyz/web/templates/image-viewer.html
 toyz/web/templates/login.html
 toyz/web/templates/scrollTable.html
+toyz/web/templates/toyz_core.js
 toyz/web/templates/workspace.html

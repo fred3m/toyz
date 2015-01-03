@@ -6,6 +6,7 @@ html, body
     padding: 0;
 }
 
+/***** GUI styles *****/
 .paramDiv-default{
     display:block;
 }
@@ -38,6 +39,7 @@ ul {
     padding-left:0;
 }
 
+/***** file dialog styles *****/
 .file-dialog-path-div {
     margin-bottom: 5px;
 }
@@ -69,6 +71,7 @@ ul {
     width: 100%;
 }
 
+/***** workspace styles *****/
 .ws-tile {
     background-color: gray;
     width: 50px;

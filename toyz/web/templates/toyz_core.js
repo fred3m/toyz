@@ -22,6 +22,21 @@ Toyz.namespace=function(namespace){
 // Define the core objects that all Toyz modules will require
 Toyz.namespace('Toyz.Core');
 
+// Parameters retrieved from the server when the page is rendered
+Toyz.Core.core_js = [
+    "/static/third_party/jquery-ui-1.11.2/jquery-ui.js",
+    "/static/web/static/toyz_gui.js",
+    "/static/web/static/toyz_visual.js",
+    "/static/third_party/jquery-contextMenu/jquery.contextMenu.js",
+    "/static/third_party/jquery-contextMenu/jquery.ui.position.js"
+];
+
+Toyz.Core.core_css = [
+    "/static/third_party/jquery-ui-themes-1.11.0/themes/redmond/jquery-ui.css",
+    "/static/web/static/toyz.css",
+    "/static/third_party/jquery-contextMenu/jquery.contextMenu.css"
+];
+
 // Returns the object at the end of a namespace
 // example: Toyz.Core.getNamespace('Mainviewer.loadFitsFile',window) returns the function loadFitsFile
 // in the fitsviewer
@@ -54,9 +69,9 @@ Toyz.Core.jobsocketInit=function(options){
                 };
                 if(typeof callback!='undefined'){
                     var params=passParams||{};
-                    jobsocket.requests[task.id.request_id.toString()]={func:callback,params:params};
+                    var task_id = task.id.request_id.toString();
+                    jobsocket.requests[task_id]={func:callback,params:params};
                 };
-                console.log("sending task:", task);
                 jobsocket.ws.send(JSON.stringify(task));
             }else if(jobsocket.ws.readyState>1){
                 // Websocket is closed, warn user the first time
@@ -65,12 +80,15 @@ Toyz.Core.jobsocketInit=function(options){
                     alert("Websocket to server was disconnected, could not send task");
                 };
                 if(jobsocket.logger){
-                    jobsocket.logger.log("Attempted to send "+task.task+" but connection is closed",true);
+                    jobsocket.logger.log("Attempted to send "
+                            +task.task+" but connection is closed",true);
                 }
             }else{
                 //The connection hasn't opened yet, add the task to the queue
-                console.log('readyState:',jobsocket.ws.readyState, 'session_id', jobsocket.session_id)
-                console.log('stored task in queue:', {task:task, callback:callback, passParams:passParams});
+                console.log('readyState:',
+                        jobsocket.ws.readyState, 'session_id', jobsocket.session_id)
+                console.log('stored task in queue:', 
+                        {task:task, callback:callback, passParams:passParams});
                 jobsocket.queue.push({task:task, callback:callback, passParams:passParams});
             };
         },
@@ -133,7 +151,8 @@ Toyz.Core.jobsocketInit=function(options){
                 jobsocket.send_task(task.task, task.callback, task.passParams);
             };
         };
-        if(result.hasOwnProperty('request_id') && jobsocket.requests.hasOwnProperty(result.request_id.toString())){
+        if(result.hasOwnProperty('request_id') && 
+                jobsocket.requests.hasOwnProperty(result.request_id.toString())){
             var f=jobsocket.requests[result.request_id.toString()].func;
             var params=jobsocket.requests[result.request_id.toString()].params;
             if(!('progress_update' in result)){
@@ -191,26 +210,12 @@ Toyz.Core.load_css = function(styles, callback){
 
 // Load js and css dependencies in order
 Toyz.Core.load_dependencies=function(dependencies, callback){
-    var core_js = [
-        "/static/third_party/jquery-ui-1.11.2/jquery-ui.js",
-        "/static/web/static/toyz_gui.js",
-        "/static/web/static/toyz_visual.js",
-        "/static/third_party/jquery-contextMenu/jquery.contextMenu.js",
-        "/static/third_party/jquery-contextMenu/jquery.ui.position.js"
-    ];
-    
-    var core_css = [
-        "/static/third_party/jquery-ui-themes-1.11.0/themes/redmond/jquery-ui.css",
-        "/static/web/static/toyz.css",
-        "/static/third_party/jquery-contextMenu/jquery.contextMenu.css"
-    ];
-    
     var scripts = [];
     var style_sheets = [];
     
     if(dependencies.hasOwnProperty('core') && dependencies.core){
-        scripts = core_js;
-        style_sheets = core_css;
+        scripts = Toyz.Core.core_js;
+        style_sheets = Toyz.Core.core_css;
     }
     if(dependencies.hasOwnProperty('js')){
         scripts = scripts.concat(dependencies.js);

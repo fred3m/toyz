@@ -18,7 +18,6 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
         editing: '',
         load_src: function(params){
             var src_params = $.extend(true, {}, params);
-            console.log('editing:', data_dialog.editing);
             // Create entry if the source is new (as opposed to one being edited)
             if(data_dialog.editing == ''){
                 var data_name = 'data-'+(data_dialog.src_index++).toString();
@@ -28,13 +27,10 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
                     $input: $('<input value="'+data_name+'"></input>'),
                     params: params
                 };
-                console.log('data name:', data_name);
                 data_dialog.sources[data_name].$div
                     .append('<input type="radio" name="data_src" value='+data_name+'></input>')
                     .append(data_dialog.sources[data_name].$input);
                 data_dialog.$div.append(data_dialog.sources[data_name].$div);
-            
-                console.log('src_params:', src_params);
             }else{
                 data_name = data_dialog.editing;
                 data_dialog.sources[data_name].params = params;
@@ -60,14 +56,12 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
                     src: data_name
                 }
             );
-            console.log('load sent');
         },
         add_src: function(result, params){
             data_dialog.sources[params.src].columns = result.columns;
             data_dialog.sources[params.src].data = result.data;
             data_dialog.sources[params.src].tiles = [];
             workspace.$new_data_div.dialog('close');
-            console.log('sources', data_dialog);
         },
         remove_src: function(source){
             if(source===undefined){
@@ -459,7 +453,6 @@ Toyz.Workspace.init = function(params){
     Toyz.Core.load_dependencies(
         dependencies={
             core: true,
-            //css: ["/static/web/static/workspace.css"]
         }, 
         callback=workspace.dependencies_onload
     );
