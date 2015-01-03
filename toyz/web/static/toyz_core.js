@@ -197,13 +197,13 @@ Toyz.Core.load_dependencies=function(dependencies, callback){
         "/static/web/static/toyz_visual.js",
         "/static/third_party/jquery-contextMenu/jquery.contextMenu.js",
         "/static/third_party/jquery-contextMenu/jquery.ui.position.js"
-    ]
+    ];
     
     var core_css = [
-        '/static/third_party/jquery-ui-themes-1.11.0/themes/redmond/jquery-ui.css',
+        "/static/third_party/jquery-ui-themes-1.11.0/themes/redmond/jquery-ui.css",
         "/static/web/static/toyz.css",
         "/static/third_party/jquery-contextMenu/jquery.contextMenu.css"
-    ]
+    ];
     
     var scripts = [];
     var style_sheets = [];
@@ -217,7 +217,7 @@ Toyz.Core.load_dependencies=function(dependencies, callback){
     }
     if(dependencies.hasOwnProperty('css')){
         style_sheets = style_sheets.concat(dependencies.css);
-    }
+    };
     
     // Call the load_css function with the callback function and style sheets when
     // all scripts have loaded
@@ -437,175 +437,6 @@ Toyz.Core.initFileSelect = function(div_name){
     }
     
     return file_select;
-}
-
-Toyz.Core.oldinitFileDialog=function(options){
-    if(!options.hasOwnProperty('element') || !options.hasOwnProperty('websocket')){
-        alert("An html element and websocket must be specified to open a file dialog!");
-        return {};
-    };
-    $div=$('<div/>').prop('id','file-dialog').prop('title','Select file to open');
-    $('body').append($div);
-    
-    $newFolder=$('<div/>')
-        .prop('title','New Folder Name');
-    
-    var fileDialog=$.extend(true,{
-        path:"",
-        parent:"",
-        dirs:[],
-        files:[],
-        element:options.element,
-        websocket:options.websocket,
-        pathLbl:options.element+'-lbl',
-        fileInput:options.element+'-input',
-        fileTbl:options.element+'-tbl',
-        stored_dirs:{},
-        newFolder:{
-            $div:$newFolder,
-            $input:$folderInput=$('<input/>').prop('size',40).appendTo($newFolder)
-        },
-        load_directory:function(path,callback,buttons){
-            if(buttons){
-                $('#'+fileDialog.element).dialog({
-                    buttons:buttons
-                });
-            }else{
-                $('#'+fileDialog.element).dialog({
-                    buttons:fileDialog.defaultButtons
-                });
-            };
-            fileDialog.websocket.sendTask(
-                {
-                    module:"toyz.web.tasks",
-                    task:"load_directory",
-                    parameters:{
-                        path:path
-                    }
-                },
-                function(result){
-                    delete result.id;
-                    fileDialog.update(result);
-                    $('#'+fileDialog.element).dialog('open');
-                }
-            );
-            if(callback){
-                fileDialog.clickOpen=callback;
-            }
-        },
-        update:function(params){
-            for(param in params){
-                fileDialog[param]=params[param];
-            };
-            $('#'+fileDialog.pathLbl).text(fileDialog.path);
-            var tbl=document.getElementById(fileDialog.fileTbl);
-            tbl.innerHTML="";
-            var row=tbl.insertRow(0);
-            var cell=row.insertCell(0);
-            row.style.cursor='pointer';
-            cell.innerHTML="\u21B0";
-            cell.onclick=function(){
-                fileDialog.load_directory(fileDialog.parent);
-                $('#'+fileDialog.fileInput).val('');
-            };
-            tbl_idx=0;
-            for(var dir in params.stored_dirs){
-                var row=tbl.insertRow(1+tbl_idx++);
-                var cell=row.insertCell(0);
-                row.style.color='#AA0000';
-                row.style.cursor='pointer';
-                cell.innerHTML=dir;
-                cell.onclick=function(path){
-                    return function(){
-                        fileDialog.load_directory(path);
-                    }
-                }(fileDialog.stored_dirs[dir]);
-            };
-            for(i=0;i<fileDialog.dirs.length;i++){
-                var row=tbl.insertRow(1+tbl_idx++);
-                var cell=row.insertCell(0);
-                row.style.color='#0000AA';
-                row.style.cursor='pointer';
-                cell.innerHTML=params.dirs[i];
-                cell.onclick=function(){
-                    fileDialog.load_directory(fileDialog.path+this.innerHTML);
-                };
-            };
-            for(i=0;i<fileDialog.files.length;i++){
-                var row=tbl.insertRow(1+tbl_idx++);
-                var cell=row.insertCell(0);
-                row.style.cursor='pointer';
-                cell.innerHTML=params.files[i];
-                cell.onclick=function(){
-                    var size=Math.max(20,this.innerHTML.length);
-                    $('#'+fileDialog.fileInput).val(this.innerHTML);
-                    $('#'+fileDialog.fileInput).prop('size',size+2);
-                    //$('#'+fileDialog.element).scrollTop(0);
-                };
-            };
-        },
-        clickOpen:function(){},
-        defaultButtons:{
-            "Open":function(){
-                fileDialog.clickOpen();
-                $(this).dialog("close");
-            },
-            "New Folder":function(){
-                fileDialog.newFolder.$div.dialog('open');
-            },
-            "Cancel":function(){
-                $(this).dialog("close");
-            }
-        }
-    },options);
-    $('#'+options.element).append($('<label/>').attr('id',fileDialog.pathLbl).text("/"));
-    $('#'+options.element).append(
-        $('<input/>')
-            .prop('id',fileDialog.fileInput)
-            .prop('type','text')
-    );
-    $('#'+options.element).append($('<table/>').attr('id',fileDialog.fileTbl));
-    $('#'+options.element).dialog({
-        resizable:true,
-        draggable:true,
-        width:400,
-        height:400,
-        autoOpen:false,
-        modal:true,
-        buttons:fileDialog.defaultButtons,
-    }).css("font-size", "12px");
-    
-    $newFolder.dialog({
-        resizable:true,
-        draggable:true,
-        width:200,
-        autoOpen:false,
-        modal:true,
-        buttons:{
-            'Create':function(){
-                console.log('new folder',fileDialog.path+fileDialog.newFolder.$input.val());
-                fileDialog.websocket.sendTask(
-                    {
-                        module:'web_utils',
-                        task:'create_dir',
-                        parameters:{
-                            path:fileDialog.path+fileDialog.newFolder.$input.val()
-                        }
-                    },
-                    function(result){
-                        if(result.id=='create folder' && result.status=='success'){
-                            fileDialog.load_directory(result.path);
-                        }
-                    }
-                );
-                $(this).dialog('close');
-            },
-            'Cancel':function(){
-                $(this).dialog('close');
-            }
-        },
-    }).css("font-size", "12px");;
-    return fileDialog;
 };
 
 // Build Interactive table

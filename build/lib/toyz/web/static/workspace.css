@@ -4,6 +4,7 @@
     height: 50px;
     border-radius: 10px;
     padding: 10px;
+    position: absolute;
 }
 
 .ws-inner-div {

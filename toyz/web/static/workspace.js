@@ -18,7 +18,6 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
         editing: '',
         load_src: function(params){
             var src_params = $.extend(true, {}, params);
-            console.log('editing:', data_dialog.editing);
             // Create entry if the source is new (as opposed to one being edited)
             if(data_dialog.editing == ''){
                 var data_name = 'data-'+(data_dialog.src_index++).toString();
@@ -28,13 +27,10 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
                     $input: $('<input value="'+data_name+'"></input>'),
                     params: params
                 };
-                console.log('data name:', data_name);
                 data_dialog.sources[data_name].$div
                     .append('<input type="radio" name="data_src" value='+data_name+'></input>')
                     .append(data_dialog.sources[data_name].$input);
                 data_dialog.$div.append(data_dialog.sources[data_name].$div);
-            
-                console.log('src_params:', src_params);
             }else{
                 data_name = data_dialog.editing;
                 data_dialog.sources[data_name].params = params;
@@ -60,13 +56,12 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
                     src: data_name
                 }
             );
-            console.log('load sent');
         },
         add_src: function(result, params){
             data_dialog.sources[params.src].columns = result.columns;
             data_dialog.sources[params.src].data = result.data;
+            data_dialog.sources[params.src].tiles = [];
             workspace.$new_data_div.dialog('close');
-            console.log('sources', data_dialog);
         },
         remove_src: function(source){
             if(source===undefined){
@@ -137,6 +132,38 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
     return data_dialog;
 };
 
+Toyz.Workspace.init_tile_dialog = function(workspace){
+    var $div = $('<div/>').prop('title','Edit Tile');
+    var tile_dialog = {
+        $div: $div,
+        editing: '',
+        edit: function(tile_id){
+            tile_dialog.editing = tile_id;
+            tile_dialog.$div.dialog('open');
+        }
+    };
+    
+    tile_dialog.$div.dialog({
+        resizable: true,
+        draggable: true,
+        autoOpen: false,
+        modal: false,
+        width: 'auto',
+        height: '300',
+        buttons: {
+            Set: function(){
+                console.log('Set tile has not yet been implemented');
+                tile_dialog.$div.dialog('close');
+            },
+            Cancel: function(){
+                tile_dialog.$div.dialog('close');
+            }
+        }
+    });
+    
+    return tile_dialog;
+};
+
 Toyz.Workspace.init = function(params){
     var workspace = {
         name: undefined,
@@ -145,7 +172,9 @@ Toyz.Workspace.init = function(params){
         $new_data_div: $('<div/>')
             .prop('title', 'Open Data File')
             .addClass('open-dialog'),
-        $ws_dropdown_div: $('<div/>').prop('title', 'Load Workspace'), 
+        $ws_dropdown_div: $('<div/>').prop('title', 'Load Workspace'),
+        tiles: {},
+        tile_index: 0,
         params: $.extend(true,{},params),
         dependencies_onload: function(){
             console.log('all_dependencies_loaded');
@@ -163,7 +192,6 @@ Toyz.Workspace.init = function(params){
                 workspace.params.data_sources = {};
             };
             workspace.data_sources=Toyz.Workspace.init_data_dialog(workspace);
-            
             workspace.$ws_dropdown_input = $('<select/>');
             
             workspace.$ws_dropdown_div.append(workspace.$ws_dropdown_input);
@@ -193,19 +221,20 @@ Toyz.Workspace.init = function(params){
                 }
             });
             
-            // Create context menu
+            // Initialize dialog to edit a tile's type and settings
+            workspace.tile_dialog = Toyz.Workspace.init_tile_dialog(workspace);
+            
+            // Create workspace context menu
             $.contextMenu({
                 selector: '.context-menu-one', 
                 callback: function(key, options) {
-                    var m = "clicked: " + key;
-                    console.log(m, options);
                     workspace[key]();
                 },
                 items: {
                     "new": {
                         name: "new",
                         items: {
-                            "tile": {name: "tile", callback: function(){}},
+                            "tile": {name: "tile", callback: workspace.new_tile},
                             "source": {name: "source", callback: function(){
                                 workspace.data_sources.editing = '';
                                 workspace.$new_data_div.dialog('open')}
@@ -214,8 +243,6 @@ Toyz.Workspace.init = function(params){
                     },
                     "sources": {name: "Data Sources", callback: function(){
                         workspace.data_sources.$div.dialog('open');
-                    }},
-                    "tiles": {name:"Tiles", callback: function(){
                     }},
                     "sep1": "--------------",
                     "load_workspace": {name: "Load Workspace"},
@@ -229,6 +256,18 @@ Toyz.Workspace.init = function(params){
                     }}
                 }
             });
+            
+            //create tile context menu
+            $.contextMenu({
+                selector: '.context-menu-tile',
+                callback: function(key, options){
+                    workspace[key](options);
+                },
+                items: {
+                    "edit_tile": {name:"Edit"},
+                    "remove_tile": {name:"Remove"}
+                }
+            })
         },
         rx_msg: function(result){
             console.log('msg received:', result);
@@ -320,7 +359,9 @@ Toyz.Workspace.init = function(params){
         },
         save_ws_as: function(){
             workspace.name = prompt("New workspace name");
-            workspace.save_workspace({overwrite:false});
+            if(workspace.name != null){
+                workspace.save_workspace({overwrite:false});
+            }
         },
         load_workspace: function(){
             workspace.websocket.send_task(
@@ -333,7 +374,6 @@ Toyz.Workspace.init = function(params){
                     }
                 },
                 function(result){
-                    console.log('workspaces', result.workspaces);
                     workspace.$ws_dropdown_input.empty();
                     for(var key in result.workspaces){
                         var opt = $('<option/>')
@@ -346,12 +386,62 @@ Toyz.Workspace.init = function(params){
             )
         },
         update_workspace: function(result){
-            console.log('result:', result);
             workspace.name = result.work_id;
             workspace.data_sources.update_sources(result.settings.sources, replace=true);
-            console.log('workspace after update:', workspace);
         },
         share_workspace: function(){
+        },
+        new_tile: function(){
+            var my_idx = (workspace.tile_index++).toString();
+            var my_id = 'tile-div'+my_idx;
+            var inner_id = 'tile-'+my_idx;
+            var $inner_div = $('<div/>')
+                .prop('id',inner_id)
+                .addClass('ws-inner-div context-menu-tile box menu-injected');
+            
+            var $div = $('<div/>')
+                .prop('id',my_id)
+                .addClass('ws-tile context-menu-tile box menu-injected')
+                .draggable({
+                    stack: '#'+my_id,
+                    cancel: '#'+inner_id,
+                    grid: [5,5],
+                    containment: 'parent'
+                })
+                .resizable({
+                    autoHide: true,
+                    handles: "ne,se,nw,sw",
+                    grid: [5,5]
+                })
+                .css({
+                    position: 'absolute',
+                    top: Math.floor(window.innerHeight/2),
+                    left: Math.floor(window.innerWidth/2)
+                });
+            $div.append($inner_div);
+            workspace.$div.append($div);
+            workspace.tiles[inner_id] = {
+                tile_id: inner_id,
+                type: undefined,
+                info: {},
+                $div: $div,
+                $inner_div: $inner_div,
+                remove: function(){},
+                save: function(){},
+                update: function(){}
+            }
+        },
+        remove_tile: function(options){
+            var my_id = options.$trigger.prop('id');
+            workspace.tiles[my_id].$div.remove();
+            
+            // tile.remove() is a function that may differ depending on the
+            // type of object displayed in the tile
+            workspace.tiles[my_id].remove();
+            delete workspace.tiles[my_id];
+        },
+        edit_tile: function(options){
+            workspace.tile_dialog.edit(options.$trigger.prop('id'))
         }
     };
     
@@ -363,7 +453,6 @@ Toyz.Workspace.init = function(params){
     Toyz.Core.load_dependencies(
         dependencies={
             core: true,
-            css: ["/static/web/static/workspace.css"]
         }, 
         callback=workspace.dependencies_onload
     );
@@ -371,62 +460,6 @@ Toyz.Workspace.init = function(params){
     params.$parent.append(workspace.$div);
     
     return workspace;
-}
-
-Toyz.Workspace.oldinit = function(options){
-    // required options:
-    // $parent: jquery object that is a parent-div for the workspace
-    
-    var ws = $.extend(true, {
-        data: {},
-        data_index: 0,
-        tiles: {},
-        tile_index: 0,
-        $parent: null,
-        new_tile: function(){
-            var my_idx = (tile_index++).toString();
-            var my_id = 'tile-'+my_idx;
-            var inner_id = 'tile-div-'+my_idx;
-            var $inner_div = $('<div/>')
-                .prop('id',inner_id)
-                .addClass('ws-inner-div');
-            var $div = $('<div/>')
-                .prop('id',my_id)
-                .addClass('ws-tile')
-                .draggable({
-                    stack: '#'+my_id,
-                    cancel: '#'+inner_id,
-                    grid: [5,5],
-                    containment: 'parent'
-                })
-                .resizable({
-                    autoHide: true,
-                    handles: "ne,se,nw,sw",
-                    grid: [5,5]
-                });
-            $div.append($inner_div);
-            ws.$parent.append($div);
-        }
-    }, options);
-    
-    var data_gui = {
-        type: 'div',
-        params: {
-            
-        }
-    }
-    
-    ws.$data_dialog = $('<div/>');
-    ws.$data_dialog.dialog({
-        resizable:true,
-        draggable:true,
-        width:400,
-        height:400,
-        autoOpen:true,
-        modal:true,
-    });
-    
-    return ws;
-}
+};
 
 console.log('workspace.js loaded');

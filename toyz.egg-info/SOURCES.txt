@@ -630,7 +630,6 @@ toyz/web/static/toyz.css
 toyz/web/static/toyz_core.js
 toyz/web/static/toyz_gui.js
 toyz/web/static/toyz_visual.js
-toyz/web/static/workspace.css
 toyz/web/static/workspace.js
 toyz/web/static/images/striped_bg.png
 toyz/web/templates/home.html
