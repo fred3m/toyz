@@ -22,10 +22,11 @@ import tornado.gen
 # Imports from Toyz package
 from toyz.utils import core
 from toyz.utils import file_access
+from toyz.utils import third_party
 import toyz.utils.db as db_utils
 from toyz.utils.errors import ToyzError, ToyzWebError
 
-class ToyzHandler(tornado.web.RequestHandler):
+class ToyzHandler:
     """*Not yet implemented*"""
     def get_toyz_path(self, path):
         """
@@ -57,6 +58,9 @@ class ToyzHandler(tornado.web.RequestHandler):
     def get_user_id(self):
         user_id = self.get_current_user().strip('"')
         return user_id
+    
+    def get_user_theme(self):
+        return 'le-frog'
 
 class AuthHandler:
     """
@@ -193,7 +197,7 @@ class AuthLogoutHandler(tornado.web.RequestHandler):
         self.clear_cookie("user")
         self.redirect(self.get_argument("next", "/"))
 
-class ToyzWorkspaceHandler(ToyzHandler):
+class ToyzWorkspaceHandler(ToyzHandler, tornado.web.RequestHandler):
     def initialize(self, ):
         self.template_path = os.path.join(core.ROOT_DIR, 'web', 'templates')
     def get(self, workspace):
@@ -211,15 +215,15 @@ class AuthToyzWorkspaceHandler(AuthHandler, ToyzWorkspaceHandler):
     def get(self, workspace):
         ToyzWorkspaceHandler.get(self, workspace)
 
-class ToyzCoreJsHandler(ToyzHandler):
-    def initialize(self, ):
+class ToyzCoreJsHandler(ToyzHandler, tornado.web.RequestHandler):
+    def initialize(self):
         self.template_path = os.path.join(core.ROOT_DIR, 'web', 'templates')
     def get(self):
         """
         Load the core javascript files
         """
         print('user=', self.get_user_id())
-        self.render('toyz_core.js')
+        self.render('toyz_core.js', user_theme=self.get_user_theme())
     
     def get_template_path(self):
         return self.template_path
@@ -228,6 +232,30 @@ class AuthToyzCoreJsHandler(AuthHandler, ToyzCoreJsHandler):
     @tornado.web.authenticated
     def get(self):
         ToyzCoreJsHandler.get(self)
+
+class Toyz3rdPartyHandler(ToyzHandler, tornado.web.StaticFileHandler):
+    def get(self, path):
+        print('MADE IT TO GET')
+        path = path.split('/')
+        pkg_name = path[0]
+        filename = path[-1]
+        rel_path = path[1:-1]
+        settings = self.application.toyz_settings.third_party
+        print('SETTINGS KEYS:', settings.keys())
+        if pkg_name not in settings:
+            raise ToyzWebError("Library '{0}' not found in third_party.py".format(pkg_name))
+        print('settings:', settings[pkg_name])
+        if len(rel_path)>0:
+            static_path = os.path.join(settings[pkg_name]['path'], *rel_path)
+        else:
+            static_path = settings[pkg_name]['path']
+        static_path = os.path.join(static_path, filename)
+        tornado.web.StaticFileHandler.get(self,static_path)
+
+class AuthToyz3rdPartyHandler(AuthHandler, Toyz3rdPartyHandler):
+    @tornado.web.authenticated
+    def get(self, path):
+        Toyz3rdPartyHandler.get(self, path)
         
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     """
@@ -276,7 +304,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         
         self.application.process_job(decoded)
 
-class MainHandler(ToyzHandler):
+class MainHandler(ToyzHandler, tornado.web.RequestHandler):
     """
     Main Handler when user connects to **localhost:8888/** (or whatever port is used by the
     application).
@@ -293,7 +321,7 @@ class MainHandler(ToyzHandler):
         """
         Render the main web page
         """
-        self.render(self.template_name)
+        self.render(self.template_name, user_theme=self.get_user_theme())
     
     def get_template_path(self):
         """
@@ -330,7 +358,7 @@ class ToyzWebApp(tornado.web.Application):
         if tornado.options.options.port is not None:
             self.toyz_settings.web.port = tornado.options.options.port
         
-        # If security is enabled, used the secure versions of the handlers
+        # If security is enabled, use the secure versions of the handlers
         if self.toyz_settings.security.user_login:
             main_handler = AuthMainHandler
             static_handler = AuthStaticFileHandler
@@ -338,6 +366,7 @@ class ToyzWebApp(tornado.web.Application):
             toyz_template_handler = AuthToyzTemplateHandler
             workspace_handler = AuthToyzWorkspaceHandler
             core_handler = AuthToyzCoreJsHandler
+            third_party_handler = AuthToyz3rdPartyHandler
         else:
             main_handler = MainHandler
             static_handler = tornado.web.StaticFileHandler
@@ -345,6 +374,7 @@ class ToyzWebApp(tornado.web.Application):
             toyz_template_handler = ToyzTemplateHandler
             workspace_handler = ToyzWorkspaceHandler
             core_hanfler = ToyzCoreHandler
+            third_party_handler = Toyz3rdPartyHandler
         
         self.user_sessions = {}
         
@@ -366,6 +396,7 @@ class ToyzWebApp(tornado.web.Application):
             (r"/toyz/static/(.*)", toyz_static_handler),
             (r"/toyz/template/(.*)", toyz_template_handler),
             (r"/toyz_core.js", core_handler),
+            (r"/third_party/(.*)", third_party_handler, {'path':core.ROOT_DIR}),
             (r"/job", WebSocketHandler),
         ]
         

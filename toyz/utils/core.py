@@ -34,8 +34,8 @@ default_settings = {
     'web': {
         'port': 8888,
         'cookie_secret': base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes),
-        'static_path': os.path.join(ROOT_DIR, 'web', 'static'),
-        'template_path': os.path.join(ROOT_DIR, 'web', 'templates'),
+        #'static_path': os.path.join(ROOT_DIR, 'web', 'static'),
+        #'template_path': os.path.join(ROOT_DIR, 'web', 'templates'),
     },
     'security': {
         'encrypt_db': False,
@@ -453,9 +453,14 @@ class ToyzSettings:
             - config_root_path (*string* ): Default root path of the new Toyz instance
         """
         from toyz.utils import file_access
-    
+        
+        # Set default settings
         for key, val in default_settings.items():
             setattr(self, key, ToyzClass(val))
+        
+        # Set default settings for third party web libraries
+        from toyz.utils import third_party
+        gui, self.third_party = third_party.get_gui()
     
         # Create config directory if it does not exist
         print("\nToyz: First Time Setup\n----------------------\n")
@@ -505,119 +510,6 @@ class Toy:
     
     def reload(self, module):
         reload(self.name)
-
-#TODO Currently ToyzUser isn't used. If this isn't implemented later, remove
-class ToyzUser:
-    """
-    User logged into the Toyz web application.
-    
-    *No longer implemented*
-    """
-    def __init__(self, toyz_settings, **user_settings):
-        """
-        Initialize a Toyz User
-        
-        Parameters
-        ----------
-        toyz_settings: toyz.core.ToyzSettings
-            - settings for the toyz web and job applications
-        user_settings: key word arguments
-            - Parameters passed to the function specific to the given user. The only 
-            required field is the `user_id`, all other fields are optional and will be set 
-            to the default values specified in the code.
-        """
-        check4keys(user_settings, ['user_id'])
-        self.__dict__.update(user_settings)
-        
-        # Set default values for missing attributes
-        defaults = {
-            'groups': [],
-            'user_sessions': {},
-            'workspaces': {},
-            'toyz': {},
-            'modules': [],
-            'shortcuts': {},
-            'app': None
-        }
-        
-        for setting, val in defaults.items():
-            if not hasattr(self, setting):
-                setattr(self, setting, val)
-        
-        # Ensure that required directories exist
-        if 'user' not in self.shortcuts:
-            self.shortcuts['user'] = os.path.join(
-                toyz_settings.config.root_path, 'users', self.user_id)
-        if 'temp' not in self.shortcuts:
-            self.shortcuts['temp'] = os.path.join(self.shortcuts['user'], 'temp')
-        create_paths([path for key, path in self.shortcuts.items()])
-        
-        # Set the users password (if it is a first time user)
-        if not hasattr(self, 'pwd'):
-            if toyz_settings.security.user_login:
-                self.pwd = encrypt_pwd(toyz_settings, self.user_id)
-            else:
-                self.pwd = self.user_id
-    
-    def add_toyz(self, toyz, paths):
-        """
-        Add a toyz from a list of packages and/or a list of paths on the server
-
-        Parameters
-        ----------
-        toyz: list
-            - elements are either names of packages built on the toyz framework or dictionaries, 
-            where the keys are names to identify each package and the values are
-            package names.
-        paths: dict of strings
-            - Keys are names to identify each toy
-            - Values are paths to modules that have not been packaged but fit the toyz framework
-
-        Returns
-        -------
-        None
-        """
-        new_handlers = []
-
-        for toy in toyz:
-            if isinstance(toy, dict):
-                module = importlib.import_module(toyz(toy))
-                self.toyz[toy] = core.Toy(toyz(toy), module=module, key=toy)
-            else:
-                module = importlib.import_module(toy)
-            self.toyz[toy] = core.Toy(toy, module=module)
-                
-        for toy, path in paths.items:
-            contents = os.listdir(path)
-            if 'toy_config.py' in contents:
-                sys.path.insert(0, path)
-                # Load the config file for the current package
-                try:
-                    reload(toy_config)
-                except NameError:
-                    import toy_config
-                toy_name = toy_config.name
-                self.toyz[toy] = core.Toy(toy_name, config=toy_config, path=path, key=toy)
-            else:
-                raise ToyzError("Config file not found for module {0} in {1}".format(toy, path))
-    
-    def __str__(self):
-        """
-        __str__
-        String representation of the class
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        myStr: string
-            -String with each attribute and its value
-        """
-        myStr=''
-        for attr,value in self.__dict__.iteritems():
-            myStr += attr+':'+str(value)+'\n'
-        return myStr
 
 #TODO Currently ToyzJobQueue isn't used. If this isn't implemented later, remove
 class ToyzJobQueue:

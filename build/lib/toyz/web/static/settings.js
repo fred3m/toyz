@@ -364,20 +364,16 @@ Toyz.Console.Settings.getAdminSettings = function(params, $admin_div){
         params: {
             root_path: {
                 lbl: 'toyz root path',
-                file_dialog: params.file_dialog
+                prop: {
+                    disabled: true
+                }
             },
             config_path: {
                 lbl: 'config file path',
-                file_dialog: params.file_dialog
-            },
-            approved_modules: Toyz.Console.Settings.getModuleSettings({
-                legend:'Modules for all users',
-                param_name: 'approved_modules'
-            }),
-            approved_toyz: Toyz.Console.Settings.getToyzSettings({
-                legend: 'Toyz for all Users',
-                param_name: 'approved_toyz'
-            })
+                prop: {
+                    disabled: true
+                }
+            }
         }
     };
     
@@ -393,7 +389,7 @@ Toyz.Console.Settings.getAdminSettings = function(params, $admin_div){
                 }
             },
             db_path: {
-                lbl:'db location',
+                lbl:'db location (relative to root path)',
                 file_dialog: params.file_dialog
             }
         }
@@ -409,14 +405,14 @@ Toyz.Console.Settings.getAdminSettings = function(params, $admin_div){
                     type: 'Number'
                 }
             },
-            static_path: {
+            /*static_path: {
                 lbl: 'static_path',
                 file_dialog: params.file_dialog
             },
             template_path: {
                 lbl: 'template_path',
                 file_dialog: params.file_dialog
-            }
+            }*/
         }
     };
     
@@ -442,11 +438,38 @@ Toyz.Console.Settings.getAdminSettings = function(params, $admin_div){
         }
     };
     
+    var third_party = {
+        type: 'div',
+        legend: 'Third Party Web Libraries',
+        params: {
+            type: 'list',
+            format: 'none',
+            newItem: {
+                type: 'div',
+                params: {
+                    pkg_name: {
+                        lbl: 'Package name'
+                    },
+                    pkg_location: {
+                        lbl: 'Path to package folder',
+                        file_dialog: params.file_dialog
+                    },
+                    pkg_settings: {
+                        type: 'div',
+                        legend: 'Package Settings',
+                        params: {}
+                    }
+                }
+            }
+        }
+    };
+    
     var admin_div = {
         config_div: config_settings,
         db_div: db_settings,
         web_div: web_settings,
-        security: security_settings
+        security: security_settings,
+        third_party: third_party
     };
     
     admin_settings = Toyz.Gui.initParamList(
@@ -519,97 +542,4 @@ Toyz.Console.Settings.getAccountSettings = function(params){
     };
     
     return account_settings;
-}
-
-Toyz.Console.Settings.getImgViewerSettings = function(options){
-    var params = {
-        directory: {
-            file_dialog: options.file_dialog
-        },
-        recursive: {
-            prop: {
-                type: 'checkbox',
-                checked: false
-            }
-        },
-        starts_div: {
-            type: 'conditional',
-            params: {
-                use_starts: {
-                    lbl: 'starts with',
-                    prop: {
-                        type: 'checkbox',
-                        checked: false
-                    }
-                }
-            },
-            paramSets: {
-                true: {
-                    type: 'div',
-                    params: {
-                        starts_with: {}
-                    }
-                },
-                false: {
-                    type: 'div',
-                    params: {}
-                }
-            }
-        },
-        ends_div: {
-            type: 'conditional',
-            params: {
-                use_ends: {
-                    lbl: 'ends with',
-                    prop: {
-                        type: 'checkbox',
-                        checked: false
-                    }
-                }
-            },
-            paramSets: {
-                true: {
-                    type: 'div',
-                    params: {
-                        ends_with: {}
-                    }
-                },
-                false: {
-                    type: 'div',
-                    params: {}
-                }
-            }
-        },
-        contains_div: {
-            type: 'conditional',
-            params: {
-                use_contains: {
-                    prop: {
-                        type: 'checkbox',
-                        checked: false
-                    }
-                }
-            },
-            paramSets: {
-                true: {
-                    type: 'div',
-                    params: {
-                        contains: {}
-                    }
-                },
-                false: {
-                    type: 'div',
-                    params: {}
-                }
-            }
-        },
-        image_ext: {
-            lbl: 'image extensions',
-            prop: {
-                size: 60
-            }
-        }
-    };
-    
-    return params;
 }

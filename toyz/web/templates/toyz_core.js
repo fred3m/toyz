@@ -24,17 +24,17 @@ Toyz.namespace('Toyz.Core');
 
 // Parameters retrieved from the server when the page is rendered
 Toyz.Core.core_js = [
-    "/static/third_party/jquery-ui-1.11.2/jquery-ui.js",
+    "/third_party/jquery_ui/jquery-ui.js",
     "/static/web/static/toyz_gui.js",
     "/static/web/static/toyz_visual.js",
-    "/static/third_party/jquery-contextMenu/jquery.contextMenu.js",
-    "/static/third_party/jquery-contextMenu/jquery.ui.position.js"
+    "/third_party/jquery-contextMenu/jquery.contextMenu.js",
+    "/third_party/jquery-contextMenu/jquery.ui.position.js"
 ];
 
 Toyz.Core.core_css = [
-    "/static/third_party/jquery-ui-themes-1.11.0/themes/redmond/jquery-ui.css",
+    "/third_party/jquery_ui_themes/{{user_theme}}/jquery-ui.min.css",
     "/static/web/static/toyz.css",
-    "/static/third_party/jquery-contextMenu/jquery.contextMenu.css"
+    "/third_party/jquery-contextMenu/jquery.contextMenu.css"
 ];
 
 // Returns the object at the end of a namespace
