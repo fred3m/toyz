@@ -60,7 +60,7 @@ class ToyzHandler:
         return user_id
     
     def get_user_theme(self):
-        return 'le-frog'
+        return 'redmond'
 
 class AuthHandler:
     """
