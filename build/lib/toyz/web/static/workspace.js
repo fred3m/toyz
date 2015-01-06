@@ -210,9 +210,10 @@ Toyz.Workspace.init = function(params){
         params: $.extend(true,{},params),
         dependencies_onload: function(){
             console.log('all_dependencies_loaded');
-            workspace.file_dialog = Toyz.Core.initFileDialog({
+            file_dialog = Toyz.Core.initFileDialog({
                 websocket: workspace.websocket
             });
+            workspace.file_dialog = file_dialog;
             
             workspace.websocket.send_task({
                 module: 'toyz.web.tasks',
@@ -282,21 +283,6 @@ Toyz.Workspace.init = function(params){
             console.log('msg received:', result);
             if(result.id == 'io_info'){
                 var param_div = $.extend(true,{},result.io_info);
-                
-                // recursively search for file_dialogs and set them to the file_dialog
-                // of the workspace
-                function set_file_dialogs(obj){
-                    for(var key in obj){
-                        if(obj.hasOwnProperty(key) && typeof obj[key]==='object'){
-                            obj[key] = set_file_dialogs(obj[key]);
-                        }
-                    };
-                    if(obj.hasOwnProperty('file_dialog')){
-                        obj['file_dialog'] = workspace.file_dialog;
-                    };
-                    return obj;
-                };
-                param_div = set_file_dialogs(param_div);
                 
                 workspace.$new_data_div.dialog({
                     resizable: true,

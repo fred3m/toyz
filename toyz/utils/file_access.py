@@ -49,7 +49,7 @@ def get_all_parents(path):
         parents.append(parent)
         last_parent = parent
         parent = os.path.dirname(parent)
-    print('path:{0}, parents:{1}'.format(path, parents))
+    #print('path:{0}, parents:{1}'.format(path, parents))
     return parents
 
 def get_path_tree(path):
@@ -78,7 +78,6 @@ def get_file_permissions(db_settings, path, **user):
           Returns **None** if no permissions have been set.
     """
     # If the user is an admin, automatically grant him/her full permission
-    print('user:', user)
     for user_type, user_id in user.items():
         if user_id == 'admin':
             return 'frwx'
@@ -97,16 +96,12 @@ def get_file_permissions(db_settings, path, **user):
                 groups = db_utils.get_param(db_settings, 'groups', **user)
                 if 'admin' in groups:
                     return 'frwx'
-                group_permissions = ''.join([p for g,p in path_info['groups'] if g in groups])
-                if '*' in path_info['users']:
-                    all_permissions = path_info['users']['*']
-                else:
-                    all_permissions = ''
-                permissions = ''.join(set(group_permissions+all_permissions))
+                group_permissions = ''.join([p for g,p in path_info['groups'].items() 
+                    if g in groups])
+                permissions = ''.join(set(group_permissions))
         else:
             if user['group_id'] in path_info['groups']:
                 permissions = path_info['groups'][user['group_id']]
-    
     return permissions
 
 def get_parent_permissions(db_settings, path, **user):
@@ -125,7 +120,6 @@ def get_parent_permissions(db_settings, path, **user):
         - permissions (*string* ): Permissions for the given user for the given path.
           Returns **None** if no permissions have been set for any parent paths.
     """
-    print('made it to parents')
     parents = get_all_parents(path)
     # Sometimes the `path` will really be a path and filename, so the first parent is
     # the actual path. This makes sure that we always check for the path as well as 
@@ -134,8 +128,8 @@ def get_parent_permissions(db_settings, path, **user):
         parents.insert(0,path)
     for parent in parents:
         permissions = get_file_permissions(db_settings, parent, **user)
+        #print('permissions for {0}: {1}'.format(path,permissions))
         if permissions != None:
-            #print('permissions for {0}: {1}'.format(path,permissions))
             return permissions
     print('No permissions for {0}'.format(path))
     return None

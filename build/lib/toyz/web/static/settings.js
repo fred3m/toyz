@@ -49,7 +49,40 @@ Toyz.Console.Settings.getToyzSettings = function(params){
     };
     
     return toyz;
-}
+};
+
+Toyz.Console.Settings.getThirdParty = function(params){
+    var third_party = {
+        type: 'div',
+        legend: 'Third Party Libraries',
+        params: {
+            third_party: {
+                type: 'list',
+                format: 'dict',
+                newItem: {
+                    type:'div',
+                    params:{
+                        key: {
+                            lbl:'Library name'
+                        },
+                        value:{
+                            type: 'div',
+                            params: {
+                                version: {lbl: 'version'},
+                                path: {
+                                    lbl: 'path',
+                                    file_dialog: params.file_dialog
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return third_party;
+};
 
 Toyz.Console.Settings.getUserSettings = function(params, $user_div){
     var user_settings;
@@ -73,7 +106,6 @@ Toyz.Console.Settings.getUserSettings = function(params, $user_div){
                                     }
                                 },
                                 callback=function(result){
-                                    console.log('call_back result:',result);
                                     user_settings.setParams(
                                         user_settings.params, 
                                         result,
@@ -229,7 +261,6 @@ Toyz.Console.Settings.getGroupSettings = function(params, $group_div){
                                     }
                                 },
                                 callback=function(result){
-                                    console.log('call_back result:',result);
                                     group_settings.setParams(
                                         group_settings.params, 
                                         result,
@@ -349,7 +380,7 @@ Toyz.Console.Settings.getAdminSettings = function(params, $admin_div){
     // unpack the congfiguration settings
     var admin_settings;
     var admin_default = {};
-    var settings = ['config', 'db', 'web', 'security'];
+    var settings = ['config', 'db', 'web', 'security'];//
     for(var i=0; i<settings.length; i++){
         for(var key in result[settings[i]]){
             if(result[settings[i]].hasOwnProperty(key)){
@@ -358,7 +389,7 @@ Toyz.Console.Settings.getAdminSettings = function(params, $admin_div){
         }
     };
     
-    var config_settings = {
+    var config_div = {
         type: 'div',
         legend: 'Toyz Configuration',
         params: {
@@ -377,7 +408,7 @@ Toyz.Console.Settings.getAdminSettings = function(params, $admin_div){
         }
     };
     
-    var db_settings = {
+    var db_div = {
         type: 'div',
         legend: 'Database',
         params: {
@@ -395,93 +426,83 @@ Toyz.Console.Settings.getAdminSettings = function(params, $admin_div){
         }
     };
     
-    var web_settings = {
+    var web_div = {
         type: 'div',
         legend: 'Web',
         params: {
             port: {
-                lbl: 'default_port',
+                lbl: 'default port',
                 prop: {
                     type: 'Number'
                 }
             },
-            /*static_path: {
-                lbl: 'static_path',
-                file_dialog: params.file_dialog
-            },
-            template_path: {
-                lbl: 'template_path',
-                file_dialog: params.file_dialog
-            }*/
+            third_party: Toyz.Console.Settings.getThirdParty(params)
         }
     };
     
-    var security_settings = {
+    var security_div = {
         type: 'div',
         legend: 'Security',
         params: {
             encrypt_db: {
                 lbl: 'encrypt database <i>(' +
-                    '<font color="red">requires SQLCipher install on server</font>)</i>',
+                    '<font color="red">requires SQLCipher install on server</font>,' +
+                    ' not yet supported)</i>',
                 prop: {
                     type: 'checkbox',
-                    checked: true
-                }
+                    checked: true,
+                    disabled: true
+                },
             },
             user_login: {
                 lbl: 'enable multiple users',
                 prop: {
                     type: 'checkbox',
-                    checked: false
+                    checked: false,
                 }
             }
         }
     };
     
-    var third_party = {
-        type: 'div',
-        legend: 'Third Party Web Libraries',
-        params: {
-            type: 'list',
-            format: 'none',
-            newItem: {
-                type: 'div',
-                params: {
-                    pkg_name: {
-                        lbl: 'Package name'
-                    },
-                    pkg_location: {
-                        lbl: 'Path to package folder',
-                        file_dialog: params.file_dialog
-                    },
-                    pkg_settings: {
-                        type: 'div',
-                        legend: 'Package Settings',
-                        params: {}
-                    }
+    function build_param_list(div){
+        return Toyz.Gui.initParamList(
+            div,
+            options = {
+                $parent: $admin_div,
+                default: admin_default
+            }
+        )
+    };
+    
+    var admin_settings = {
+        config: build_param_list(config_div),
+        db: build_param_list(db_div),
+        web: build_param_list(web_div),
+        security: build_param_list(security_div)
+    };
+    
+    // submit button for admin div
+    var $submit = $('<button/>')
+        .html("Submit")
+        .click(function(){
+            var settings = {
+                config: admin_settings.config.getParams(admin_settings.config.params),
+                db: admin_settings.db.getParams(admin_settings.db.params),
+                web: admin_settings.web.getParams(admin_settings.web.params),
+                security: admin_settings.security.getParams(admin_settings.security.params)
+            };
+            for(var setting in settings){
+                if(settings.hasOwnProperty(setting)){
+                    delete settings[setting].conditions
                 }
             }
-        }
-    };
-    
-    var admin_div = {
-        config_div: config_settings,
-        db_div: db_settings,
-        web_div: web_settings,
-        security: security_settings,
-        third_party: third_party
-    };
-    
-    admin_settings = Toyz.Gui.initParamList(
-        {
-            type:'div',
-            params: admin_div
-        },
-        options = {
-            $parent: $admin_div,
-            default: admin_default
-        }
-    );
+            websocket.send_task({
+                module: 'toyz.web.tasks',
+                task: 'update_toyz_settings',
+                parameters: settings
+            });
+        });
+    $admin_div.append($submit);
     
     return admin_settings;
 };

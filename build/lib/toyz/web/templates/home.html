@@ -30,8 +30,6 @@
                 <a href='/workspace/'>New workspace</a>
             </div>
         </div>
-        <div id='dialogs'></div>
-        <div id="file-dialog"></div>
         <script>
         var account_settings;
         var admin_settings;
@@ -44,13 +42,14 @@
         var file_dialog;
         
         function rxMsg(result){
-            console.log('rx message:', result);
+            //console.log('rx message:', result);
             if(result.id == 'user_settings'){
                 var account_info = {
                     user_id: websocket.user_id,
                     change_pwd: change_pwd,
-                    file_dialog: file_dialog
+                    file_dialog: file_dialog,
                 };
+                
                 var paths = new Array();
                 var toyz = new Array();
                 
@@ -81,7 +80,7 @@
                         default: result
                     }
                 );
-                console.log('account_settings:',account_settings);
+                //console.log('account_settings:',account_settings);
                 
                 // If the user is in the admin group, also load the
                 // admin settings
@@ -136,7 +135,7 @@
         
         function initChangePassword(){
             var $div = $('<div/>');
-            $('#dialogs').append($div);
+            $('body').append($div);
             
             change_pwd = Toyz.Gui.initParamList(
                 {
@@ -166,7 +165,6 @@
                     $parent: $div
                 }
             );
-            console.log('change-pwd:',change_pwd);
             change_pwd.params.$div.dialog({
                 resizable:true,
                 draggable:true,
@@ -195,7 +193,7 @@
         
         function initNewUser(){
             var $div = $('<div/>');
-            $('#dialogs').append($div);
+            $('body').append($div);
             
             new_user = Toyz.Gui.initParamList(
                 {
@@ -249,7 +247,7 @@
                     task: 'save_user_info',
                     parameters: params
                 });
-                console.log('Parameters:',params);
+                //console.log('Parameters:',params);
             });
             
             websocket=Toyz.Core.jobsocketInit({
@@ -264,7 +262,6 @@
             });
             
             file_dialog = Toyz.Core.initFileDialog({
-                element:'file-dialog',
                 websocket: websocket
             });
         };

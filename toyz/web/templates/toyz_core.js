@@ -72,7 +72,7 @@ Toyz.Core.jobsocketInit=function(options){
                     var task_id = task.id.request_id.toString();
                     jobsocket.requests[task_id]={func:callback,params:params};
                 };
-                console.log('sending', task);
+                //console.log('sending', task);
                 jobsocket.ws.send(JSON.stringify(task));
             }else if(jobsocket.ws.readyState>1){
                 // Websocket is closed, warn user the first time
@@ -115,8 +115,7 @@ Toyz.Core.jobsocketInit=function(options){
         }
     },options);
     var url="ws://"+location.host+jobsocket.job_url;
-    console.log("websocket url", url);
-	jobsocket.ws=new WebSocket(url);
+    jobsocket.ws=new WebSocket(url);
     
     if(jobsocket.hasOwnProperty('onopen')){
         jobsocket.ws.onopen=jobsocket.onopen;
@@ -139,10 +138,8 @@ Toyz.Core.jobsocketInit=function(options){
             return;
         }else if(result.id=='notification'){
             jobsocket.notify(result);
-            return;
         }else if(result.id=='warning'){
             jobsocket.warn(result);
-            return;
         }else if(result.id=='initialize'){
             jobsocket.user_id=result.user_id;
             jobsocket.session_id=result.session_id;
@@ -296,6 +293,7 @@ Toyz.Core.initFileDialog = function(options){
     $div.append(files.$div);
     
     var file_dialog = {
+        path: '',
         $div: $div,
         $path_div: $path_div,
         shortcuts: shortcuts,
@@ -313,7 +311,6 @@ Toyz.Core.initFileDialog = function(options){
             if(file_dialog.hist.length==0){
                 file_dialog.hist.push(path);
             }
-            console.log("loading:", path);
             if(buttons){
                 file_dialog.$div.dialog({
                     buttons:buttons
@@ -342,12 +339,14 @@ Toyz.Core.initFileDialog = function(options){
             }
         },
         update:function(params){
+            console.log('params in update:', params);
             file_dialog.path = params.path;
             file_dialog.$path_div.html(params.path);
             file_dialog.parent_folder = params.parent;
             file_dialog.shortcuts.update(params.shortcuts);
             file_dialog.folders.update(params.folders);
             file_dialog.files.update(params.files);
+            console.log('file dialog path', file_dialog.path);
         },
         click_open:function(){},
         default_buttons:{
@@ -409,6 +408,52 @@ Toyz.Core.initFileDialog = function(options){
         autoOpen:false,
         modal:true,
         buttons:file_dialog.default_buttons,
+    }).css("font-size", "12px");
+    
+    file_dialog.new_folder.$div.dialog({
+        resizable:true,
+        draggable:true,
+        width:600,
+        autoOpen:false,
+        modal:true,
+        buttons: {
+            Create: function(){
+                if(file_dialog.new_folder.$input.val()!=null &&
+                        file_dialog.new_folder.$input.val()!=''){
+                    file_dialog.new_folder.$div.dialog('close');
+                    file_dialog.websocket.send_task(
+                        {
+                            module: 'toyz.web.tasks',
+                            task: 'create_paths',
+                            parameters: {
+                                path: file_dialog.path,
+                                new_folder: file_dialog.new_folder.$input.val()
+                            }
+                        },
+                        function(result, params){
+                            console.log('made it to callback');
+                            console.log('params:', params);
+                            file_dialog.load_directory(
+                                params.path, 
+                                params.callback, 
+                                params.buttons
+                            );
+                        },
+                        {
+                            path: file_dialog.path,
+                            callback: file_dialog.click_open,
+                            buttons: file_dialog.$div.dialog.buttons
+                        }
+                    )
+                }else{
+                    alert('You must enter a path to create a new folder');
+                }
+                
+            },
+            Cancel: function(){
+                file_dialog.new_folder.$div.dialog('close');
+            }
+        },
     }).css("font-size", "12px");
     
     return file_dialog;

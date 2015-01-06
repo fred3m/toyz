@@ -143,12 +143,20 @@ Toyz.Gui.buildParamDiv = function(param, $div){
             .css('margin-left','5px');
         $btn.click(function(param) {
             return function(){
+                console.log('param in click function');
                 var file_dir = '$user$';
                 if(param.$input.val() != ''){
                     file_dir = param.$input.val();
                 };
-                param.file_dialog.load_directory(file_dir,function(){
-                    param.$input.val(param.file_dialog.path+param.file_dialog.files.$select.val());
+                file_dialog.load_directory(file_dir,function(){
+                    var path = "";
+                    if(!(file_dialog.path===null)){
+                        path = file_dialog.path;
+                    };
+                    if(!(file_dialog.files.$select.val()===null)){
+                        path = path + file_dialog.files.$select.val();
+                    }
+                    param.$input.val(path);
                 });
             }
         }(param));
@@ -157,7 +165,7 @@ Toyz.Gui.buildParamDiv = function(param, $div){
     };
     param.$div = $paramDiv;
     return param;
-}
+};
 
 // Parse a parameter (param) to see if it is a div containing a subset of parameters
 // param: parameter JSON object
@@ -432,8 +440,15 @@ Toyz.Gui.initParamList=function(pList,options){
                     for(var i=0; i<param.items.length; i++){
                         var item_values = {};
                         param_list.parseParam(item_values, param.items[i].name, param.items[i]);
-                        params[param_name][item_values.key] = item_values.value;
-                    }
+                        if(item_values.hasOwnProperty('value')){
+                            params[param_name][item_values.key] = item_values.value;
+                        }else{
+                            var key = item_values.key;
+                            delete item_values.key;
+                            delete item_values.conditions;
+                            params[param_name][key] = item_values;
+                        }
+                    };
                 }else if(param.format == 'list'){
                     var local_list = [];
                     for(var i=0; i<param.items.length; i++){
@@ -562,7 +577,9 @@ Toyz.Gui.initParamList=function(pList,options){
                         pKey=p;
                     };
                 };
-                param_list.setParams(param.selector[pKey], param_values.conditions, set_all);
+                if(param_values.hasOwnProperty('conditions')){
+                    param_list.setParams(param.selector[pKey], param_values.conditions, set_all);
+                };
                 var selected = Toyz.Gui.val(param.selector[pKey].$input);
                 
                 // only set conditional values that are selected, unless select_all is true
@@ -593,10 +610,19 @@ Toyz.Gui.initParamList=function(pList,options){
                         for(var key in param_values[param.name]){
                             param.buttons.add.$input.click();
                             param_list.setInput(param.items[p_index].params['key'], key);
-                            param_list.setInput(
-                                param.items[p_index++].params['value'], 
-                                param_values[param.name][key]
-                            );
+                            if(param.items[p_index].params['value'].type == 'input' ||
+                                    param.items[p_index].params['value'].type == 'select'){
+                                param_list.setInput(
+                                    param.items[p_index++].params['value'], 
+                                    param_values[param.name][key]
+                                );
+                            }else{
+                                param_list.setParams(
+                                    param.items[p_index++].params['value'], 
+                                    param_values[param.name][key],
+                                    set_all
+                                );
+                            };
                         }
                     }else if(param.format == 'list'){
                         for(var i=0; i<param_values[param.name].length; i++){
@@ -624,7 +650,6 @@ Toyz.Gui.initParamList=function(pList,options){
     },options);
     
     if(options.hasOwnProperty('default')){
-        console.log('default:',options.default)
         param_list.setParams(param_list.params, options.default, true);
     };
     

@@ -232,10 +232,13 @@ def check_user_shortcuts(toyz_settings, user_id, shortcuts=None):
         - user_id (*string* ): User id to check for shortcuts
         - shortcuts (*dict*, optional): Dictionary of shortcuts for a user. Shortcuts
           are always of the form ``shortcut_name:path`` .
+    
+    Returns
+        - 
     """
     modified = False
     if shortcuts==None:
-        shortcuts = get_param(toyz_settings.db, 'shortcuts', user)
+        shortcuts = db_utils.get_param(toyz_settings.db, 'shortcuts', user_id=user_id)
     if 'user' not in shortcuts:
         shortcuts['user'] = os.path.join(toyz_settings.config.root_path, 'users', user_id)
         db_utils.update_param(toyz_settings.db, 'shortcuts', user_id=user_id, 
@@ -250,7 +253,12 @@ def check_user_shortcuts(toyz_settings, user_id, shortcuts=None):
         modified = True
     if modified:
         db_utils.update_param(toyz_settings.db, 'shortcuts', user_id=user_id, shortcuts=shortcuts)
-    
+        paths = db_utils.get_param(toyz_settings.db, 'paths', user_id=user_id)
+        # Ensure that the user has full access to his/her home directory
+        if shortcuts['user'] not in paths or paths[shortcuts['user']] !='frwx':
+            print('UPDATING SHORTCUT')
+            db_utils.update_param(toyz_settings.db, 'paths', user_id=user_id, 
+                paths={shortcuts['user']: 'frwx'})
     return shortcuts
 
 def run_job(toyz_settings, job):
@@ -426,6 +434,7 @@ class ToyzSettings:
         #    from toyz.utils.security import encrypt_pickle
         #    self.security.key = security_key
         #    toyz_settings = encrypt_pickle(self.__dict__, security_key)
+        print('config path', self.config.path)
         pickle.dump(toyz_settings, open(self.config.path, 'wb'))
     
     def load_settings(self, config_path, security_key=None):
@@ -453,17 +462,16 @@ class ToyzSettings:
             - config_root_path (*string* ): Default root path of the new Toyz instance
         """
         from toyz.utils import file_access
+        from toyz.utils import third_party
         
         # Set default settings
+        default_settings['web']['third_party'] = third_party.get_defaults()
         for key, val in default_settings.items():
             setattr(self, key, ToyzClass(val))
-        
-        # Set default settings for third party web libraries
-        from toyz.utils import third_party
-        gui, self.third_party = third_party.get_gui()
     
         # Create config directory if it does not exist
         print("\nToyz: First Time Setup\n----------------------\n")
+        self.config.root_path = normalize_path(os.getcwd())
         while not get_bool(
                 "Create new Toyz configuration in '{0}'? ".format(self.config.root_path)):
             self.config.root_path = normalize_path(raw_input("new path: "))
@@ -484,9 +492,14 @@ class ToyzSettings:
         if self.security.user_login:
             admin_pwd = encrypt_pwd(self, admin_pwd)
         db_utils.update_param(self.db, 'pwd', user_id='admin', pwd=admin_pwd)
-        db_utils.update_param(self.db, 'pwd', user_id='*', pwd='*')
+        db_utils.update_param(self.db, 'pwd', group_id='all', pwd='')
         db_utils.update_param(self.db, 'pwd', group_id='admin', pwd='')
         db_utils.update_param(self.db, 'pwd', group_id='modify_toyz', pwd='')
+        db_utils.update_param(self.db, 'paths', group_id='all', paths={
+            os.path.join(ROOT_DIR, 'web','static'): 'fr',
+            os.path.join(ROOT_DIR, 'web','templates'): 'fr',
+            os.path.join(ROOT_DIR, 'third_party'): 'fr',
+        })
         
         self.save_settings()
         print("\nFirst Time Setup completed")

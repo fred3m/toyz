@@ -46,6 +46,7 @@ def load_user_settings(toyz_settings, tid, params):
         - user_settings (*dict* ): Settings for a specified user (initially the *admin*)
         - group_settings (*dict* ): Settings for a specified group (initially the *admin* group)
     """
+    from toyz.utils import third_party
     dbs = toyz_settings.db
     old_shortcuts = db_utils.get_param(dbs, 'shortcuts', user_id=tid['user_id'])
     shortcuts = core.check_user_shortcuts(toyz_settings, tid['user_id'], old_shortcuts)
@@ -89,9 +90,8 @@ def load_user_settings(toyz_settings, tid, params):
     if 'modify_toyz' in groups or 'admin' in groups or tid['user_id'] == 'admin':
         response.update({
             'modules': db_utils.get_param(dbs, 'modules', user_id=tid['user_id']),
-            'toyz': db_utils.get_param(dbs, 'toyz', user_id=tid['user_id']),
+            'toyz': db_utils.get_param(dbs, 'toyz', user_id=tid['user_id'])
         })
-    
     return response
 
 def load_user_info(toyz_settings, tid, params):
@@ -157,11 +157,16 @@ def save_user_info(toyz_settings, tid, params):
     if 'paths' in params and tid['user_id']!='admin' and 'admin' not in groups:
         raise ToyzJobError("You must be in the admin group to modify path permissions")
     
-    if (('modules' in params or 'toyz' in params) and tid['user_id']!='admin' and 
-            'admin' not in groups and 'modify_toyz' not in groups):
+    if (('modules' in params or 'toyz' in params or 'third_party' in params) and 
+            tid['user_id']!='admin' and 'admin' not in groups and 'modify_toyz' not in groups):
         raise ToyzJobError(
             "You must be an administrator or belong to the 'modify_toyz' "
             "group to modify a users toyz or module access")
+    
+    # Conditions is a dict that contains any conditional parameters from a gui
+    # parameter list. We don't use any of those for this function, so we remove them
+    if 'conditions' in params:
+        del params['conditions']
     
     user = core.get_user_type(params)
     update_fields = dict(params)
@@ -183,6 +188,42 @@ def save_user_info(toyz_settings, tid, params):
         'id': 'notification',
         'func': 'save_user_info',
         'msg': 'Settings saved for '+ msg
+    }
+    
+    return response
+
+def update_toyz_settings(toyz_settings, tid, params):
+    """
+    Update the toyz settings for the application
+    """
+    #print('db', toyz_settings.db)
+    #print('config', toyz_settings.config)
+    #rint('web', toyz_settings.web)
+    #print('security', toyz_settings.security)
+    
+    db = toyz_settings.db.__dict__
+    config = toyz_settings.config.__dict__
+    web = toyz_settings.web.__dict__
+    security = toyz_settings.security.__dict__
+    db.update(params['db'])
+    params['config']['path'] = os.path.join(
+        params['config']['root_path'],
+        params['config']['config_path']
+    )
+    config.update(params['config'])
+    web.update(params['web'])
+    security.update(params['security'])
+    
+    toyz_settings.db = core.ToyzClass(db)
+    toyz_settings.config = core.ToyzClass(config)
+    toyz_settings.web = core.ToyzClass(web)
+    toyz_settings.security = core.ToyzClass(security)
+    toyz_settings.save_settings()
+    
+    response = {
+        'id': 'notification',
+        'msg': 'Settings saved successfully',
+        'func': 'update_toyz_settings'
     }
     
     return response
@@ -209,6 +250,10 @@ def add_new_user(toyz_settings, tid, params):
     pwd = core.encrypt_pwd(toyz_settings, params['user_id'])
     db_utils.update_param(toyz_settings.db, 'pwd', pwd=pwd, **user)
     if 'user_id' in user:
+        # set permissions and shortcuts for users home path
+        core.check_user_shortcuts(toyz_settings, **user)
+        # Add user to all users
+        db_utils.update_param(toyz_settings.db, 'users', group_id='all', users=[user['user_id']])
         msg = 'User added correctly'
     else:
         msg = 'Group added correctly'
@@ -342,7 +387,7 @@ def load_directory(toyz_settings, tid, params):
     #print('path info:', response)
     return response
 
-def create_dir(toyz_settings, tid, params):
+def create_paths(toyz_settings, tid, params):
     """
     Creates a new path on the server (if it does not already exist).
     
@@ -360,11 +405,17 @@ def create_dir(toyz_settings, tid, params):
         status (*string* ): 'success',
         path (*string* ): path created on the server
     """
-    core.create_dirs(params['path'])
+    core.check4keys(params, ['path', 'new_folder'])
+    path = os.path.join(params['path'], params['new_folder'])
+    permissions = file_access.get_parent_permissions(toyz_settings.db,
+        path, user_id=tid['user_id'])
+    if 'w' not in permissions and 'x' not in permissions:
+        raise ToyzJobError("You do not have permission to create path {0}".format(path))
+    core.create_paths(path)
     response = {
-        'id': 'create folder',
-        'status': 'success',
-        'path': params['path']
+        'id': 'notification',
+        'msg': 'Created path'.format(path),
+        'func': 'create_dir'
     }
     return response
 
@@ -483,4 +534,3 @@ def load_workspace(toyz_settings, tid, params):
     }
     
     return response
-    
