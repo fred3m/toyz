@@ -488,6 +488,7 @@ def load_data_file(toyz_settings, tid, params):
         'id': 'data_file',
         'columns': columns,
         'data': data,
+        'data_type': 'columns',
         'meta': meta
     }
     #print('response', response)

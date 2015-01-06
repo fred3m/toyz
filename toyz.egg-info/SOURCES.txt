@@ -631,6 +631,7 @@ toyz/web/static/toyz.css
 toyz/web/static/toyz_gui.js
 toyz/web/static/toyz_visual.js
 toyz/web/static/workspace.js
+toyz/web/static/api/highcharts.js
 toyz/web/static/images/striped_bg.png
 toyz/web/templates/home.html
 toyz/web/templates/image-viewer.html
