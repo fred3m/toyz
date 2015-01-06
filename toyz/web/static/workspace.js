@@ -4,6 +4,107 @@
 
 Toyz.namespace('Toyz.Workspace');
 
+Toyz.DataSource = function(id, params, $parent, radio_group, info){
+    this.id = id;
+    this.name = id;
+    this.params = params;
+    this.tiles = {};
+    this.data = {};
+    // Add an entry to a list of data sources
+    if(!($parent===undefined)){
+        this.$parent = $parent;
+        this.$div = $('<div/>');
+        this.$input = $('<input value="'+this.id+'"></input>')
+            .change(function(){
+                console.log('change this?:', this);
+            });
+        if(radio_group===undefined){
+            radio_group = 'data_src';
+        };
+        this.$div
+            .append('<input type="radio" name="'+radio_group+'" value='+this.id+'></input>')
+            .append(this.$input);
+        $parent.append(this.$div);
+    };
+    // Update with any additionally added parameters
+    if(!(info===undefined)){
+        this.update(info);
+    };
+};
+Toyz.DataSource.prototype.update = function(info, info_val){
+    // Allow user to either pass param_name, param_val to function or
+    // dictionary with multiple parameters
+    if(!(info_val===undefined)){
+        info = {info:info_val};
+    };
+    // Make sure the data_type is set first, since other parameters may depend on it
+    if(info.hasOwnProperty('data_type')){
+        this.data_type = info.data_type;
+    };
+    for(var prop in info){
+        if(prop=='data'){
+            // Organize columns and data depending on the data_type received
+            // If 'rows_no_heading' is received, an automatic list of column names is
+            // created and the data_type is changed to 'rows'.
+            if(this.data_type=='columns'){
+                if(!(info.hasOwnProperty('columns'))){
+                    this.columns = Object.keys(info.data);
+                }
+                this.data = info.data;
+            }else if(this.data_type=='rows'){
+                if(!(info.hasOwnProperty('columns'))){
+                    this.columns = info.data[0];
+                };
+                this.data = info.data.slice(1,info.data.length);
+            }else if(this.data_type=='rows_no_heading'){
+                if(!(info.hasOwnProperty('columns'))){
+                    this.columns = [];
+                    for(var i=0;i<data[0].length;i++){
+                        this.columns.push('col-'+i.toString());
+                    };
+                };
+                this.data = info.data;
+                this.data_type = 'rows';
+            }else{
+                var error = "You must initialize a data source with a data_type of "
+                    + "'rows', 'columns' or 'rows_no_heading'";
+                throw error;
+            };
+        }else{
+            this[prop] = info[prop];
+        }
+    };
+};
+Toyz.DataSource.prototype.remove = function(){
+    // Remove jQuery objects
+    for(var param in this){
+        if(param[0]=='$'){
+            this[param].remove();
+        };
+    };
+    // Remove references to this data source
+    for(var tile in this.tiles){
+        tile.remove_source(this.name);
+    };
+};
+Toyz.DataSource.prototype.rx_info = function(info_type, info){
+};
+Toyz.DataSource.prototype.tx_info = function(info_type, info){
+};
+
+Toyz.Tile = function(info){
+    this.update(info);
+};
+Toyz.Tile.prototype.update = function(info){
+    for(var prop in info){
+        this[prop] = info[prop];
+    };
+};
+Toyz.Tile.prototype.rx_info = function(info_type, info){
+};
+Toyz.Tile.prototype.tx_info = function(info_type, info){
+};
+
 Toyz.Workspace.contextMenu_items = function(workspace){
     var items = {
         "new": {
@@ -47,27 +148,14 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
         $div: $('<div/>').prop('title', 'Data Sources'),
         src_index: 0,
         sources: {},
-        editing: '',
+        editing:'',
+        radio_group: 'data_src',
         load_src: function(params){
-            var src_params = $.extend(true, {}, params);
-            // Create entry if the source is new (as opposed to one being edited)
-            if(data_dialog.editing == ''){
-                var data_name = 'data-'+(data_dialog.src_index++).toString();
-                data_dialog.sources[data_name] = {
-                    $div: $('<div/>'),
-                    name: data_name,
-                    $input: $('<input value="'+data_name+'"></input>'),
-                    params: params
-                };
-                data_dialog.sources[data_name].$div
-                    .append('<input type="radio" name="data_src" value='+data_name+'></input>')
-                    .append(data_dialog.sources[data_name].$input);
-                data_dialog.$div.append(data_dialog.sources[data_name].$div);
-            }else{
-                data_name = data_dialog.editing;
-                data_dialog.sources[data_name].params = params;
-                data_dialog.editing = '';
+            var data_id = data_dialog.editing;
+            if(data_dialog.editing==''){
+                data_id = 'data-'+(data_dialog.src_index++).toString();
             };
+            var src_params = $.extend(true, {}, params);
             
             // Load data from server
             var io_module = src_params['conditions'].io_module;
@@ -85,20 +173,27 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
                 },
                 data_dialog.add_src,
                 {
-                    src: data_name
+                    data_id: data_id,
+                    params: params
                 }
             );
         },
         add_src: function(result, params){
-            data_dialog.sources[params.src].columns = result.columns;
-            data_dialog.sources[params.src].data = result.data;
-            data_dialog.sources[params.src].tiles = [];
+            delete result.id;
+            if(!(data_dialog.sources.hasOwnProperty(params.data_id))){
+                data_dialog.sources[params.data_id] = new Toyz.DataSource(
+                    params.data_id, params.params, data_dialog.$div, data_dialog.radio_group
+                );
+            };
+            data_dialog.sources[params.data_id].update(result)
             workspace.$new_data_div.dialog('close');
-            console.log('data:', params.src, data_dialog.sources[params.src]);
+            data_dialog.editing = '';
+            console.log('data:', params.data_id, data_dialog.sources[params.data_id]);
+            
         },
         remove_src: function(source){
             if(source===undefined){
-                source = $("input:radio[ name='data_src' ]:checked").val()
+                source = $("input:radio[ name='"+data_dialog.radio_group+"' ]:checked").val()
             };
             if(!(source===undefined)){
                 for(var param in data_dialog.sources[source]){
@@ -118,13 +213,13 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
             };
         },
         edit_src: function(){
-            var source = $("input:radio[ name='data_src' ]:checked").val()
+            var source = $("input:radio[ name='"+data_dialog.radio_group+"' ]:checked").val();
             var src = data_dialog.sources[source];
             data_dialog.editing = source;
             if(!(source===undefined)){
                 workspace.new_data_gui.setParams(workspace.new_data_gui.params, src.params, false);
                 workspace.$new_data_div.dialog('open');
-            }
+            };
         },
         update_sources: function(sources, replace){
             if(replace){
@@ -420,17 +515,13 @@ Toyz.Workspace.init = function(params){
                 });
             $div.append($inner_div);
             workspace.$div.append($div);
-            workspace.tiles[inner_id] = {
-                tile_id: inner_id,
-                type: undefined,
-                info: {},
+            workspace.tiles[inner_id] = new Toyz.Tile({
+                id: inner_id,
                 $div: $div,
                 $inner_div: $inner_div,
-                remove: function(){},
-                save: function(){return {};},
-                update: function(){}
-            }
-            
+                content: {}
+            });
+            console.log('tiles:', workspace.tiles);
             return workspace.tiles[inner_id];
         },
         remove_tile: function(options){
