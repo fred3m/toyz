@@ -94,6 +94,7 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
             data_dialog.sources[params.src].data = result.data;
             data_dialog.sources[params.src].tiles = [];
             workspace.$new_data_div.dialog('close');
+            console.log('data:', params.src, data_dialog.sources[params.src]);
         },
         remove_src: function(source){
             if(source===undefined){
@@ -426,7 +427,7 @@ Toyz.Workspace.init = function(params){
                 $div: $div,
                 $inner_div: $inner_div,
                 remove: function(){},
-                save: function(){},
+                save: function(){return {};},
                 update: function(){}
             }
             
@@ -455,6 +456,7 @@ Toyz.Workspace.init = function(params){
                     width: tile.$div.width(),
                     height: tile.$div.height()
                 };
+                tiles[tile_id] = $.extend(true, tiles[tile_id], tile.save());
             };
             return tiles;
         },

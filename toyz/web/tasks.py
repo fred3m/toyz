@@ -490,9 +490,7 @@ def load_data_file(toyz_settings, tid, params):
         'data': data,
         'meta': meta
     }
-    
-    print('response', response)
-    
+    #print('response', response)
     return response
 
 def save_workspace(toyz_settings, tid, params):

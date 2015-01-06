@@ -1,7 +1,7 @@
 // settings.js
 // Settings for Toyz
 // Copyright 2014 by Fred Moolekamp
-// License: GPLv3
+// License: MIT
 
 Toyz.namespace('Toyz.Console.Settings');
 

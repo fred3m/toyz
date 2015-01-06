@@ -42,7 +42,7 @@ io_modules = {
     'numpy': {
         # "http://docs.scipy.org/doc/numpy/reference/generated/numpy.load.html#numpy.load"
         'all': {
-            'filename': {
+            'file': {
                 'lbl': 'filename',
                 'file_dialog': True
             },
@@ -301,26 +301,33 @@ def load_unknown(str_in, single_ok=False):
     
     return val_out
 
-def load_data_file(io_module, file_type, file_options, io_modules=None):
+def load_data_file(io_module, file_type, file_options, io_modules=None, 
+        io_func=None, format='dict'):
     meta = ''
     if io_module == 'python':
         sep = file_options['sep']
         del file_options['sep']
         f = open(**file_options)
-        data = []
+        raw_data = []
         if file_type == 'csv-like':
             for line in f:
                 no_cr = line.split('\n')[0]
-                data.append(no_cr.split(sep))
+                raw_data.append(no_cr.split(sep))
         else:
             raise ToyzIoError("Invalid file type '{0}' for python open file".format(file_type))
-        columns = data[0]
-        del data[0]
+        columns = raw_data[0]
+        del raw_data[0]
+        data = {col: [raw_data[m][n] for m in range(len(raw_data))] 
+            for n,col in enumerate(columns)}
     elif io_module == 'numpy':
         import numpy as np
-        data = np.load(**file_options)
-        columns = data.dtype.names
-        data = data.tolist()
+        raw_data = np.load(**file_options)
+        if len(raw_data.dtype) == 0:
+            columns = ['col-'+str(n) for n in range(raw_data.shape[1])]
+            data = {col: raw_data[:,n].tolist() for n,col in enumerate(columns)}
+        else:
+            columns = raw_data.dtype.names
+            data = {col: raw_data[col].tolist() for col in columns}
     elif io_module == 'pandas':
         import pandas as pd
         if file_type == 'csv':
@@ -354,7 +361,8 @@ def load_data_file(io_module, file_type, file_options, io_modules=None):
         else:
             raise ToyzIoError("File type is not yet supported")
         columns = df.columns.values.tolist()
-        data = df.values.tolist()
+        #data = df.values.tolist()
+        data = {col: df[col].values.tolist() for col in columns}
         
     elif io_module == 'astropy':
         response = {
@@ -368,6 +376,9 @@ def load_data_file(io_module, file_type, file_options, io_modules=None):
             raise ToyzIoError(
                 "io_module not found in toyz.utils.io.io_modules or in specified "
                 "io_modules.\n Please check your module name or io_modules")
+        else:
+            # Code here to load data from external module
+            pass
     else:
         raise ToyzIoError(
             "io_module not found in toyz.utils.io.io_modules.\n"
