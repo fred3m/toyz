@@ -16,8 +16,8 @@ Toyz.DataSource = function(id, params, $parent, radio_group, info){
         this.$div = $('<div/>');
         this.$input = $('<input value="'+this.id+'"></input>')
             .change(function(){
-                console.log('change this?:', this);
-            });
+                this.name = event.currentTarget.value;
+            }.bind(this));
         if(radio_group===undefined){
             radio_group = 'data_src';
         };
@@ -70,6 +70,9 @@ Toyz.DataSource.prototype.update = function(info, info_val){
                     + "'rows', 'columns' or 'rows_no_heading'";
                 throw error;
             };
+        }else if(prop=='name'){
+            this.name = info.name;
+            this.$input.val(this.name);
         }else{
             this[prop] = info[prop];
         }
@@ -87,9 +90,19 @@ Toyz.DataSource.prototype.remove = function(){
         tile.remove_source(this.name);
     };
 };
-Toyz.DataSource.prototype.rx_info = function(info_type, info){
+Toyz.DataSource.prototype.save = function(){
+    var save_params = {
+        params: this.params,
+        tiles: this.tiles,
+        name: this.name
+    };
+    return save_params;
 };
-Toyz.DataSource.prototype.tx_info = function(info_type, info){
+Toyz.DataSource.prototype.rx_info = function(info_type, info){
+    // Update tiles with the new information
+    for(var tile in this.tiles){
+        tile.rx_info(info_type, info);
+    };
 };
 
 Toyz.Tile = function(info){
@@ -99,11 +112,20 @@ Toyz.Tile.prototype.update = function(info){
     for(var prop in info){
         this[prop] = info[prop];
     };
+    this.content = {} || this.content;
+    if(!(this.content.hasOwnProperty('save'))){
+        this.content = {
+            save: function(){}
+        };
+    }
 };
 Toyz.Tile.prototype.rx_info = function(info_type, info){
 };
-Toyz.Tile.prototype.tx_info = function(info_type, info){
-};
+
+/*Toyz.Tile.Content = function(info){
+}
+Toyz.Tile.Content.prototype.save = function(){ 
+}*/
 
 Toyz.Workspace.contextMenu_items = function(workspace){
     var items = {
@@ -150,11 +172,14 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
         sources: {},
         editing:'',
         radio_group: 'data_src',
-        load_src: function(params){
+        load_src: function(params, data_name){
             var data_id = data_dialog.editing;
             if(data_dialog.editing==''){
                 data_id = 'data-'+(data_dialog.src_index++).toString();
             };
+            if(data_name===undefined){
+                data_name=data_id;
+            }
             var src_params = $.extend(true, {}, params);
             
             // Load data from server
@@ -173,23 +198,24 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
                 },
                 data_dialog.add_src,
                 {
-                    data_id: data_id,
+                    id: data_id,
+                    name: data_name,
                     params: params
                 }
             );
+            return data_id;
         },
         add_src: function(result, params){
             delete result.id;
-            if(!(data_dialog.sources.hasOwnProperty(params.data_id))){
-                data_dialog.sources[params.data_id] = new Toyz.DataSource(
-                    params.data_id, params.params, data_dialog.$div, data_dialog.radio_group
+            if(!(data_dialog.sources.hasOwnProperty(params.id))){
+                data_dialog.sources[params.id] = new Toyz.DataSource(
+                    params.id, params.params, data_dialog.$div, data_dialog.radio_group
                 );
             };
-            data_dialog.sources[params.data_id].update(result)
+            result.name = params.name;
+            data_dialog.sources[params.id].update(result)
             workspace.$new_data_div.dialog('close');
             data_dialog.editing = '';
-            console.log('data:', params.data_id, data_dialog.sources[params.data_id]);
-            
         },
         remove_src: function(source){
             if(source===undefined){
@@ -197,7 +223,7 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
             };
             if(!(source===undefined)){
                 for(var param in data_dialog.sources[source]){
-                    if(param[0]=='$'){
+                    if(param[0]=='$' && param!='$parent'){
                         data_dialog.sources[source][param].remove();
                     }
                 }
@@ -226,7 +252,7 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
                 data_dialog.remove_all_sources();
             };
             for(var src in sources){
-                data_dialog.load_src(sources[src].params);
+                data_id = data_dialog.load_src(sources[src].params, sources[src].name);
             };
         },
     }, params.options);
@@ -392,7 +418,6 @@ Toyz.Workspace.init = function(params){
                             var params = workspace.new_data_gui.getParams(
                                 workspace.new_data_gui.params
                             );
-                            console.log('params', params);
                             workspace.data_sources.load_src(params);
                         },
                         Cancel: function(){
@@ -421,8 +446,7 @@ Toyz.Workspace.init = function(params){
             }else{
                 var sources = {};
                 for(var src in workspace.data_sources.sources){
-                    console.log('src:', src, workspace.data_sources.sources[src]);
-                    sources[src] = {params:workspace.data_sources.sources[src].params};
+                    sources[src] = workspace.data_sources.sources[src].save();
                 };
                 var ws_dict = {
                     workspaces: {},
@@ -481,18 +505,18 @@ Toyz.Workspace.init = function(params){
             workspace.name = result.work_id;
             workspace.data_sources.update_sources(result.settings.sources, replace=true);
             workspace.tiles = workspace.load_tiles(result.settings.tiles);
-            console.log('workspace tiles:',workspace.tiles);
         },
         share_workspace: function(){
         },
-        new_tile: function(){
-            var my_idx = (workspace.tile_index++).toString();
+        new_tile: function(my_idx){
+            if(my_idx===undefined){
+                my_idx = (workspace.tile_index++).toString();
+            };
             var inner_id = 'tile-'+my_idx;
             var my_id = 'tile-div'+my_idx;
             var $inner_div = $('<div/>')
                 .prop('id',inner_id)
                 .addClass('ws-inner-div context-menu-tile box menu-injected');
-            
             
             var $div = $('<div/>')
                 .prop('id',my_id)
@@ -521,7 +545,6 @@ Toyz.Workspace.init = function(params){
                 $inner_div: $inner_div,
                 content: {}
             });
-            console.log('tiles:', workspace.tiles);
             return workspace.tiles[inner_id];
         },
         remove_tile: function(options){
@@ -547,14 +570,14 @@ Toyz.Workspace.init = function(params){
                     width: tile.$div.width(),
                     height: tile.$div.height()
                 };
-                tiles[tile_id] = $.extend(true, tiles[tile_id], tile.save());
+                tiles[tile_id] = $.extend(true, tiles[tile_id], tile.content.save());
             };
             return tiles;
         },
         load_tiles: function(tiles){
             var new_tiles = {};
             for(var tile_id in tiles){
-                new_tiles[tile_id] = workspace.new_tile();
+                new_tiles[tile_id] = workspace.new_tile(tile_id);
                 new_tiles[tile_id].$div.css({
                     top: tiles[tile_id].top,
                     left: tiles[tile_id].left,
