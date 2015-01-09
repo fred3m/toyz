@@ -122,11 +122,6 @@ Toyz.Tile.prototype.update = function(info){
 Toyz.Tile.prototype.rx_info = function(info_type, info){
 };
 
-/*Toyz.Tile.Content = function(info){
-}
-Toyz.Tile.Content.prototype.save = function(){ 
-}*/
-
 Toyz.Workspace.contextMenu_items = function(workspace){
     var items = {
         "new": {
@@ -290,10 +285,40 @@ Toyz.Workspace.init_tile_dialog = function(workspace){
     var $div = $('<div/>').prop('title','Edit Tile');
     var tile_dialog = {
         $div: $div,
-        editing: '',
-        edit: function(tile_id){
-            tile_dialog.editing = tile_id;
+        load_api: function(tile_api, tile){
             tile_dialog.$div.dialog('open');
+            tile_dialog.$div.dialog({title: tile_api+' API'});
+            if(!window.Toyz.hasOwnProperty('API') ||
+                    window.Toyz.API[tile_api]===undefined ||
+                    !window.Toyz.API[tile_api].dependencies_loaded()){
+                // Load the javascript for the api
+                Toyz.Core.load_dependencies(
+                    dependencies={
+                        js: ['/static/web/static/api/'+tile_api.toLowerCase()+'.js']
+                    }, 
+                    callback = function(){
+                        Toyz.API[tile_api].load_dependencies(
+                            tile_dialog.update.bind(tile_dialog, tile_api, tile)
+                        )
+                    }.bind(tile_api, tile)
+                );
+            }else{
+                tile_dialog.edit(tile_api, tile);
+            }
+        },
+        update: function(tile_api, tile){
+            tile.contents = new Toyz.API[tile_api].Contents({
+                $parent: tile_dialog.$div,
+                $tile_div: tile.$inner_div,
+                workspace: workspace
+            });
+            tile.contents.$div.html('');
+            tile.contents.param_list = Toyz.Gui.initParamList(
+                tile.contents.gui,
+                options = {
+                    $parent: tile.contents.$div
+                }
+            );
         }
     };
     
@@ -303,7 +328,12 @@ Toyz.Workspace.init_tile_dialog = function(workspace){
         autoOpen: false,
         modal: false,
         width: 'auto',
-        height: '300',
+        maxHeight: $(window).height(),
+        position: {
+            my: "left top",
+            at: "center top",
+            of: window
+        },
         buttons: {
             Set: function(){
                 console.log('Set tile has not yet been implemented');
@@ -395,7 +425,14 @@ Toyz.Workspace.init = function(params){
                     workspace[key](options);
                 },
                 items: $.extend(true, {
-                    "edit_tile": {name:"Edit Tile"},
+                    "tile_type": {
+                        name: "Tile Type",
+                        items: {
+                            'Highcharts': {name: 'Highcharts', callback: function(key, options){
+                                workspace.edit_tile(key, options);
+                            }}
+                        }
+                    },
                     "remove_tile": {name:"Remove Tile"},
                     "tile_sep": "--------------"
                 }, Toyz.Workspace.contextMenu_items(workspace))
@@ -508,7 +545,7 @@ Toyz.Workspace.init = function(params){
         },
         share_workspace: function(){
         },
-        new_tile: function(my_idx){
+        new_tile: function(key, options, my_idx){
             if(my_idx===undefined){
                 my_idx = (workspace.tile_index++).toString();
             };
@@ -556,8 +593,8 @@ Toyz.Workspace.init = function(params){
             workspace.tiles[my_id].remove();
             delete workspace.tiles[my_id];
         },
-        edit_tile: function(options){
-            workspace.tile_dialog.edit(options.$trigger.prop('id'))
+        edit_tile: function(key, options){
+            workspace.tile_dialog.load_api(key, workspace.tiles[options.$trigger.prop('id')]);
         },
         save_tiles: function(){
             var tiles = {};
@@ -577,7 +614,7 @@ Toyz.Workspace.init = function(params){
         load_tiles: function(tiles){
             var new_tiles = {};
             for(var tile_id in tiles){
-                new_tiles[tile_id] = workspace.new_tile(tile_id);
+                new_tiles[tile_id] = workspace.new_tile(null, null, tile_id);
                 new_tiles[tile_id].$div.css({
                     top: tiles[tile_id].top,
                     left: tiles[tile_id].left,
@@ -597,7 +634,7 @@ Toyz.Workspace.init = function(params){
     
     Toyz.Core.load_dependencies(
         dependencies={
-            core: true,
+            core: true
         }, 
         callback=workspace.dependencies_onload
     );

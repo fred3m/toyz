@@ -217,7 +217,7 @@ Toyz.Core.load_dependencies=function(dependencies, callback){
     }
     if(dependencies.hasOwnProperty('js')){
         scripts = scripts.concat(dependencies.js);
-    }
+    };
     if(dependencies.hasOwnProperty('css')){
         style_sheets = style_sheets.concat(dependencies.css);
     };

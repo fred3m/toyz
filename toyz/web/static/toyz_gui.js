@@ -367,8 +367,15 @@ Toyz.Gui.initParams=function(param, $parent, key){
                                 $li.append(new_item.$div);
                                 new_item.$radio = $radio;
                                 new_item.$item = $li;
+                                // Select the current series if any item in the div is clicked
+                                new_item.$div.click(function(){
+                                    this.$radio.prop('checked', true);
+                                }.bind(new_item));
                                 param.items.push(new_item);
                                 param.$list.append($li);
+                                if(new_item.hasOwnProperty('init')){
+                                    new_item.init(new_item);
+                                };
                             }
                         }(param)
                     }

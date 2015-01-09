@@ -138,7 +138,7 @@ class AuthStaticFileHandler(AuthHandler, tornado.web.StaticFileHandler):
                     self, root, full_path)
         else:
             absolute_path = None
-        #print('Absoulte path:', absolute_path)
+        print('Absoulte path:', absolute_path)
         return absolute_path
 
 class AuthLoginHandler(AuthHandler, tornado.web.RequestHandler):
@@ -239,16 +239,16 @@ class Toyz3rdPartyHandler(ToyzHandler, tornado.web.StaticFileHandler):
         filename = path[-1]
         rel_path = path[1:-1]
         settings = self.application.toyz_settings.web.third_party
-        #print('SETTINGS KEYS:', settings.keys())
+        print('SETTINGS KEYS:', settings.keys())
         if pkg_name not in settings:
             raise ToyzWebError("Library '{0}' not found in third_party.py".format(pkg_name))
-        #print('settings:', settings[pkg_name])
+        print('settings:', settings[pkg_name])
         if len(rel_path)>0:
             static_path = os.path.join(settings[pkg_name]['path'], *rel_path)
         else:
             static_path = settings[pkg_name]['path']
-        static_path = os.path.join(static_path, filename)
-        tornado.web.StaticFileHandler.get(self,static_path)
+        self.root = static_path
+        tornado.web.StaticFileHandler.get(self,filename)
 
 class AuthToyz3rdPartyHandler(AuthHandler, Toyz3rdPartyHandler):
     @tornado.web.authenticated
