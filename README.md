@@ -26,19 +26,19 @@ getting started with Toyz.
 Sceenshots
 ----------
 ### Toyz
-![alt text](https://github.com/fred3m/toyz/tree/master/screenshots/user_settings.png)
+![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/user_settings.png)
 
 User settings in admin console
 
-![alt text](https://github.com/fred3m/toyz/tree/master/screenshots/group_settings.png)
+![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/group_settings.png)
 
 Group settings in admin console
 
-![alt text](https://github.com/fred3m/toyz/tree/master/screenshots/open_file.png)
+![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/open_file.png)
 
 Open a data file from the server using python, numpy, or pandas (astropy in the future)
 
-![alt text](https://github.com/fred3m/toyz/tree/master/screenshots/plots.png)
+![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/plots.png)
 
 Interactive plots using Highcharts (custom js plot libraries can also be used)
 
@@ -46,15 +46,15 @@ Interactive plots using Highcharts (custom js plot libraries can also be used)
 There are a number of feature from astopyp and astropypelines that will be added in the next few 
 weeks. Here is a sneak preview of some of those features.
 
-![alt text](https://github.com/fred3m/toyz/tree/master/screenshots/fitsviewer1.png)
+![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/fitsviewer1.png)
 
 Detecting stars with the fits image viewer
 
-![alt text](https://github.com/fred3m/toyz/tree/master/screenshots/fitsviewer2.png)
+![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/fitsviewer2.png)
 
 Setting the contrast and bias with the fits image viewer
 
-![alt text](https://github.com/fred3m/toyz/tree/master/screenshots/color_mag_.png)
+![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/color_mag_.png)
 
 Viewing interactive plots, surface plots, and image arrays that are all connected
 
