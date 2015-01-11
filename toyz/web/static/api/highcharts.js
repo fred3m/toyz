@@ -129,6 +129,7 @@ Toyz.API.Highcharts.Contents = function(params){
                                             }
                                         },
                                         marker_enabled: {
+                                            lbl: 'marker enabled',
                                             prop: {
                                                 type: 'checkbox',
                                                 checked: true
@@ -193,6 +194,9 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(){
     var chart_params = {
         title: {text:settings.title},
         series: [],
+    };
+    if(!(settings.subtitle===undefined || settings.subtitle=='') || settings.subtitle===null){
+        chart_params.subtitle={text:settings.subtitle};
     };
     for(var i=0; i<settings.series.length; i++){
         var data_source = settings.series[i].data_source;
