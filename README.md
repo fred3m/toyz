@@ -54,7 +54,7 @@ Detecting stars with the fits image viewer
 
 Setting the contrast and bias with the fits image viewer
 
-![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/color_mag_.png)
+![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/color_mag.png)
 
 Viewing interactive plots, surface plots, and image arrays that are all connected
 
