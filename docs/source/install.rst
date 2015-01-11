@@ -10,13 +10,16 @@ Requirements
 - `Tornado <http://www.tornadoweb.org/en/stable/>`_ 4.0 or later
 - `passlib <https://pythonhosted.org/passlib/>`_ 1.6.2 or later (eventually this will be optional 
   and only required for password protected toyz applications)
-- `numpy <http://www.numpy.org/>`_ 1.5.1 or later
 
 Optional Requirements
 =====================
+- `numpy <http://www.numpy.org/>`_ 1.5.1 or later
+    + Required to load saved .npy files
 - `Highcharts <http://www.highcharts.com/download>`_ 4.0 or higher
     + Required for interactive plots and charts
-    + Download is free for personal or non-profit use and 
+    + Software contains link to online resource but can also be downloaded from
+      `http://www.highcharts.com/download`_
+    + is free for personal or non-profit use and 
       `reasonably priced <http://shop.highsoft.com/highcharts.html>`_ for commercial use
 
 Installing Toyz

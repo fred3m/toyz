@@ -47,17 +47,3 @@ Another scenario is a much larger collaboration, where researchers are sharing d
 with collaborators located all over the world. Toyz includes workspaces that allow for multiple
 plots (whose points are all connected) to be shared between users and groups, or for a single
 user to save his/her workspace for future analysis.
-
-Third Party Software
-====================
-Creating toyz was only possible due to the open source community, including other projects on
-github.
-
-The third party codes currently used in toyz are:
-    - `loadpng <http://lodev.org/lodepng/>`_
-    - `jquery <http://jquery.com/>`_
-    - `jquery UI <http://jqueryui.com/>`_
-    - `Graph 3d <http://almende.github.io/chap-links-library/js/graph3d/doc/>`_
-    - `Google visual <https://developers.google.com/chart/interactive/docs/reference>`_
-    - `jQuery contextMenu <http://medialize.github.io/jQuery-contextMenu/index.html>`_
-    - `jQuery getCss <https://github.com/furf/jquery-getCSS>`_
