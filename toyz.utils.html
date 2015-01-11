@@ -59,7 +59,6 @@
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="overview.html#what-is-toyz">What is Toyz?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="overview.html#possible-use-cases">Possible Use Cases</a></li>
-<li class="toctree-l2"><a class="reference internal" href="overview.html#third-party-software">Third Party Software</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
@@ -210,35 +209,6 @@ the settings file will be encrypted (this requires a security key).</p>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="toyz.utils.core.ToyzUser">
-<em class="property">class </em><tt class="descclassname">toyz.utils.core.</tt><tt class="descname">ToyzUser</tt><big>(</big><em>toyz_settings</em>, <em>**user_settings</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzUser" title="Permalink to this definition">¶</a></dt>
-<dd><p>User logged into the Toyz web application.</p>
-<p><em>No longer implemented</em></p>
-<dl class="method">
-<dt id="toyz.utils.core.ToyzUser.add_toyz">
-<tt class="descname">add_toyz</tt><big>(</big><em>toyz</em>, <em>paths</em><big>)</big><a class="headerlink" href="#toyz.utils.core.ToyzUser.add_toyz" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a toyz from a list of packages and/or a list of paths on the server</p>
-<dl class="docutils">
-<dt>toyz: list</dt>
-<dd><ul class="first simple">
-<li>elements are either names of packages built on the toyz framework or dictionaries,</li>
-</ul>
-<p class="last">where the keys are names to identify each package and the values are
-package names.</p>
-</dd>
-<dt>paths: dict of strings</dt>
-<dd><ul class="first last simple">
-<li>Keys are names to identify each toy</li>
-<li>Values are paths to modules that have not been packaged but fit the toyz framework</li>
-</ul>
-</dd>
-</dl>
-<p>None</p>
-</dd></dl>
-
-</dd></dl>
-
 <dl class="function">
 <dt id="toyz.utils.core.check4keys">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">check4keys</tt><big>(</big><em>myDict</em>, <em>keys</em><big>)</big><a class="headerlink" href="#toyz.utils.core.check4keys" title="Permalink to this definition">¶</a></dt>
@@ -308,6 +278,11 @@ application</li>
 <li>user_id (<em>string</em> ): User id to check for shortcuts</li>
 <li>shortcuts (<em>dict</em>, optional): Dictionary of shortcuts for a user. Shortcuts
 are always of the form <tt class="docutils literal"><span class="pre">shortcut_name:path</span></tt> .</li>
+</ul>
+</dd>
+<dt>Returns</dt>
+<dd><ul class="first last simple">
+<li></li>
 </ul>
 </dd>
 </dl>
@@ -738,11 +713,8 @@ License: MIT</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-toyz.utils.third_party_settings">
-<span id="toyz-utils-third-party-settings-module"></span><h2>toyz.utils.third_party_settings module<a class="headerlink" href="#module-toyz.utils.third_party_settings" title="Permalink to this headline">¶</a></h2>
-<p>Settings for 3rd party web libraries, including jquery, jquery_ui, jquery_ui_themes.
-These are the defaults for any third party libraries, containing version information
-and a path to the source code.</p>
+<div class="section" id="toyz-utils-third-party-settings-module">
+<h2>toyz.utils.third_party_settings module<a class="headerlink" href="#toyz-utils-third-party-settings-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-toyz.utils">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-toyz.utils" title="Permalink to this headline">¶</a></h2>

@@ -60,7 +60,6 @@
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="overview.html#what-is-toyz">What is Toyz?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="overview.html#possible-use-cases">Possible Use Cases</a></li>
-<li class="toctree-l2"><a class="reference internal" href="overview.html#third-party-software">Third Party Software</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
@@ -144,10 +143,6 @@
   </dt>
 
       
-  <dt><a href="toyz.utils.html#toyz.utils.core.ToyzUser.add_toyz">add_toyz() (toyz.utils.core.ToyzUser method)</a>
-  </dt>
-
-      
   <dt><a href="toyz.web.html#toyz.web.app.AuthHandler">AuthHandler (class in toyz.web.app)</a>
   </dt>
 
@@ -159,14 +154,22 @@
   <dt><a href="toyz.web.html#toyz.web.app.AuthLogoutHandler">AuthLogoutHandler (class in toyz.web.app)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="toyz.web.html#toyz.web.app.AuthMainHandler">AuthMainHandler (class in toyz.web.app)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="toyz.web.html#toyz.web.app.AuthStaticFileHandler">AuthStaticFileHandler (class in toyz.web.app)</a>
+  </dt>
+
+      
+  <dt><a href="toyz.web.html#toyz.web.app.AuthToyz3rdPartyHandler">AuthToyz3rdPartyHandler (class in toyz.web.app)</a>
+  </dt>
+
+      
+  <dt><a href="toyz.web.html#toyz.web.app.AuthToyzCoreJsHandler">AuthToyzCoreJsHandler (class in toyz.web.app)</a>
   </dt>
 
       
@@ -178,7 +181,7 @@
   </dt>
 
       
-  <dt><a href="toyz.web.html#toyz.web.app.AuthWorkspaceHandler">AuthWorkspaceHandler (class in toyz.web.app)</a>
+  <dt><a href="toyz.web.html#toyz.web.app.AuthToyzWorkspaceHandler">AuthToyzWorkspaceHandler (class in toyz.web.app)</a>
   </dt>
 
   </dl></td>
@@ -226,13 +229,15 @@
   </dt>
 
       
-  <dt><a href="toyz.web.html#toyz.web.tasks.create_dir">create_dir() (in module toyz.web.tasks)</a>
-  </dt>
-
-      
   <dt><a href="toyz.utils.html#toyz.utils.core.create_paths">create_paths() (in module toyz.utils.core)</a>
   </dt>
 
+      <dd><dl>
+        
+  <dt><a href="toyz.web.html#toyz.web.tasks.create_paths">(in module toyz.web.tasks)</a>
+  </dt>
+
+      </dl></dd>
       
   <dt><a href="toyz.utils.html#toyz.utils.db.create_toyz_database">create_toyz_database() (in module toyz.utils.db)</a>
   </dt>
@@ -333,6 +338,14 @@
   </dt>
 
         
+  <dt><a href="toyz.web.html#toyz.web.app.AuthToyz3rdPartyHandler.get">(toyz.web.app.AuthToyz3rdPartyHandler method)</a>
+  </dt>
+
+        
+  <dt><a href="toyz.web.html#toyz.web.app.AuthToyzCoreJsHandler.get">(toyz.web.app.AuthToyzCoreJsHandler method)</a>
+  </dt>
+
+        
   <dt><a href="toyz.web.html#toyz.web.app.AuthToyzStaticFileHandler.get">(toyz.web.app.AuthToyzStaticFileHandler method)</a>
   </dt>
 
@@ -341,11 +354,19 @@
   </dt>
 
         
-  <dt><a href="toyz.web.html#toyz.web.app.AuthWorkspaceHandler.get">(toyz.web.app.AuthWorkspaceHandler method)</a>
+  <dt><a href="toyz.web.html#toyz.web.app.AuthToyzWorkspaceHandler.get">(toyz.web.app.AuthToyzWorkspaceHandler method)</a>
   </dt>
 
         
   <dt><a href="toyz.web.html#toyz.web.app.MainHandler.get">(toyz.web.app.MainHandler method)</a>
+  </dt>
+
+        
+  <dt><a href="toyz.web.html#toyz.web.app.Toyz3rdPartyHandler.get">(toyz.web.app.Toyz3rdPartyHandler method)</a>
+  </dt>
+
+        
+  <dt><a href="toyz.web.html#toyz.web.app.ToyzCoreJsHandler.get">(toyz.web.app.ToyzCoreJsHandler method)</a>
   </dt>
 
         
@@ -357,7 +378,7 @@
   </dt>
 
         
-  <dt><a href="toyz.web.html#toyz.web.app.WorkspaceHandler.get">(toyz.web.app.WorkspaceHandler method)</a>
+  <dt><a href="toyz.web.html#toyz.web.app.ToyzWorkspaceHandler.get">(toyz.web.app.ToyzWorkspaceHandler method)</a>
   </dt>
 
       </dl></dd>
@@ -441,11 +462,15 @@
 
       <dd><dl>
         
+  <dt><a href="toyz.web.html#toyz.web.app.ToyzCoreJsHandler.get_template_path">(toyz.web.app.ToyzCoreJsHandler method)</a>
+  </dt>
+
+        
   <dt><a href="toyz.web.html#toyz.web.app.ToyzTemplateHandler.get_template_path">(toyz.web.app.ToyzTemplateHandler method)</a>
   </dt>
 
         
-  <dt><a href="toyz.web.html#toyz.web.app.WorkspaceHandler.get_template_path">(toyz.web.app.WorkspaceHandler method)</a>
+  <dt><a href="toyz.web.html#toyz.web.app.ToyzWorkspaceHandler.get_template_path">(toyz.web.app.ToyzWorkspaceHandler method)</a>
   </dt>
 
       </dl></dd>
@@ -455,6 +480,10 @@
 
       
   <dt><a href="toyz.web.html#toyz.web.app.ToyzHandler.get_user_id">get_user_id() (toyz.web.app.ToyzHandler method)</a>
+  </dt>
+
+      
+  <dt><a href="toyz.web.html#toyz.web.app.ToyzHandler.get_user_theme">get_user_theme() (toyz.web.app.ToyzHandler method)</a>
   </dt>
 
       
@@ -495,11 +524,15 @@
   </dt>
 
         
+  <dt><a href="toyz.web.html#toyz.web.app.ToyzCoreJsHandler.initialize">(toyz.web.app.ToyzCoreJsHandler method)</a>
+  </dt>
+
+        
   <dt><a href="toyz.web.html#toyz.web.app.ToyzTemplateHandler.initialize">(toyz.web.app.ToyzTemplateHandler method)</a>
   </dt>
 
         
-  <dt><a href="toyz.web.html#toyz.web.app.WorkspaceHandler.initialize">(toyz.web.app.WorkspaceHandler method)</a>
+  <dt><a href="toyz.web.html#toyz.web.app.ToyzWorkspaceHandler.initialize">(toyz.web.app.ToyzWorkspaceHandler method)</a>
   </dt>
 
       </dl></dd>
@@ -549,6 +582,10 @@
 
       
   <dt><a href="toyz.web.html#toyz.web.tasks.load_user_settings">load_user_settings() (in module toyz.web.tasks)</a>
+  </dt>
+
+      
+  <dt><a href="toyz.web.html#toyz.web.tasks.load_workspace">load_workspace() (in module toyz.web.tasks)</a>
   </dt>
 
   </dl></td>
@@ -654,11 +691,15 @@
   </dt>
 
       
-  <dt><a href="toyz.web.html#toyz.web.app.AuthLoginHandler.set_current_user">set_current_user() (toyz.web.app.AuthLoginHandler method)</a>
+  <dt><a href="toyz.web.html#toyz.web.tasks.save_workspace">save_workspace() (in module toyz.web.tasks)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="toyz.web.html#toyz.web.app.AuthLoginHandler.set_current_user">set_current_user() (toyz.web.app.AuthLoginHandler method)</a>
+  </dt>
+
       
   <dt><a href="toyz.utils.html#toyz.utils.file_access.split_path">split_path() (in module toyz.utils.file_access)</a>
   </dt>
@@ -714,10 +755,6 @@
   </dt>
 
       
-  <dt><a href="toyz.utils.html#module-toyz.utils.third_party_settings">toyz.utils.third_party_settings (module)</a>
-  </dt>
-
-      
   <dt><a href="toyz.html#module-toyz.version">toyz.version (module)</a>
   </dt>
 
@@ -733,10 +770,18 @@
   <dt><a href="toyz.web.html#module-toyz.web.tasks">toyz.web.tasks (module)</a>
   </dt>
 
+      
+  <dt><a href="toyz.web.html#toyz.web.app.Toyz3rdPartyHandler">Toyz3rdPartyHandler (class in toyz.web.app)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="toyz.utils.html#toyz.utils.core.ToyzClass">ToyzClass (class in toyz.utils.core)</a>
+  </dt>
+
+      
+  <dt><a href="toyz.web.html#toyz.web.app.ToyzCoreJsHandler">ToyzCoreJsHandler (class in toyz.web.app)</a>
   </dt>
 
       
@@ -776,10 +821,6 @@
   </dt>
 
       
-  <dt><a href="toyz.utils.html#toyz.utils.core.ToyzUser">ToyzUser (class in toyz.utils.core)</a>
-  </dt>
-
-      
   <dt><a href="toyz.utils.html#toyz.utils.errors.ToyzWarning">ToyzWarning (class in toyz.utils.errors)</a>
   </dt>
 
@@ -789,6 +830,10 @@
 
       
   <dt><a href="toyz.utils.html#toyz.utils.errors.ToyzWebError">ToyzWebError</a>
+  </dt>
+
+      
+  <dt><a href="toyz.web.html#toyz.web.app.ToyzWorkspaceHandler">ToyzWorkspaceHandler (class in toyz.web.app)</a>
   </dt>
 
   </dl></td>
@@ -811,12 +856,12 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="toyz.html#toyz.version.update_git_devstr">update_git_devstr() (in module toyz.version)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="toyz.utils.html#toyz.utils.db.update_param">update_param() (in module toyz.utils.db)</a>
   </dt>
@@ -827,6 +872,10 @@
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="toyz.web.html#toyz.web.tasks.update_toyz_settings">update_toyz_settings() (in module toyz.web.tasks)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -845,12 +894,6 @@
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="toyz.web.html#toyz.web.app.WebSocketHandler">WebSocketHandler (class in toyz.web.app)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="toyz.web.html#toyz.web.app.WorkspaceHandler">WorkspaceHandler (class in toyz.web.app)</a>
   </dt>
 
   </dl></td>
