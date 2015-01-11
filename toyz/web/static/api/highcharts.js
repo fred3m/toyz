@@ -89,6 +89,12 @@ Toyz.API.Highcharts.Contents = function(params){
                                     options: ['scatter', 'line', 'spline', 'area', 'areaspline', 
                                                 'bar', 'column', 'pie', 'polar']
                                 },
+                                series_name: {
+                                    lbl: 'Series name',
+                                    plot: {
+                                        value: ''
+                                    }
+                                },
                                 data_source: {
                                     type: 'select',
                                     lbl: 'data source',
@@ -118,6 +124,7 @@ Toyz.API.Highcharts.Contents = function(params){
                                             }
                                         },
                                         marker_symbol: {
+                                            lbl: 'synmbol',
                                             type: 'select',
                                             options: ['circle', 'square', 'diamond', 
                                                     'triangle','triangle-down']
@@ -215,6 +222,8 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(){
             };
         };
         chart_params.series.push({
+            type: settings.series[i].chart_type,
+            name: settings.series[i].series_name,
             data: this_data,
             marker: marker
         });
