@@ -9,6 +9,8 @@ Toyz.API.Highcharts.Contents = function(params){
     this.$parent.append(this.$div);
     this.$tile_div = params.$tile_div;
     this.workspace = params.workspace;
+    this.tile = params.tile;
+    this.selected_pts = [];
     this.gui = {
         type: 'div',
         params: {
@@ -19,6 +21,16 @@ Toyz.API.Highcharts.Contents = function(params){
                 }
             },
             subtitle: {lbl: 'Subtitle'},
+            selection: {
+                lbl: 'Selection type',
+                type: 'select',
+                options: {
+                    'selection': 'select points',
+                    'xy': 'xy zoom',
+                    'x': 'x zoom',
+                    'y': 'y zoom',
+                }
+            },
             legend: {
                 type: 'div',
                 legend: 'Chart Legend',
@@ -181,11 +193,8 @@ Toyz.API.Highcharts.Contents.prototype.update_columns = function(event){
     //var data_source = event.currentTarget.value;
     var idx = $("input:radio[ name='series' ]:checked").val();
     idx = Number(idx.split('-')[1]);
-    console.log('idx', idx);
     var params = this.gui.params.series_div.params.series.items[idx].params;
-    console.log('params', params);
     var data_source = params.data_source.$input.val();
-    console.log(data_source);
     params.x.$input.empty();
     params.y.$input.empty();
     for(var col in workspace.data_sources.sources[data_source].data){
@@ -200,8 +209,13 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(){
     console.log('chart settings', settings);
     var chart_params = {
         title: {text:settings.title},
+        chart: {
+            zoomType: 'xy',
+            events: {}
+        },
         series: [],
     };
+    
     if(!(settings.subtitle===undefined || settings.subtitle=='') || settings.subtitle===null){
         chart_params.subtitle={text:settings.subtitle};
     };
@@ -210,10 +224,13 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(){
         var data = this.workspace.data_sources.sources[data_source].data;
         var x = settings.series[i].x;
         var y = settings.series[i].y;
-        console.log('data', data);
         var this_data = [];
         for(var j=0; j<data[x].length; j++){
-            this_data.push([data[x][j], data[y][j]]);
+            this_data.push({
+                x:data[x][j], 
+                y:data[y][j],
+                idx: j
+            });
         };
         var marker = {};
         for(var setting in settings.series[i]){
@@ -227,9 +244,59 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(){
             data: this_data,
             marker: marker
         });
+        
+        if(settings.selection=='selection'){
+            // Change the selection behavior of a point to update other plots
+            chart_params.plotOptions = {
+                series: {
+                    allowPointSelect: true,
+                    point: {
+                        events: {
+                            select: function(event){
+                                var point = event.currentTarget;
+                                var contents = this;
+                                // If user is holding down shift or ctrl (depends on system),
+                                // add point to existing array, otherwise clear all selected
+                                // points before adding the new point
+                                if(event.accumulate){
+                                    this.selected_pts.push(point.idx);
+                                }else{
+                                    this.selected_pts = [point.idx];
+                                };
+                                this.update_selected([point.idx], !event.accumulate)
+                            }.bind(this)
+                        }
+                    }
+                }
+            };
+            // If a range is selected, select all of the points in the range
+            // TODO: Improve this algorithm to work in log(n) time using a
+            // binary search
+            chart_params.chart.events.selection = function(event){
+                for(var s=0; s<this.series.length; s++){
+                    for(var i=0; i<this.series[s].data.length; i++){
+                        var point = this.series[s].data[i];
+                        if (point.x > event.xAxis[0].min &&
+                            point.x < event.xAxis[0].max &&
+                            point.y > event.yAxis[0].min &&
+                            point.y < event.yAxis[0].max
+                        ){
+                            point.select(true, true);
+                        };
+                    };
+                };
+                return false;
+            };
+        }else{
+            chart_params.chart.zoomType = settings.selection;
+        };
     };
     console.log('chart_params', chart_params);
     this.$tile_div.highcharts(chart_params);
+};
+
+Toyz.API.Highcharts.Contents.prototype.update_selected = function(selected_points, clear_all){
+    console.log('selected points', selected_points);
 };
 
 Toyz.API.Highcharts.dependencies_loaded = function(){

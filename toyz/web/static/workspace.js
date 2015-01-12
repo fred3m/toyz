@@ -310,7 +310,8 @@ Toyz.Workspace.init_tile_dialog = function(workspace){
             tile.contents = new Toyz.API[tile_api].Contents({
                 $parent: tile_dialog.$div,
                 $tile_div: tile.$inner_div,
-                workspace: workspace
+                workspace: workspace,
+                tile: tile
             });
             tile.contents.$div.html('');
             tile.contents.param_list = Toyz.Gui.initParamList(
