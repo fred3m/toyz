@@ -3,15 +3,57 @@
 // License: MIT
 Toyz.namespace('Toyz.API.Highcharts');
 
-Toyz.API.Highcharts.Contents = function(params){
+// Check to see if all of the API's dependencies have loaded
+Toyz.API.Highcharts.dependencies_loaded = function(){
+    try {
+        var h = Highcharts;
+        return true;
+    } catch(e){
+        return false;
+    }
+};
+Toyz.API.Highcharts.load_dependencies = function(callback, params){
+    // Check to see if highcharts loaded from the server, if not load from the web
+    // Note: Highcharts has put a usage limit on its js files, so it is a good
+    // idea to have the source code located on the server
+    console.log('callback in api load_dependencies', callback);
+    if(!Toyz.API.Highcharts.dependencies_loaded()){
+        console.log('Loading Highcharts');
+        $.ajax({
+            type: 'GET',
+            url: "/third_party/highcharts/highcharts.js",
+            dataType: 'script',
+            error: function(XMLHttpRequest, status, err){
+                console.log("Highcharts not found on server "
+                            + "loading Highcharts from external web site");
+                $.ajax({
+                    type: 'GET',
+                    url: "https://code.highcharts.com/highcharts.js",
+                    dataType: 'script',
+                    error: function(){
+                        alert('Unable to load highcharts from server or code.highcharts.com');
+                    },
+                    success: function(){
+                        console.log('Highcharts successfully loaded from code.highcharts.com')
+                        callback();
+                    }.bind(null,callback)
+                })
+            }.bind(null,callback),
+            success: function(){
+                console.log('Highcharts loaded successfully');
+                callback();
+            }.bind(null,callback)
+        })
+    };
+};
+
+Toyz.API.Highcharts.Gui = function(params){
     this.$div = $('<div/>');
     this.$parent = params.$parent;
     this.$parent.append(this.$div);
-    this.$tile_div = params.$tile_div;
     this.workspace = params.workspace;
     this.tile = params.tile;
-    this.selected_pts = [];
-    this.gui = {
+    var gui = {
         type: 'div',
         params: {
             title: {
@@ -174,26 +216,21 @@ Toyz.API.Highcharts.Contents = function(params){
                         }
                     }
                 }
-            },
-            submit: {
-                type: 'button',
-                prop: {
-                    innerHTML: 'Submit'
-                },
-                func: {
-                    click: this.create_chart.bind(this)
-                }
             }
         }
-    }
+    };
+    this.gui = Toyz.Gui.initParamList(
+        gui,
+        options = {
+            $parent: this.$div
+        }
+    );
 };
-Toyz.API.Highcharts.Contents.prototype.rx_info = function(info_type, info){
-};
-Toyz.API.Highcharts.Contents.prototype.update_columns = function(event){
+Toyz.API.Highcharts.Gui.prototype.update_columns = function(event){
     //var data_source = event.currentTarget.value;
     var idx = $("input:radio[ name='series' ]:checked").val();
     idx = Number(idx.split('-')[1]);
-    var params = this.gui.params.series_div.params.series.items[idx].params;
+    var params = this.gui.params.params.series_div.params.series.items[idx].params;
     var data_source = params.data_source.$input.val();
     params.x.$input.empty();
     params.y.$input.empty();
@@ -204,11 +241,33 @@ Toyz.API.Highcharts.Contents.prototype.update_columns = function(event){
         params.y.$input.append(y_opt);
     };
 };
-Toyz.API.Highcharts.Contents.prototype.create_chart = function(){
-    var settings = this.param_list.getParams(this.param_list.params);
-    console.log('chart settings', settings);
+
+Toyz.API.Highcharts.Contents = function(params){
+    this.type = 'Highcharts';
+    this.tile = params.tile;
+    this.$tile_div = params.$tile_div;
+    this.workspace = params.workspace;
+    this.settings = {};
+    this.selected_pts = [];
+};
+Toyz.API.Highcharts.Contents.prototype.update = function(params, param_val){
+    // Allow user to either pass param_name, param_val to function or
+    // dictionary with multiple parameters
+    if(!(param_val===undefined)){
+        params = {params:param_val};
+    };
+    for(var param in params){
+        this[param] = params[param];
+    }
+};
+Toyz.API.Highcharts.Contents.prototype.rx_info = function(info_type, info){
+};
+Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
+    //var settings = this.param_list.getParams(this.param_list.params);
+    this.settings = settings;
+    console.log('chart settings', this.settings);
     var chart_params = {
-        title: {text:settings.title},
+        title: {text: this.settings.title},
         chart: {
             zoomType: 'xy',
             events: {}
@@ -216,14 +275,14 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(){
         series: [],
     };
     
-    if(!(settings.subtitle===undefined || settings.subtitle=='') || settings.subtitle===null){
-        chart_params.subtitle={text:settings.subtitle};
+    if(!(this.settings.subtitle===undefined || this.settings.subtitle=='') || this.settings.subtitle===null){
+        chart_params.subtitle={text: this.settings.subtitle};
     };
-    for(var i=0; i<settings.series.length; i++){
-        var data_source = settings.series[i].data_source;
+    for(var i=0; i<this.settings.series.length; i++){
+        var data_source = this.settings.series[i].data_source;
         var data = this.workspace.data_sources.sources[data_source].data;
-        var x = settings.series[i].x;
-        var y = settings.series[i].y;
+        var x = this.settings.series[i].x;
+        var y = this.settings.series[i].y;
         var this_data = [];
         for(var j=0; j<data[x].length; j++){
             this_data.push({
@@ -233,19 +292,19 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(){
             });
         };
         var marker = {};
-        for(var setting in settings.series[i]){
+        for(var setting in this.settings.series[i]){
             if(setting.indexOf('marker_')>-1){
-                marker[setting.slice(7,setting.length)] = settings.series[i][setting];
+                marker[setting.slice(7,setting.length)] = this.settings.series[i][setting];
             };
         };
         chart_params.series.push({
-            type: settings.series[i].chart_type,
-            name: settings.series[i].series_name,
+            type: this.settings.series[i].chart_type,
+            name: this.settings.series[i].series_name,
             data: this_data,
             marker: marker
         });
         
-        if(settings.selection=='selection'){
+        if(this.settings.selection=='selection'){
             // Change the selection behavior of a point to update other plots
             chart_params.plotOptions = {
                 series: {
@@ -288,52 +347,24 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(){
                 return false;
             };
         }else{
-            chart_params.chart.zoomType = settings.selection;
+            chart_params.chart.zoomType = this.settings.selection;
         };
     };
     console.log('chart_params', chart_params);
     this.$tile_div.highcharts(chart_params);
 };
-
+Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
+    this.create_chart(settings);
+};
 Toyz.API.Highcharts.Contents.prototype.update_selected = function(selected_points, clear_all){
     console.log('selected points', selected_points);
 };
-
-Toyz.API.Highcharts.dependencies_loaded = function(){
-    return !window.Highcharts===undefined;
-};
-Toyz.API.Highcharts.load_dependencies = function(callback, params){
-    // Check to see if highcharts loaded from the server, if not load from the web
-    // Note: Highcharts has put a usage limit on its js files, so it is a good
-    // idea to have the source code located on the server
-    if(!Toyz.API.Highcharts.dependencies_loaded()){
-        console.log('Loading Highcharts');
-        $.ajax({
-            type: 'GET',
-            url: "/third_party/highcharts/highcharts.js",
-            dataType: 'script',
-            error: function(XMLHttpRequest, status, err){
-                console.log("Highcharts not found on server "
-                            + "loading Highcharts from external web site");
-                $.ajax({
-                    type: 'GET',
-                    url: "https://code.highcharts.com/highcharts.js",
-                    dataType: 'script',
-                    error: function(){
-                        alert('Unable to load highcharts from server or code.highcharts.com');
-                    },
-                    success: function(){
-                        console.log('Highcharts successfully loaded from code.highcharts.com')
-                        callback();
-                    }.bind(null,callback)
-                })
-            }.bind(null,callback),
-            success: function(){
-                console.log('Highcharts loaded successfully')
-                callback();
-            }.bind(null,callback)
-        })
+Toyz.API.Highcharts.Contents.prototype.save = function(){
+    var tile = {
+        type: this.type,
+        settings: this.settings
     };
+    return tile;
 };
 
 console.log('Toyz Highcharts API loaded');

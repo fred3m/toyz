@@ -4,6 +4,24 @@
 
 Toyz.namespace('Toyz.Workspace');
 
+Toyz.Workspace.load_api_dependencies = function(tile_api, callback){
+    if(!window.Toyz.hasOwnProperty('API') ||
+            window.Toyz.API[tile_api]===undefined ||
+            !window.Toyz.API[tile_api].dependencies_loaded()){
+        // Load the javascript for the api
+        Toyz.Core.load_dependencies(
+            dependencies={
+                js: ['/static/web/static/api/'+tile_api.toLowerCase()+'.js']
+            }, 
+            callback = function(tile_api, callback){
+                Toyz.API[tile_api].load_dependencies(callback)
+            }.bind(null, tile_api, callback)
+        );
+    }else{
+        callback();
+    }
+}
+
 Toyz.DataSource = function(id, params, $parent, radio_group, info){
     this.id = id;
     this.name = id;
@@ -106,18 +124,32 @@ Toyz.DataSource.prototype.rx_info = function(info_type, info){
 };
 
 Toyz.Tile = function(info){
+    this.contents = {
+        save: function(){}
+    };
     this.update(info);
 };
-Toyz.Tile.prototype.update = function(info){
-    for(var prop in info){
-        this[prop] = info[prop];
+Toyz.Tile.prototype.update = function(info, info_val){
+    // Allow user to either pass param_name, param_val to function or
+    // dictionary with multiple parameters
+    if(!(info_val===undefined)){
+        info = {info:info_val};
     };
-    this.content = {} || this.content;
-    if(!(this.content.hasOwnProperty('save'))){
-        this.content = {
-            save: function(){}
-        };
-    }
+    for(var prop in info){
+        if(prop == 'contents'){
+            console.log('contents', info.contents);
+            this.contents = new Toyz.API[info.contents.api].Contents({
+                tile: this,
+                $tile_div: this.$inner_div,
+                workspace: info.contents.workspace
+            });
+            if(info.contents.hasOwnProperty('settings')){
+                this.contents.set_tile(info.contents.settings);
+            };
+        }else{
+            this[prop] = info[prop];
+        }
+    };
 };
 Toyz.Tile.prototype.rx_info = function(info_type, info){
 };
@@ -167,6 +199,7 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
         sources: {},
         editing:'',
         radio_group: 'data_src',
+        callback: undefined,
         load_src: function(params, data_name){
             var data_id = data_dialog.editing;
             if(data_dialog.editing==''){
@@ -211,6 +244,9 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
             data_dialog.sources[params.id].update(result)
             workspace.$new_data_div.dialog('close');
             data_dialog.editing = '';
+            if(!(data_dialog.callback===undefined)){
+                callback();
+            }
         },
         remove_src: function(source){
             if(source===undefined){
@@ -242,7 +278,8 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
                 workspace.$new_data_div.dialog('open');
             };
         },
-        update_sources: function(sources, replace){
+        update_sources: function(sources, replace, callback){
+            data_dialog.callback = callback;
             if(replace){
                 data_dialog.remove_all_sources();
             };
@@ -281,49 +318,10 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
     return data_dialog;
 };
 
-Toyz.Workspace.init_tile_dialog = function(workspace){
-    var $div = $('<div/>').prop('title','Edit Tile');
-    var tile_dialog = {
-        $div: $div,
-        load_api: function(tile_api, tile){
-            tile_dialog.$div.dialog('open');
-            tile_dialog.$div.dialog({title: tile_api+' API'});
-            if(!window.Toyz.hasOwnProperty('API') ||
-                    window.Toyz.API[tile_api]===undefined ||
-                    !window.Toyz.API[tile_api].dependencies_loaded()){
-                // Load the javascript for the api
-                Toyz.Core.load_dependencies(
-                    dependencies={
-                        js: ['/static/web/static/api/'+tile_api.toLowerCase()+'.js']
-                    }, 
-                    callback = function(){
-                        Toyz.API[tile_api].load_dependencies(
-                            tile_dialog.update.bind(tile_dialog, tile_api, tile)
-                        )
-                    }.bind(tile_api, tile)
-                );
-            }else{
-                tile_dialog.edit(tile_api, tile);
-            }
-        },
-        update: function(tile_api, tile){
-            tile.contents = new Toyz.API[tile_api].Contents({
-                $parent: tile_dialog.$div,
-                $tile_div: tile.$inner_div,
-                workspace: workspace,
-                tile: tile
-            });
-            tile.contents.$div.html('');
-            tile.contents.param_list = Toyz.Gui.initParamList(
-                tile.contents.gui,
-                options = {
-                    $parent: tile.contents.$div
-                }
-            );
-        }
-    };
-    
-    tile_dialog.$div.dialog({
+Toyz.Workspace.TileDialog = function(workspace){
+    this.$div = $('<div/>').prop('title','Edit Tile');
+    this.gui_div = undefined;
+    this.$div.dialog({
         resizable: true,
         draggable: true,
         autoOpen: false,
@@ -337,17 +335,50 @@ Toyz.Workspace.init_tile_dialog = function(workspace){
         },
         buttons: {
             Set: function(){
-                console.log('Set tile has not yet been implemented');
-                tile_dialog.$div.dialog('close');
-            },
+                console.log('tile:', this.tile);
+                this.tile.contents.set_tile(this.gui_div.gui.getParams(this.gui_div.gui.params));
+                this.$div.dialog('close');
+            }.bind(this),
             Cancel: function(){
-                tile_dialog.$div.dialog('close');
-            }
+                this.$div.dialog('close');
+            }.bind(this)
         }
     });
-    
-    return tile_dialog;
 };
+Toyz.Workspace.TileDialog.prototype.load_api = function(tile_api, tile){
+    this.$div.dialog('open');
+    this.$div.dialog({title: tile_api+' API'});
+    console.log('loading api');
+    Toyz.Workspace.load_api_dependencies(
+        tile_api,
+        callback = this.update.bind(this, tile_api, tile)
+    );
+};
+Toyz.Workspace.TileDialog.prototype.update = function(tile_api, tile){
+    console.log('tile', tile);
+    var set_params = true;
+    this.$div.html('');
+    this.tile = tile;
+    if(!(tile.contents.hasOwnProperty('type') && tile.contents.type==tile_api)){
+        console.log('creating new tile');
+        set_params = false;
+        tile.update({
+            contents: {
+                api: tile_api,
+                workspace: workspace
+            }
+        })
+    };
+    this.gui_div = new Toyz.API[tile_api].Gui({
+        $parent: this.$div,
+        workspace: workspace,
+        tile: tile
+    });
+    if(set_params){
+        this.gui_div.gui.setParams(this.gui_div.gui.params, tile.contents.settings, false);
+    };
+};
+
 
 Toyz.Workspace.init = function(params){
     var workspace = {
@@ -408,7 +439,7 @@ Toyz.Workspace.init = function(params){
             });
             
             // Initialize dialog to edit a tile's type and settings
-            workspace.tile_dialog = Toyz.Workspace.init_tile_dialog(workspace);
+            workspace.tile_dialog = new Toyz.Workspace.TileDialog(workspace);
             
             // Create workspace context menu
             $.contextMenu({
@@ -539,17 +570,27 @@ Toyz.Workspace.init = function(params){
                 }
             )
         },
+        // First load all of the data sources, then update the tiles once all of the
+        // data has been loaded from the server
         update_workspace: function(result){
             workspace.name = result.work_id;
-            workspace.data_sources.update_sources(result.settings.sources, replace=true);
-            workspace.tiles = workspace.load_tiles(result.settings.tiles);
+            workspace.data_sources.update_sources(
+                result.settings.sources, 
+                replace=true,
+                callback = function(tiles){
+                    this.load_tiles(tiles);
+                }.bind(workspace, result.settings.tiles)
+            );
         },
         share_workspace: function(){
         },
         new_tile: function(key, options, my_idx){
             if(my_idx===undefined){
-                my_idx = (workspace.tile_index++).toString();
+                my_idx = workspace.tile_index++;
+            }else if(workspace.tile_index<=my_idx){
+                workspace.tile_index = my_idx+1;
             };
+            my_idx = my_idx.toString();
             var inner_id = 'tile-'+my_idx;
             var my_id = 'tile-div'+my_idx;
             var $inner_div = $('<div/>')
@@ -581,7 +622,6 @@ Toyz.Workspace.init = function(params){
                 id: inner_id,
                 $div: $div,
                 $inner_div: $inner_div,
-                content: {}
             });
             return workspace.tiles[inner_id];
         },
@@ -595,6 +635,7 @@ Toyz.Workspace.init = function(params){
             delete workspace.tiles[my_id];
         },
         edit_tile: function(key, options){
+            console.log('tile id in edit:', options.$trigger.prop('id'));
             workspace.tile_dialog.load_api(key, workspace.tiles[options.$trigger.prop('id')]);
         },
         save_tiles: function(){
@@ -608,23 +649,58 @@ Toyz.Workspace.init = function(params){
                     width: tile.$div.width(),
                     height: tile.$div.height()
                 };
-                tiles[tile_id] = $.extend(true, tiles[tile_id], tile.content.save());
+                tiles[tile_id].contents = tile.contents.save();
             };
             return tiles;
         },
         load_tiles: function(tiles){
+            var api_list = [];
+            for(var tile_id in tiles){
+                if(api_list.indexOf(tiles[tile_id].contents.type)==-1){
+                    api_list.push(tiles[tile_id].contents.type);
+                };
+            };
+            workspace.load_tile_apis(api_list, tiles);
+        },
+        // Load Tile API's synchronously, then update all of the tiles
+        load_tile_apis: function(api_list, tiles){
+            var callback;
+            if(api_list.length==1){
+                callback = workspace.update_all_tiles.bind(null, tiles);
+            }else{
+                callback = workspace.load_tile_apis.bind(
+                    null,
+                    api_list.slice(1,apli_list.length),
+                    tiles
+                );
+            };
+            Toyz.Workspace.load_api_dependencies(
+                tile_api=api_list[0],
+                callback
+            )
+        },
+        update_all_tiles: function(tiles){
             var new_tiles = {};
             for(var tile_id in tiles){
-                new_tiles[tile_id] = workspace.new_tile(null, null, tile_id);
+                new_tiles[tile_id] = workspace.new_tile(null, null, tile_id.split('-')[1]);
                 new_tiles[tile_id].$div.css({
                     top: tiles[tile_id].top,
                     left: tiles[tile_id].left,
                     width: tiles[tile_id].width,
                     height: tiles[tile_id].height
                 });
-                // Code here to modify the new tiles type and properties
+                Toyz.Workspace.load_api_dependencies(
+                    tile_api=tiles[tile_id].contents.type,
+                    callback=new_tiles[tile_id].update.bind(new_tiles[tile_id], {
+                        contents: {
+                            workspace: workspace,
+                            api: tiles[tile_id].contents.type,
+                            settings: tiles[tile_id].contents.settings
+                        }
+                    })
+                );
             };
-            return new_tiles;
+            workspace.tiles = new_tiles;
         }
     };
     

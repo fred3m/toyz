@@ -639,11 +639,13 @@ Toyz.Gui.initParamList=function(pList,options){
                                 param_values[param.name][i]
                             );
                         }
-                    }else if(param.format == 'div'){
+                    }else if(param.format == 'none'){
                         for(var i=0; i<param_values[param.name].length; i++){
                             param.buttons.add.$input.click();
-                            for(item_key in param_values[key][i]){
-                                param_list.setParams(param.items[i],param_values[key][i],set_all);
+                            for(item_key in param_values[param.name][i]){
+                                param_list.setParams(
+                                    param.items[i],param_values[param.name][i],set_all
+                                );
                             }
                         }
                     };
