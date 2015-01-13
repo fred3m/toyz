@@ -47,6 +47,17 @@ Toyz.API.Highcharts.load_dependencies = function(callback, params){
     };
 };
 
+Toyz.API.Highcharts.contextMenu_items = function(workspace, tile_contents){
+    var items = $.extend(true,{
+        remove: {name:"Remove selected points", callback: function(key, options){
+            console.log('contextMenu params',key,options)
+            this.remove_points();
+        }.bind(tile_contents)},
+        high_sep: "--------------",
+    }, Toyz.Workspace.tile_contextMenu_items(workspace));
+    return items;
+};
+
 Toyz.API.Highcharts.Gui = function(params){
     this.$div = $('<div/>');
     this.$parent = params.$parent;
@@ -196,6 +207,20 @@ Toyz.API.Highcharts.Gui = function(params){
                     }
                 }
             },
+            log_x: {
+                lbl: 'log x',
+                prop: {
+                    type: 'checkbox',
+                    checked: false
+                }
+            },
+            log_y: {
+                lbl: 'log_y',
+                prop: {
+                    type: 'checkbox',
+                    checked: false
+                }
+            }
         },
         optional: {
             legend: {
@@ -249,6 +274,25 @@ Toyz.API.Highcharts.Gui = function(params){
                     }
                 }
             },
+            grid: {
+                type: 'div',
+                params: {
+                    grid_gridLineWidth: {
+                        lbl:'gridlineWidth',
+                        prop: {
+                            type: 'Number',
+                            value: 1
+                        }
+                    },
+                    grid_lineWidth: {
+                        lbl:'lineWidth',
+                        prop: {
+                            type: 'Number',
+                            value: 1
+                        }
+                    }
+                }
+            }
         }
     };
     this.gui = Toyz.Gui.initParamList(
@@ -280,10 +324,21 @@ Toyz.API.Highcharts.Contents = function(params){
     this.type = 'Highcharts';
     this.tile = params.tile;
     this.$tile_div = params.$tile_div;
+    this.$tile_div
+        .removeClass('context-menu-tile')
+        .addClass('context-menu-highcharts');
     this.workspace = params.workspace;
     this.settings = {};
     this.selected_pts = [];
     this.current_point = -1;
+    //create tile context menu
+    $.contextMenu({
+        selector: '.context-menu-highcharts',
+        callback: function(workspace, key, options){
+            workspace[key](options);
+        }.bind(null, workspace),
+        items: Toyz.API.Highcharts.contextMenu_items(workspace, this)
+    })
 };
 Toyz.API.Highcharts.Contents.prototype.update = function(params, param_val){
     // Allow user to either pass param_name, param_val to function or
@@ -310,6 +365,16 @@ Toyz.API.Highcharts.Contents.prototype.rx_info = function(from, info_type, info)
                 };
             };
         };
+    }else if(info_type='remove datapoints'){
+        for(var i=0; i<this.settings.series.length; i++){
+            for(var p=info.points.length-1; p>=0; p--){
+                console.log('index', info.points[p]);
+                console.log('data', this.$tile_div.highcharts().series[i].data);
+                console.log('point', this.$tile_div.highcharts().series[i].data[info.points[p]]);
+                this.$tile_div.highcharts().series[i].data[info.points[p]].remove();
+            }
+        };
+        this.$tile_div.highcharts().redraw();
     };
 };
 Toyz.API.Highcharts.Contents.prototype.save = function(){
@@ -392,11 +457,12 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
                     events: {
                         select: function(event){
                             var point = event.currentTarget;
-                            var series_idx = event.currentTarget.series.index;
-                            if(this.current_point!=point.idx){
+                            var series_idx = point.series.index;
+                            var point_idx = point.series.data.indexOf(point);
+                            if(this.current_point!=point_idx){
                                 this.update_selected(
                                     series_idx, 
-                                    [point.idx], 
+                                    [point_idx], 
                                     'select datapoints'
                                 );
                             };
@@ -404,11 +470,12 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
                         }.bind(this),
                         unselect: function(event){
                             var point = event.currentTarget;
-                            var series_idx = event.currentTarget.series.index;
-                            if(this.current_point!=point.idx){
+                            var series_idx = point.series.index;
+                            var point_idx = point.series.data.indexOf(point);
+                            if(this.current_point!=point_idx){
                                 this.update_selected(
                                     series_idx, 
-                                    [point.idx], 
+                                    [point_idx], 
                                     'unselect datapoints'
                                 );
                             };
@@ -491,6 +558,22 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
             chart_params.yAxis.reversed = true;
         };
     };
+    // Set the grid
+    if(settings.conditions.use_grid===true){
+        for(var setting in settings){
+            if(setting.indexOf('grid_')>-1){
+                chart_params.xAxis[setting.slice(5,setting.length)] = settings[setting]
+                chart_params.yAxis[setting.slice(5,setting.length)] = settings[setting]
+            }
+        }
+    };
+    // Log scale?
+    if(settings.log_x){
+        chart_params.xAxis.type = 'logarithmic'
+    };
+    if(settings.log_y){
+        chart_params.yAxis.type = 'logarithmic'
+    }
     
     // Set the legend
     if(settings.conditions.use_legend===true){
@@ -519,5 +602,23 @@ Toyz.API.Highcharts.Contents.prototype.update_selected =
         }
     );
 };
+
+Toyz.API.Highcharts.Contents.prototype.remove_points = function(){
+    var points = this.$tile_div.highcharts().getSelectedPoints();
+    var unique_pts = [];
+    for(var i=0;i<points.length; i++){
+        if(unique_pts.indexOf(points[i].idx==-1)){
+            unique_pts.push(points[i].idx);
+        };
+    };
+    console.log('points', unique_pts);
+    this.workspace.data_sources.sources[this.settings.series[0].data_source].rx_info(
+        from='',
+        info_type='remove datapoints',
+        info={
+            points: unique_pts,
+        }
+    );
+}
 
 console.log('Toyz Highcharts API loaded');
