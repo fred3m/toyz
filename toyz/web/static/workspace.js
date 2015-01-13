@@ -22,7 +22,8 @@ Toyz.Workspace.load_api_dependencies = function(tile_api, callback){
     }
 }
 
-Toyz.DataSource = function(id, params, $parent, radio_group, info){
+Toyz.DataSource = function(workspace, id, params, $parent, radio_group, info){
+    this.workspace = workspace;
     this.id = id;
     this.name = id;
     this.params = params;
@@ -116,10 +117,12 @@ Toyz.DataSource.prototype.save = function(){
     };
     return save_params;
 };
-Toyz.DataSource.prototype.rx_info = function(info_type, info){
+Toyz.DataSource.prototype.rx_info = function(from, info_type, info){
     // Update tiles with the new information
-    for(var tile in this.tiles){
-        tile.rx_info(info_type, info);
+    for(var tile_id in this.workspace.tiles){
+        if(tile_id!=from){
+            this.workspace.tiles[tile_id].contents.rx_info(this.id, info_type, info);
+        }
     };
 };
 
@@ -200,6 +203,7 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
         editing:'',
         radio_group: 'data_src',
         callback: undefined,
+        workspace: workspace,
         load_src: function(params, data_name){
             var data_id = data_dialog.editing;
             if(data_dialog.editing==''){
@@ -234,10 +238,15 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
             return data_id;
         },
         add_src: function(result, params){
+            console.log('added source to workspace', data_dialog.workspace)
             delete result.id;
             if(!(data_dialog.sources.hasOwnProperty(params.id))){
                 data_dialog.sources[params.id] = new Toyz.DataSource(
-                    params.id, params.params, data_dialog.$div, data_dialog.radio_group
+                    data_dialog.workspace,
+                    params.id, 
+                    params.params, 
+                    data_dialog.$div, 
+                    data_dialog.radio_group
                 );
             };
             result.name = params.name;

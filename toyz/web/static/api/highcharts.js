@@ -249,6 +249,7 @@ Toyz.API.Highcharts.Contents = function(params){
     this.workspace = params.workspace;
     this.settings = {};
     this.selected_pts = [];
+    this.current_point = -1;
 };
 Toyz.API.Highcharts.Contents.prototype.update = function(params, param_val){
     // Allow user to either pass param_name, param_val to function or
@@ -260,7 +261,29 @@ Toyz.API.Highcharts.Contents.prototype.update = function(params, param_val){
         this[param] = params[param];
     }
 };
-Toyz.API.Highcharts.Contents.prototype.rx_info = function(info_type, info){
+Toyz.API.Highcharts.Contents.prototype.rx_info = function(from, info_type, info){
+    var chart = this.$tile_div.highcharts();
+    if(info_type=='select datapoints' || info_type=='unselect datapoints'){
+        for(var s in this.settings.series){
+            if(this.settings.series[s].data_source==from){
+                for(var p=0;p<info.points.length;p++){
+                    this.current_point = info.points[p];
+                    if(info_type=='select datapoints'){
+                        chart.series[s].data[info.points[p]].select(true, true);
+                    }else{
+                        chart.series[s].data[info.points[p]].select(false, true);
+                    }
+                };
+            };
+        };
+    };
+};
+Toyz.API.Highcharts.Contents.prototype.save = function(){
+    var tile = {
+        type: this.type,
+        settings: this.settings
+    };
+    return tile;
 };
 Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
     //var settings = this.param_list.getParams(this.param_list.params);
@@ -313,16 +336,27 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
                         events: {
                             select: function(event){
                                 var point = event.currentTarget;
-                                var contents = this;
-                                // If user is holding down shift or ctrl (depends on system),
-                                // add point to existing array, otherwise clear all selected
-                                // points before adding the new point
-                                if(event.accumulate){
-                                    this.selected_pts.push(point.idx);
-                                }else{
-                                    this.selected_pts = [point.idx];
+                                var series_idx = event.currentTarget.series.index;
+                                if(this.current_point!=point.idx){
+                                    this.update_selected(
+                                        series_idx, 
+                                        [point.idx], 
+                                        'select datapoints'
+                                    );
                                 };
-                                this.update_selected([point.idx], !event.accumulate)
+                                this.current_point=-1;
+                            }.bind(this),
+                            unselect: function(event){
+                                var point = event.currentTarget;
+                                var series_idx = event.currentTarget.series.index;
+                                if(this.current_point!=point.idx){
+                                    this.update_selected(
+                                        series_idx, 
+                                        [point.idx], 
+                                        'unselect datapoints'
+                                    );
+                                };
+                                this.current_point=-1;
                             }.bind(this)
                         }
                     }
@@ -332,6 +366,7 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
             // TODO: Improve this algorithm to work in log(n) time using a
             // binary search
             chart_params.chart.events.selection = function(event){
+                var selected_one = false;
                 for(var s=0; s<this.series.length; s++){
                     for(var i=0; i<this.series[s].data.length; i++){
                         var point = this.series[s].data[i];
@@ -340,7 +375,12 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
                             point.y > event.yAxis[0].min &&
                             point.y < event.yAxis[0].max
                         ){
-                            point.select(true, true);
+                            if(selected_one){
+                                point.select(true, true);
+                            }else{
+                                point.select(true, false);
+                                selected_one = true;
+                            }
                         };
                     };
                 };
@@ -356,15 +396,16 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
 Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
     this.create_chart(settings);
 };
-Toyz.API.Highcharts.Contents.prototype.update_selected = function(selected_points, clear_all){
-    console.log('selected points', selected_points);
-};
-Toyz.API.Highcharts.Contents.prototype.save = function(){
-    var tile = {
-        type: this.type,
-        settings: this.settings
-    };
-    return tile;
+Toyz.API.Highcharts.Contents.prototype.update_selected = 
+        function(series_idx, points, info_type){
+    var data_source = this.settings.series[series_idx].data_source;
+    this.workspace.data_sources.sources[data_source].rx_info(
+        from=this.tile.id,
+        info_type=info_type,
+        info={
+            points: points,
+        }
+    );
 };
 
 console.log('Toyz Highcharts API loaded');
