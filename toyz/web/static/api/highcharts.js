@@ -73,6 +73,117 @@ Toyz.API.Highcharts.Gui = function(params){
                     'y': 'y zoom',
                 }
             },
+            series_div: {
+                type: 'div',
+                legend: 'Series',
+                params: {
+                    series: {
+                        type: 'list',
+                        format: 'none',
+                        items: [],
+                        newItem: {
+                            type: 'div',
+                            init: function(new_item){
+                                this.update_columns();
+                            }.bind(this),
+                            params: {
+                                chart_type: {
+                                    type: 'select',
+                                    options: ['scatter', 'line', 'spline', 'area', 'areaspline', 
+                                                'bar', 'column', 'pie', 'polar']
+                                },
+                                series_name: {
+                                    lbl: 'Series name',
+                                    plot: {
+                                        value: ''
+                                    }
+                                },
+                                data_source: {
+                                    type: 'select',
+                                    lbl: 'data source',
+                                    options: Object.keys(this.workspace.data_sources.sources),
+                                    func: {
+                                        change: this.update_columns.bind(this)
+                                    }
+                                },
+                                x_div: {
+                                    type: 'div',
+                                    params: {
+                                        x: {
+                                            type: 'select',
+                                            lbl: 'x column',
+                                            options: []
+                                        },
+                                    },
+                                    optional: {
+                                        x_lbl: {lbl: 'x label'}
+                                    }
+                                },
+                                y_div: {
+                                    type: 'div',
+                                    params: {
+                                        y: {
+                                            type: 'select',
+                                            lbl: 'y column',
+                                            options: []
+                                        },
+                                    },
+                                    optional: {
+                                        y_lbl: {lbl: 'y label'}
+                                    }
+                                },
+                                marker_div: {
+                                    type: 'div',
+                                    legend: 'Marker',
+                                    params: {
+                                        marker_lineWidth: {
+                                            lbl: 'lineWidth',
+                                            prop:{
+                                                value: 1
+                                            }
+                                        },
+                                        marker_symbol: {
+                                            lbl: 'synmbol',
+                                            type: 'select',
+                                            options: ['circle', 'square', 'diamond', 
+                                                    'triangle','triangle-down']
+                                        },
+                                        marker_radius: {
+                                            lbl: 'radius',
+                                            prop:{
+                                                value:4
+                                            }
+                                        },
+                                        marker_enabled: {
+                                            lbl: 'marker enabled',
+                                            prop: {
+                                                type: 'checkbox',
+                                                checked: true
+                                            }
+                                        }
+                                    },
+                                    optional: {
+                                        marker_fillColor: {
+                                            lbl: 'fill color',
+                                            prop: {
+                                                value: 'rgba(100,10,10,.5)'
+                                            }
+                                        },
+                                        marker_lineColor: {
+                                            lbl: 'line color', 
+                                            prop: {
+                                                value: 'rgb(100,10,10)'
+                                            }
+                                        },
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        },
+        optional: {
             legend: {
                 type: 'div',
                 legend: 'Chart Legend',
@@ -124,99 +235,6 @@ Toyz.API.Highcharts.Gui = function(params){
                     }
                 }
             },
-            series_div: {
-                type: 'div',
-                legend: 'Series',
-                params: {
-                    series: {
-                        type: 'list',
-                        format: 'none',
-                        items: [],
-                        newItem: {
-                            type: 'div',
-                            init: function(new_item){
-                                this.update_columns();
-                            }.bind(this),
-                            params: {
-                                chart_type: {
-                                    type: 'select',
-                                    options: ['scatter', 'line', 'spline', 'area', 'areaspline', 
-                                                'bar', 'column', 'pie', 'polar']
-                                },
-                                series_name: {
-                                    lbl: 'Series name',
-                                    plot: {
-                                        value: ''
-                                    }
-                                },
-                                data_source: {
-                                    type: 'select',
-                                    lbl: 'data source',
-                                    options: Object.keys(this.workspace.data_sources.sources),
-                                    func: {
-                                        change: this.update_columns.bind(this)
-                                    }
-                                },
-                                x: {
-                                    type: 'select',
-                                    lbl: 'x column',
-                                    options: []
-                                },
-                                y: {
-                                    type: 'select',
-                                    lbl: 'y column',
-                                    options: []
-                                },
-                                marker_div: {
-                                    type: 'div',
-                                    legend: 'Marker',
-                                    params: {
-                                        marker_lineWidth: {
-                                            lbl: 'lineWidth',
-                                            prop:{
-                                                value: 1
-                                            }
-                                        },
-                                        marker_symbol: {
-                                            lbl: 'synmbol',
-                                            type: 'select',
-                                            options: ['circle', 'square', 'diamond', 
-                                                    'triangle','triangle-down']
-                                        },
-                                        marker_radius: {
-                                            lbl: 'radius',
-                                            prop:{
-                                                value:4
-                                            }
-                                        },
-                                        marker_enabled: {
-                                            lbl: 'marker enabled',
-                                            prop: {
-                                                type: 'checkbox',
-                                                checked: true
-                                            }
-                                        }
-                                    },
-                                    optional: {
-                                        marker_fillColor: {
-                                            lbl: 'fill color',
-                                            prop: {
-                                                value: 'rgba(100,10,10,.5)'
-                                            }
-                                        },
-                                        marker_lineColor: {
-                                            lbl: 'line color', 
-                                            prop: {
-                                                value: 'rgb(100,10,10)'
-                                            }
-                                        },
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     };
     this.gui = Toyz.Gui.initParamList(
@@ -232,13 +250,15 @@ Toyz.API.Highcharts.Gui.prototype.update_columns = function(event){
     idx = Number(idx.split('-')[1]);
     var params = this.gui.params.params.series_div.params.series.items[idx].params;
     var data_source = params.data_source.$input.val();
-    params.x.$input.empty();
-    params.y.$input.empty();
+    var $x_input = params.x_div.params.x.$input;
+    var $y_input = params.y_div.params.y.$input;
+    $x_input.empty();
+    $y_input.empty();
     for(var col in workspace.data_sources.sources[data_source].data){
         var x_opt = $('<option/>').val(col).html(col);
         var y_opt = $('<option/>').val(col).html(col);
-        params.x.$input.append(x_opt);
-        params.y.$input.append(y_opt);
+        $x_input.append(x_opt);
+        $y_input.append(y_opt);
     };
 };
 
@@ -286,7 +306,6 @@ Toyz.API.Highcharts.Contents.prototype.save = function(){
     return tile;
 };
 Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
-    //var settings = this.param_list.getParams(this.param_list.params);
     this.settings = settings;
     console.log('chart settings', this.settings);
     var chart_params = {
@@ -297,6 +316,8 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
         },
         series: [],
     };
+    var x_lbls = [];
+    var y_lbls = [];
     
     if(!(this.settings.subtitle===undefined || this.settings.subtitle=='') || this.settings.subtitle===null){
         chart_params.subtitle={text: this.settings.subtitle};
@@ -304,6 +325,7 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
     for(var i=0; i<this.settings.series.length; i++){
         var data_source = this.settings.series[i].data_source;
         var data = this.workspace.data_sources.sources[data_source].data;
+        // Add data points to chart
         var x = this.settings.series[i].x;
         var y = this.settings.series[i].y;
         var this_data = [];
@@ -314,12 +336,33 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
                 idx: j
             });
         };
+        // Add marker settings
         var marker = {};
         for(var setting in this.settings.series[i]){
             if(setting.indexOf('marker_')>-1){
                 marker[setting.slice(7,setting.length)] = this.settings.series[i][setting];
             };
         };
+        // Label Axes
+        var x_lbl = x;
+        var y_lbl = y;
+        if(this.settings.series[i].conditions.use_x_lbl && 
+                !(this.settings.series[i].x_lbl===undefined) &&
+                !(this.settings.series[i].x_lbl===null)){
+            x_lbl = this.settings.series[i].x_lbl;
+        };
+        if(this.settings.series[i].conditions.use_y_lbl && 
+                !(this.settings.series[i].y_lbl===undefined) &&
+                !(this.settings.series[i].y_lbl===null)){
+            y_lbl = this.settings.series[i].y_lbl;
+        };
+        if(x_lbls.indexOf(x_lbl)==-1){
+            x_lbls.push(x_lbl);
+        };
+        if(y_lbls.indexOf(y_lbl)==-1){
+            y_lbls.push(y_lbl);
+        };
+        
         chart_params.series.push({
             type: this.settings.series[i].chart_type,
             name: this.settings.series[i].series_name,
@@ -327,42 +370,45 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
             marker: marker
         });
         
-        if(this.settings.selection=='selection'){
-            // Change the selection behavior of a point to update other plots
-            chart_params.plotOptions = {
-                series: {
-                    allowPointSelect: true,
-                    point: {
-                        events: {
-                            select: function(event){
-                                var point = event.currentTarget;
-                                var series_idx = event.currentTarget.series.index;
-                                if(this.current_point!=point.idx){
-                                    this.update_selected(
-                                        series_idx, 
-                                        [point.idx], 
-                                        'select datapoints'
-                                    );
-                                };
-                                this.current_point=-1;
-                            }.bind(this),
-                            unselect: function(event){
-                                var point = event.currentTarget;
-                                var series_idx = event.currentTarget.series.index;
-                                if(this.current_point!=point.idx){
-                                    this.update_selected(
-                                        series_idx, 
-                                        [point.idx], 
-                                        'unselect datapoints'
-                                    );
-                                };
-                                this.current_point=-1;
-                            }.bind(this)
-                        }
+        // Change the selection behavior of a point so that it updates other points
+        chart_params.plotOptions = {
+            series: {
+                allowPointSelect: true,
+                point: {
+                    events: {
+                        select: function(event){
+                            var point = event.currentTarget;
+                            var series_idx = event.currentTarget.series.index;
+                            if(this.current_point!=point.idx){
+                                this.update_selected(
+                                    series_idx, 
+                                    [point.idx], 
+                                    'select datapoints'
+                                );
+                            };
+                            this.current_point=-1;
+                        }.bind(this),
+                        unselect: function(event){
+                            var point = event.currentTarget;
+                            var series_idx = event.currentTarget.series.index;
+                            if(this.current_point!=point.idx){
+                                this.update_selected(
+                                    series_idx, 
+                                    [point.idx], 
+                                    'unselect datapoints'
+                                );
+                            };
+                            this.current_point=-1;
+                        }.bind(this)
                     }
                 }
-            };
-            // If a range is selected, select all of the points in the range
+            }
+        };
+        
+        // By default highcharts will zoom in to a selected area. If the user has
+        // instead chosen to select points, this changes the behavior.
+        // The `return false` prevents the code from zooming
+        if(this.settings.selection=='selection'){
             // TODO: Improve this algorithm to work in log(n) time using a
             // binary search
             chart_params.chart.events.selection = function(event){
@@ -390,6 +436,31 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
             chart_params.chart.zoomType = this.settings.selection;
         };
     };
+    // Update the labels for the chart
+    if(x_lbls.length==1){
+        chart_params.xAxis = {
+            title: {
+                text: x_lbls[0]
+            }
+        };
+    };
+    if(y_lbls.length==1){
+        chart_params.yAxis = {
+            title: {
+                text: y_lbls[0]
+            }
+        };
+    };
+    // Set the legend
+    if(settings.conditions.use_legend===true){
+        chart_params.legend = {};
+        for(var setting in settings){
+            if(setting.indexOf('legend_')>-1){
+                chart_params.legend[setting.slice(7,setting.length)] = settings[setting];
+            }
+        }
+    };
+    
     console.log('chart_params', chart_params);
     this.$tile_div.highcharts(chart_params);
 };

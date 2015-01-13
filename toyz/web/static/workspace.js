@@ -364,7 +364,7 @@ Toyz.Workspace.TileDialog.prototype.load_api = function(tile_api, tile){
     );
 };
 Toyz.Workspace.TileDialog.prototype.update = function(tile_api, tile){
-    console.log('tile', tile);
+    //console.log('tile', tile);
     var set_params = true;
     this.$div.html('');
     this.tile = tile;
@@ -384,6 +384,7 @@ Toyz.Workspace.TileDialog.prototype.update = function(tile_api, tile){
         tile: tile
     });
     if(set_params){
+        //console.log('init param values:',tile.contents.settings);
         this.gui_div.gui.setParams(this.gui_div.gui.params, tile.contents.settings, false);
     };
 };
@@ -644,7 +645,7 @@ Toyz.Workspace.init = function(params){
             delete workspace.tiles[my_id];
         },
         edit_tile: function(key, options){
-            console.log('tile id in edit:', options.$trigger.prop('id'));
+            //console.log('tile id in edit:', options.$trigger.prop('id'));
             workspace.tile_dialog.load_api(key, workspace.tiles[options.$trigger.prop('id')]);
         },
         save_tiles: function(){
