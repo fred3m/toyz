@@ -114,6 +114,13 @@ Toyz.API.Highcharts.Gui = function(params){
                                             lbl: 'x column',
                                             options: []
                                         },
+                                        x_reverse: {
+                                            lbl: 'reverse x-axis',
+                                            prop: {
+                                                type: 'checkbox',
+                                                checked: false
+                                            }
+                                        }
                                     },
                                     optional: {
                                         x_lbl: {lbl: 'x label'}
@@ -127,6 +134,13 @@ Toyz.API.Highcharts.Gui = function(params){
                                             lbl: 'y column',
                                             options: []
                                         },
+                                        y_reverse: {
+                                            lbl: 'reverse y-axis',
+                                            prop: {
+                                                type: 'checkbox',
+                                                checked: false
+                                            }
+                                        }
                                     },
                                     optional: {
                                         y_lbl: {lbl: 'y label'}
@@ -443,6 +457,19 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
                 text: x_lbls[0]
             }
         };
+        if(settings.series[0].x_reverse){
+            chart_params.xAxis.reversed = true;
+        };
+    }else{
+        // TODO: add axis for each series
+        chart_params.xAxis = {
+            title: {
+                text: x_lbls[0]
+            }
+        };
+        if(settings.series[0].x_reverse){
+            chart_params.xAxis.reversed = true;
+        };
     };
     if(y_lbls.length==1){
         chart_params.yAxis = {
@@ -450,7 +477,21 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
                 text: y_lbls[0]
             }
         };
+        if(settings.series[0].y_reverse){
+            chart_params.yAxis.reversed = true;
+        };
+    }else{
+        //TODO: add axis for each series
+        chart_params.yAxis = {
+            title: {
+                text: y_lbls[0]
+            }
+        };
+        if(settings.series[0].y_reverse){
+            chart_params.yAxis.reversed = true;
+        };
     };
+    
     // Set the legend
     if(settings.conditions.use_legend===true){
         chart_params.legend = {};
