@@ -574,7 +574,11 @@ Toyz.Gui.initParamList=function(pList,options){
                     param_list.setParams(param.params[p], param_values, set_all);
                 };
                 for(p in param.optional){
-                    param_list.setParams(param.optional[p], param_values.conditions, set_all);
+                    var pv = param_values;
+                    if(param_values.hasOwnProperty('conditions')){
+                        pv = $.extend(true, pv, param_values.conditions);
+                    }
+                    param_list.setParams(param.optional[p], pv, set_all);
                 };
             }else if (param.type == 'conditional'){
                 // There will only be one entry here, but we don't know its name
@@ -601,7 +605,11 @@ Toyz.Gui.initParamList=function(pList,options){
                 
                 for(p in param.optional){
                     if(param.optional.hasOwnProperty(p)){
-                        param_list.setParams(param.optional[p], param_values.conditions, set_all);
+                        var pv = param_values;
+                        if(param_values.hasOwnProperty('conditions')){
+                            pv = $.extend(true, pv, param_values.conditions);
+                        }
+                        param_list.setParams(param.optional[p], pv, set_all);
                     };
                 };
             }else if(param.type == 'list'){
