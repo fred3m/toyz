@@ -143,7 +143,7 @@ Toyz.Core.jobsocketInit=function(options){
         }else if(result.id=='initialize'){
             jobsocket.user_id=result.user_id;
             jobsocket.session_id=result.session_id;
-            console.log('session:',result);
+            //console.log('session:',result);
             for(var i=0;i<jobsocket.queue.length;i++){
                 var task = jobsocket.queue[i];
                 jobsocket.send_task(task.task, task.callback, task.passParams);

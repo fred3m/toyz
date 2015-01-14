@@ -167,6 +167,14 @@ Toyz.DataSource.prototype.save = function(){
     return save_params;
 };
 Toyz.DataSource.prototype.rx_info = function(from, info_type, info){
+    // If any points are removed, remove them from the data source
+    if(info_type=='remove datapoints'){
+        for(var col in this.data){
+            for(var i=info.points.length-1; i>=0; i--){
+                this.data[col].splice(info.points[i], 1);
+            }
+        }
+    };
     // Update tiles with the new information
     for(var tile_id in this.workspace.tiles){
         if(tile_id!=from){
@@ -189,7 +197,7 @@ Toyz.Tile.prototype.update = function(info, info_val){
     };
     for(var prop in info){
         if(prop == 'contents'){
-            console.log('contents', info.contents);
+            //console.log('contents', info.contents);
             this.contents = new Toyz.API[info.contents.api].Contents({
                 tile: this,
                 $tile_div: this.$inner_div,
@@ -257,7 +265,7 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
             return data_id;
         },
         add_src: function(result, params){
-            console.log('added source to workspace', data_dialog.workspace)
+            //console.log('added source to workspace', data_dialog.workspace)
             delete result.id;
             if(!(data_dialog.sources.hasOwnProperty(params.id))){
                 data_dialog.sources[params.id] = new Toyz.DataSource(
@@ -363,7 +371,6 @@ Toyz.Workspace.TileDialog = function(workspace){
         },
         buttons: {
             Set: function(){
-                console.log('tile:', this.tile);
                 this.tile.contents.set_tile(this.gui_div.gui.getParams(this.gui_div.gui.params));
                 this.$div.dialog('close');
             }.bind(this),
@@ -376,7 +383,6 @@ Toyz.Workspace.TileDialog = function(workspace){
 Toyz.Workspace.TileDialog.prototype.load_api = function(tile_api, tile){
     this.$div.dialog('open');
     this.$div.dialog({title: tile_api+' API'});
-    console.log('loading api');
     Toyz.Workspace.load_api_dependencies(
         tile_api,
         callback = this.update.bind(this, tile_api, tile)
@@ -388,7 +394,7 @@ Toyz.Workspace.TileDialog.prototype.update = function(tile_api, tile){
     this.$div.html('');
     this.tile = tile;
     if(!(tile.contents.hasOwnProperty('type') && tile.contents.type==tile_api)){
-        console.log('creating new tile');
+        //console.log('creating new tile');
         set_params = false;
         tile.update({
             contents: {
@@ -653,8 +659,6 @@ Toyz.Workspace.init = function(params){
             delete workspace.tiles[my_id];
         },
         edit_tile: function(key, options){
-            //console.log('tile id in edit:', options.$trigger.prop('id'));
-            console.log('options', options);
             workspace.tile_dialog.load_api(key, workspace.tiles[options.$trigger.prop('id')]);
         },
         save_tiles: function(){

@@ -16,7 +16,7 @@ Toyz.API.Highcharts.load_dependencies = function(callback, params){
     // Check to see if highcharts loaded from the server, if not load from the web
     // Note: Highcharts has put a usage limit on its js files, so it is a good
     // idea to have the source code located on the server
-    console.log('callback in api load_dependencies', callback);
+    //console.log('callback in api load_dependencies', callback);
     if(!Toyz.API.Highcharts.dependencies_loaded()){
         console.log('Loading Highcharts');
         $.ajax({
@@ -50,7 +50,6 @@ Toyz.API.Highcharts.load_dependencies = function(callback, params){
 Toyz.API.Highcharts.contextMenu_items = function(workspace, tile_contents){
     var items = $.extend(true,{
         remove: {name:"Remove selected points", callback: function(key, options){
-            console.log('contextMenu params',key,options)
             this.remove_points();
         }.bind(tile_contents)},
         high_sep: "--------------",
@@ -157,6 +156,8 @@ Toyz.API.Highcharts.Gui = function(params){
                                         y_lbl: {lbl: 'y label'}
                                     }
                                 },
+                            },
+                            optional: {
                                 marker_div: {
                                     type: 'div',
                                     legend: 'Marker',
@@ -176,6 +177,7 @@ Toyz.API.Highcharts.Gui = function(params){
                                         marker_radius: {
                                             lbl: 'radius',
                                             prop:{
+                                                type: 'Number',
                                                 value:4
                                             }
                                         },
@@ -368,9 +370,6 @@ Toyz.API.Highcharts.Contents.prototype.rx_info = function(from, info_type, info)
     }else if(info_type='remove datapoints'){
         for(var i=0; i<this.settings.series.length; i++){
             for(var p=info.points.length-1; p>=0; p--){
-                console.log('index', info.points[p]);
-                console.log('data', this.$tile_div.highcharts().series[i].data);
-                console.log('point', this.$tile_div.highcharts().series[i].data[info.points[p]]);
                 this.$tile_div.highcharts().series[i].data[info.points[p]].remove();
             }
         };
@@ -386,7 +385,7 @@ Toyz.API.Highcharts.Contents.prototype.save = function(){
 };
 Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
     this.settings = settings;
-    console.log('chart settings', this.settings);
+    //console.log('chart settings', this.settings);
     var chart_params = {
         title: {text: this.settings.title},
         chart: {
@@ -411,16 +410,8 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
         for(var j=0; j<data[x].length; j++){
             this_data.push({
                 x:data[x][j], 
-                y:data[y][j],
-                idx: j
+                y:data[y][j]
             });
-        };
-        // Add marker settings
-        var marker = {};
-        for(var setting in this.settings.series[i]){
-            if(setting.indexOf('marker_')>-1){
-                marker[setting.slice(7,setting.length)] = this.settings.series[i][setting];
-            };
         };
         // Label Axes
         var x_lbl = x;
@@ -442,12 +433,29 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
             y_lbls.push(y_lbl);
         };
         
-        chart_params.series.push({
+        var this_series = {
             type: this.settings.series[i].chart_type,
             name: this.settings.series[i].series_name,
             data: this_data,
-            marker: marker
-        });
+        }
+        // Add marker settings
+        if(this.settings.series[i].conditions.use_marker_div){
+            this_series.marker = {
+                states:{
+                    hover: {
+                        radius: this.settings.series[i].marker_radius*1.5,
+                        lineWidth: this.settings.series[i].marker_lineWidth
+                    }
+                }
+            };
+            for(var setting in this.settings.series[i]){
+                if(setting.indexOf('marker_')>-1){
+                    this_series.marker[setting.slice(7,setting.length)] = 
+                        this.settings.series[i][setting];
+                };
+            };
+        };
+        chart_params.series.push(this_series);
         
         // Change the selection behavior of a point so that it updates other points
         chart_params.plotOptions = {
@@ -585,7 +593,7 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
         }
     };
     
-    console.log('chart_params', chart_params);
+    //console.log('chart_params', chart_params);
     this.$tile_div.highcharts(chart_params);
 };
 Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
@@ -602,21 +610,19 @@ Toyz.API.Highcharts.Contents.prototype.update_selected =
         }
     );
 };
-
 Toyz.API.Highcharts.Contents.prototype.remove_points = function(){
-    var points = this.$tile_div.highcharts().getSelectedPoints();
-    var unique_pts = [];
-    for(var i=0;i<points.length; i++){
-        if(unique_pts.indexOf(points[i].idx==-1)){
-            unique_pts.push(points[i].idx);
-        };
+    var pts = [];
+    var data = this.$tile_div.highcharts().series[0].data;
+    for(var i=0;i<data.length; i++){
+        if(data[i].selected){
+            pts.push(i);
+        }
     };
-    console.log('points', unique_pts);
     this.workspace.data_sources.sources[this.settings.series[0].data_source].rx_info(
         from='',
         info_type='remove datapoints',
         info={
-            points: unique_pts,
+            points: pts,
         }
     );
 }
