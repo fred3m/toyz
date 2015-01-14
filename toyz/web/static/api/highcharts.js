@@ -53,9 +53,6 @@ Toyz.API.Highcharts.contextMenu_items = function(workspace, tile_contents){
             name:"Remove selected points", 
             callback: function(key, options){
                 this.remove_points();
-            }.bind(tile_contents),
-            disabled: function(){
-                return this.sorted_series
             }.bind(tile_contents)
         },
         high_sep: "--------------",
@@ -394,19 +391,7 @@ Toyz.API.Highcharts.Contents.prototype.rx_info = function(from, info_type, info)
             };
         };
     }else if(info_type='remove datapoints'){
-        for(var i=0; i<this.settings.series.length; i++){
-            var points = info.points;
-            if(this.settings.series[i].sorted){
-                points = info.points.map(function(v, idx){
-                    return this.settings.series[i].argsort.inv[v];
-                }.bind(this));
-                points.sort(function(a,b){return a-b});
-            };
-            for(var p=points.length-1; p>=0; p--){
-                this.$tile_div.highcharts().series[i].data[points[p]].remove();
-            }
-        };
-        this.$tile_div.highcharts().redraw();
+        this.create_chart(this.settings);
     };
 };
 Toyz.API.Highcharts.Contents.prototype.save = function(){
@@ -693,6 +678,7 @@ Toyz.API.Highcharts.Contents.prototype.update_selected =
 Toyz.API.Highcharts.Contents.prototype.remove_points = function(){
     var pts = [];
     var data = this.$tile_div.highcharts().series[0].data;
+    console.time('test');
     for(var i=0;i<data.length; i++){
         if(data[i].selected){
             pts.push(i);
@@ -704,6 +690,8 @@ Toyz.API.Highcharts.Contents.prototype.remove_points = function(){
         }.bind(this));
         pts.sort(function(a,b){return a-b});
     };
+    console.timeEnd('test');
+    
     this.workspace.data_sources.sources[this.settings.series[0].data_source].rx_info(
         from='',
         info_type='remove datapoints',
