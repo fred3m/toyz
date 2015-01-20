@@ -93,3 +93,17 @@ ul {
     min-height: 100%;
     background-color: #999999;
 }
+
+/***** viewer styles *****/
+.image-viewer-div {
+    overflow: scroll;
+}
+
+.image-viewer {
+    background-color: #EEEEEE;
+    position: relative;
+}
+
+.tile-img {
+    position: absolute;
+}

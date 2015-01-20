@@ -760,36 +760,4 @@ Toyz.Gui.initSlider2d=function(options){
     return slider2d;
 };
 
-// Build a context menu when the user "right-clicks"
-Toyz.Gui.buildContextMenu = function(menu){
-    var ctx_menu = {
-        type: 'list',
-        items: {
-            settings:{
-                func: {
-                    click: function(){
-                        window.location.href = '/';
-                    }
-                }
-            },
-        }
-    }
-};
-
-// Initialize a right click context menu
-Toyz.Gui.initContextMenu = function(params){
-    var ctx_menu = $.extend(true,{
-        
-    }, params.options);
-    
-    $(document).bind("contextmenu", function(event) { 
-        event.preventDefault();
-        $("<div class='custom-menu'>Custom menu</div>")
-            .appendTo("body")
-            .css({top: event.pageY + "px", left: event.pageX + "px"});
-    })//.bind("click", function(event) {
-    //    $("div.custom-menu").hide();
-    //});
-}
-
 console.log('toyz_gui.js loaded');

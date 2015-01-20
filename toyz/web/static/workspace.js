@@ -61,6 +61,9 @@ Toyz.Workspace.tile_contextMenu_items = function(workspace){
             items: {
                 'Highcharts': {name: 'Highcharts', callback: function(key, options){
                     workspace.edit_tile(key, options);
+                }},
+                'Viewer': {name:'Image viewer', callback: function(key, options){
+                    workspace.edit_tile(key, options);
                 }}
             }
         },

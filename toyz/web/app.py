@@ -11,6 +11,7 @@ import os.path
 import shutil
 import importlib
 import socket
+from futures import ProcessPoolExecutor
 
 import tornado.ioloop
 import tornado.options
@@ -100,11 +101,16 @@ class ToyzStaticFileHandler(ToyzHandler, tornado.web.StaticFileHandler):
     """
     @tornado.web.asynchronous
     def get(self, path):
-        """
-        Called when the application recieves a **get** command from the client.
-        """
-        self.root, rel_path = self.get_toyz_path(path)
-        tornado.web.StaticFileHandler.get(self,rel_path)
+        # Called when the application recieves a **get** command from the client.
+        path = path.split('/')
+        filename = path[-1]
+        # If this is a unix system, and a '/' prefix so that the absolute path
+        # is taken
+        if os.sep == '/':
+            self.root = os.path.join('/','/'.join(path[:-1]))
+        print('root:', self.root)
+        print('filename', filename)
+        tornado.web.StaticFileHandler.get(self,filename)
 
 class AuthToyzStaticFileHandler(AuthHandler, ToyzStaticFileHandler):
     """
@@ -113,8 +119,23 @@ class AuthToyzStaticFileHandler(AuthHandler, ToyzStaticFileHandler):
     """
     @tornado.web.authenticated
     def get(self, path):
-        # TODO: Check that user has permissions to access the file
         ToyzStaticFileHandler.get(self, path)
+    
+    def validate_absolute_path(self, root, full_path):
+        """
+        Check that the user has permission to view the file
+        """
+        #print('root:{0}, full_path:{1}\n\n'.format(root, full_path))
+        permissions = file_access.get_parent_permissions(
+            self.application.toyz_settings.db, full_path, 
+            user_id=self.get_current_user().strip('"'))
+        if 'r' in permissions or 'x' in permissions:
+            absolute_path = tornado.web.StaticFileHandler.validate_absolute_path(
+                    self, root, full_path)
+        else:
+            absolute_path = None
+        print('Absoulte path:', absolute_path)
+        return absolute_path
 
 class AuthStaticFileHandler(AuthHandler, tornado.web.StaticFileHandler):
     """
@@ -335,8 +356,6 @@ class AuthMainHandler(MainHandler):
     def get(self):
         MainHandler.get(self)
 
-from futures import ProcessPoolExecutor
-
 class ToyzWebApp(tornado.web.Application):
     """
     Web application that runs on the server. Along with setting up the Tornado web application,
@@ -391,7 +410,7 @@ class ToyzWebApp(tornado.web.Application):
             (r"/static/(.*)", static_handler, {'path': core.ROOT_DIR}),
             (r"/workspace/(.*)", workspace_handler),
             (r"/file/(.*)", static_handler, {'path': file_path}),
-            (r"/toyz/static/(.*)", toyz_static_handler),
+            (r"/toyz/static/(.*)", toyz_static_handler, {'path': '/'}),
             (r"/toyz/template/(.*)", toyz_template_handler),
             (r"/toyz_core.js", core_handler),
             (r"/third_party/(.*)", third_party_handler, {'path':core.ROOT_DIR}),

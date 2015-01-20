@@ -678,7 +678,6 @@ Toyz.API.Highcharts.Contents.prototype.update_selected =
 Toyz.API.Highcharts.Contents.prototype.remove_points = function(){
     var pts = [];
     var data = this.$tile_div.highcharts().series[0].data;
-    console.time('test');
     for(var i=0;i<data.length; i++){
         if(data[i].selected){
             pts.push(i);
@@ -690,7 +689,6 @@ Toyz.API.Highcharts.Contents.prototype.remove_points = function(){
         }.bind(this));
         pts.sort(function(a,b){return a-b});
     };
-    console.timeEnd('test');
     
     this.workspace.data_sources.sources[this.settings.series[0].data_source].rx_info(
         from='',

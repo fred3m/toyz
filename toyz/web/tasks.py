@@ -533,3 +533,114 @@ def load_workspace(toyz_settings, tid, params):
     }
     
     return response
+
+def get_file_info(toyz_settings, tid, params):
+    """
+    Get information about an image file
+    """
+    import toyz.web.viewer as viewer
+    core.check4keys(params, ['filepath', 'viewer'])
+    if tid['user_id']!='admin':
+        permissions = file_access.get_parent_permissions(
+            toyz_settings.db, params['filepath'], user_id=tid['user_id'])
+        if 'r' not in permissions:
+            raise ToyzJobError(
+                'You do not have permission to view the requested file.'
+                'Please contact your network administrator if you believe this is an error.')
+    file_info = viewer.get_file_info(params['filepath'])
+    
+    # Get the tile map for the first image
+    result = get_img_info(toyz_settings, tid, {
+        'file_info': file_info,
+        'viewer': params['viewer']
+    })
+    
+    file_info['frame'] = result['img_info']['frame']
+    file_info['images'][file_info['frame']] = result['img_info']
+    response = {
+        'id': 'file info',
+        'file_info': file_info,
+        'new_tiles': result['new_tiles']
+    }
+    
+    return response
+
+def get_img_info(toyz_settings, tid, params):
+    """
+    Map a large image into a set of tiles that make up the larger image
+    """
+    import toyz.web.viewer as viewer
+    
+    core.check4keys(params, ['viewer', 'file_info'])
+    if tid['user_id']!='admin':
+        permissions = file_access.get_parent_permissions(
+            toyz.db, params['file_info']['filepath'], user_id=tid['user_id'])
+        if 'r' not in permissions:
+            raise ToyzJobError(
+                'You do not have permission to view the requested file.'
+                'Please contact your network administrator if you believe this is an error.')
+    shortcuts = db_utils.get_param(toyz_settings.db, 'shortcuts', user_id=tid['user_id'])
+    save_path = os.path.join(shortcuts['temp'], tid['session_id'], 'images')
+    img_info = viewer.get_img_info(params['file_info'], save_path, params['viewer'])
+    
+    result = get_tile_info(toyz_settings, tid, {
+        'file_info': params['file_info'],
+        'img_info': img_info
+    })
+    img_info['tiles'] = result['new_tiles']
+    
+    response = {
+        'id': 'img info',
+        'img_info': img_info,
+        'new_tiles': result['new_tiles']
+    }
+    return response
+
+def get_tile_info(toyz_settings, tid, params):
+    """
+    Get new tiles that need to be loaded
+    """
+    import toyz.web.viewer as viewer
+    
+    core.check4keys(params, ['img_info', 'file_info'])
+    if tid['user_id']!='admin':
+        permissions = file_access.get_parent_permissions(
+            toyz.db, params['filepath'], user_id=tid['user_id'])
+        if 'r' not in permissions:
+            raise ToyzJobError(
+                'You do not have permission to view the requested file.'
+                'Please contact your network administrator if you believe this is an error.')
+    
+    all_tiles, new_tiles = viewer.get_tile_info(params['file_info'], params['img_info'])
+    #print('all tile:', all_tiles)
+    
+    response = {
+        'id': 'tile info',
+        'all_tiles': all_tiles,
+        'new_tiles': new_tiles
+    }
+    return response
+
+def get_img_tile(toyz_settings, tid, params):
+    """
+    Load a tile from a larger image and notify the client it has been created
+    """
+    import toyz.web.viewer as viewer
+    
+    core.check4keys(params, ['img_info', 'file_info', 'tile_info'])
+    if tid['user_id']!='admin':
+        permissions = file_access.get_parent_permissions(
+            toyz.db, params['filepath'], user_id=tid['user_id'])
+        if 'r' not in permissions:
+            raise ToyzJobError(
+                'You do not have permission to view the requested file.'
+                'Please contact your network administrator if you believe this is an error.')
+    
+    viewer.create_tile(params['file_info'], params['img_info'], params['tile_info'])
+    
+    response = {
+        'id': 'tile created',
+        'status': 'success'
+    }
+    
+    return response
