@@ -53,9 +53,7 @@ def get_window(viewer):
 def get_best_fit(data_width, data_height, img_viewer):
     x_scale = img_viewer['width']/data_width
     y_scale = img_viewer['height']/data_height
-    scale = y_scale;
-    if x_scale<y_scale:
-        scale = x_scale
+    scale = min(y_scale, x_scale)
     img_viewer['x_center'] = data_width/2
     img_viewer['y_center'] = data_height/2
     img_viewer['scale'] = scale

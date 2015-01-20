@@ -91,8 +91,8 @@ Toyz.API.Viewer.Contents = function(params){
     this.$tile_div
         .removeClass('context-menu-tile')
         .addClass('context-menu-viewer')
-    .addClass('image-viewer-div');
-    this.$viewer = $('<div/>').addClass('image-viewer');
+        .addClass('viewer-main-div');
+    this.$viewer = $('<div/>').addClass('viewer-div');
     this.$tile_div.append(this.$viewer);
     this.workspace = params.workspace;
     this.settings = {};
@@ -251,7 +251,7 @@ Toyz.API.Viewer.Contents.prototype.rx_tile_info = function(
         }*/
         var tile = img_info.tiles[tile_idx];
         var $img = $(img)
-            .addClass('tile-img')
+            .addClass('viewer-tile-img')
             .css({
                 left: tile.left+'px',
                 bottom: tile.bottom+'px'

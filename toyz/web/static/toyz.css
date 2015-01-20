@@ -95,15 +95,15 @@ ul {
 }
 
 /***** viewer styles *****/
-.image-viewer-div {
+.viewer-main-div {
     overflow: scroll;
 }
 
-.image-viewer {
+.viewer-div {
     background-color: #EEEEEE;
     position: relative;
 }
 
-.tile-img {
+.viewer-tile-img {
     position: absolute;
 }
