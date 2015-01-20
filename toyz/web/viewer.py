@@ -51,8 +51,11 @@ def get_window(viewer):
     return viewer
 
 def get_best_fit(data_width, data_height, img_viewer):
-    x_scale = img_viewer['width']/data_width
-    y_scale = img_viewer['height']/data_height
+    # Make the image slightly smaller than the viewer size, to account for 
+    # slight differences in the image height/width from the desired
+    # tiles sizes
+    x_scale = img_viewer['width']/data_width*.97
+    y_scale = img_viewer['height']/data_height*.97
     scale = min(y_scale, x_scale)
     img_viewer['x_center'] = data_width/2
     img_viewer['y_center'] = data_height/2

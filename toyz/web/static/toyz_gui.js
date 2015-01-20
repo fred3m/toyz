@@ -51,6 +51,9 @@ Toyz.Gui.buildParamDiv = function(param, $div){
             $input[f](functions[f]);
         };
     };
+    if(param.hasOwnProperty('inputClass')){
+        $input.addClass(param.inputClass);
+    }
     // Tooltip title
     if(param.hasOwnProperty('title')){
         $paramDiv.prop('title',param.title);

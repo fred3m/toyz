@@ -6,7 +6,7 @@ html, body
     padding: 0;
 }
 
-/***** GUI styles *****/
+/******************** GUI styles ********************/
 .paramDiv-default{
     display:block;
 }
@@ -39,7 +39,7 @@ ul {
     padding-left:0;
 }
 
-/***** file dialog styles *****/
+/******************** file dialog styles ********************/
 .file-dialog-path-div {
     margin-bottom: 5px;
 }
@@ -71,7 +71,7 @@ ul {
     width: 100%;
 }
 
-/***** workspace styles *****/
+/******************** workspace styles ********************/
 .ws-tile {
     background-color: gray;
     width: 50px;
@@ -94,7 +94,7 @@ ul {
     background-color: #999999;
 }
 
-/***** viewer styles *****/
+/******************** viewer styles ********************/
 .viewer-main-div {
     overflow: scroll;
 }
@@ -106,4 +106,125 @@ ul {
 
 .viewer-tile-img {
     position: absolute;
+}
+
+/***** viewer button types *****/
+.viewer-ctrl-button{
+    background-position:center;
+    background-repeat:no-repeat;
+    background-size:80%;
+    cursor:pointer;
+    border:none;
+    width:23px;
+    height:23px;
+    border-radius: 7px 7px 7px 7px;
+    vertical-align:bottom;
+    float:left;
+    margin:2px 1px 2px 1px;
+}
+
+.viewer-ctrl-img-btn {
+    background-color:#82FF82
+}
+.viewer-ctrl-img-btn:active{
+    background-color:#B2B26B;
+}
+
+.viewer-ctrl-viewer-btn {
+    background-color:#C299EB;
+}
+.viewer-ctrl-viewer-btn:active {
+    background-color:#6600CC;
+}.viewer-ctrl-zoom-btn {
+    background-color:#99CCFF;
+}
+.viewer-ctrl-zoom-btn:active {
+    background-color:#7AA3CC;
+}
+
+.viewer-ctrl-tools-btn {
+    background-color:#DEDEDE;
+}
+.viewer-ctrl-tools-btn:active {
+    background-color:#AAAAAA;
+}
+
+.viewer-ctrl-info-btn {
+}
+.viewer-ctrl-info-btn:active {
+    
+}
+/***** viewer control buttons *****/
+.viewer-ctrl-first {
+    background-image:url(/static/web/static/button_icons/first.png);
+}
+.viewer-ctrl-previous{
+    background-image:url(/static/web/static/button_icons/previous.png);
+}
+.viewer-ctrl-next{
+    background-image:url(/static/web/static/button_icons/next.png);
+}
+.viewer-ctrl-last{
+    background-image:url(/static/web/static/button_icons/last.png);
+}
+
+.viewer-ctrl-input{
+    width:70px;
+    font-size:18px;
+    vertical-align:bottom;
+    text-align:center;
+    float:left;
+    margin:4px 1px 2px 1px;
+}
+
+.viewer-ctrl-select{
+    width:40px;
+    font-size:18px;
+    vertical-align:bottom;
+    text-align:center;
+    float:left;
+    margin:4px 1px 2px 1px;
+}
+
+.viewer-ctrl-img-load {
+    background-image:url(/static/web/static/button_icons/newfile.png);
+}
+
+.viewer-ctrl-viewer-add{
+    background-image:url(/static/web/static/button_icons/add_frame.png);
+}
+.viewer-ctrl-viewer-remove{
+    background-image:url(/static/web/static/button_icons/delete_frame.png);
+}
+
+.viewer-ctrl-zoom-out{
+    background-image:url(/static/web/static/button_icons/zoom_out.png);
+}
+.viewer-ctrl-zoom-in{
+    background-image:url(/static/web/static/button_icons/zoom_in.png);
+}
+.viewer-ctrl-zoom-bestfit{
+    background-image:url(/static/web/static/button_icons/bestfit.png);
+}
+.viewer-ctrl-zoom-fullsize{
+    background-image:url(/static/web/static/button_icons/fullsize.png);
+}
+
+.viewer-ctrl-tools-resize {
+    background-image:url(/static/web/static/button_icons/rectangle.png);
+}
+.viewer-ctrl-tools-center {
+    background-image:url(/static/web/static/button_icons/center.png);
+}
+.viewer-ctrl-tools-hist {
+    background-image:url(/static/web/static/button_icons/histogram.png);
+}
+.viewer-ctrl-tools-surface {
+    background-image:url(/static/web/static/button_icons/surface.png);
+}
+
+/***** other viewer controls *****/
+.viewer-ctrl-info-coord-div {
+    display:inline-block;
+    width:120px;
 }
