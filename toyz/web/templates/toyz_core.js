@@ -22,6 +22,30 @@ Toyz.namespace=function(namespace){
 // Define the core objects that all Toyz modules will require
 Toyz.namespace('Toyz.Core');
 
+// Define some basic namespace functions //////////
+// Check if a namespace exists
+Toyz.Core.exists = function(namespace) {
+    console.log('namespace:', namespace);
+    var parts = namespace.split('.');
+    var obj = window;
+    for(var i=0; i<parts.length; i++){
+        if(obj[parts[i]]===undefined){
+            return false
+        };
+        obj = obj[parts[i]];
+    };
+    return true;
+};
+// Get the variable represented by a namespace
+Toyz.Core.get_var = function(namespace) {
+    var parts = namespace.split('.');
+    var obj = window;
+    for(var i=0; i<parts.length; i++){
+        obj = obj[parts[i]];
+    };
+    return obj;
+};
+
 // Parameters retrieved from the server when the page is rendered
 Toyz.Core.core_js = [
     "/third_party/jquery_ui/jquery-ui.js",

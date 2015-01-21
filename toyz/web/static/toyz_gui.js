@@ -616,13 +616,13 @@ Toyz.Gui.initParamList=function(pList,options){
                     };
                 };
             }else if(param.type == 'list'){
+                // remove the old items from the list
+                for(var i=0; i<param.items.length; i++){
+                    param.items[i].$div.remove();
+                };
+                param.items = [];
+                param.current_idx = 0;
                 if(param_values.hasOwnProperty(param.name)){
-                    // remove the old items from the list
-                    for(var i=0; i<param.items.length; i++){
-                        param.items[i].$div.remove();
-                    };
-                    param.items = [];
-                    
                     if(param.format == 'dict'){
                         var p_index = 0;
                         for(var key in param_values[param.name]){

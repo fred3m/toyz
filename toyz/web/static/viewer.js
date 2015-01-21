@@ -1,20 +1,20 @@
 // API for Image Viewers
 // Copyright 2015 by Fred Moolekamp
 // License: MIT
-Toyz.namespace('Toyz.API.Viewer');
+Toyz.namespace('Toyz.Viewer');
 
 // Some API's require other dependencies to be loaed
-Toyz.API.Viewer.dependencies_loaded = function(){
+Toyz.Viewer.dependencies_loaded = function(){
     return true;
 };
 
-Toyz.API.Viewer.scales = [-1,0.1,0.25,0.5,1,2,4,8,16,32,64];
+Toyz.Viewer.scales = [-1,0.1,0.25,0.5,1,2,4,8,16,32,64];
 
-Toyz.API.Viewer.load_dependencies = function(callback, params){
+Toyz.Viewer.load_dependencies = function(callback, params){
     callback();
 };
 
-Toyz.API.Viewer.Types = function(tile_contents){
+Toyz.Viewer.Types = function(tile_contents){
     this.img = {
         name:"image", 
         callback: function(key, options){
@@ -40,7 +40,7 @@ Toyz.API.Viewer.Types = function(tile_contents){
     };
 };
 
-Toyz.API.Viewer.Controls = function(parent){
+Toyz.Viewer.Controls = function(parent){
     // Image controls
     this.load_img = {
         inputClass: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-img-load',
@@ -318,14 +318,14 @@ Toyz.API.Viewer.Controls = function(parent){
     };
 };
 
-Toyz.API.Viewer.Gui = function(params){
+Toyz.Viewer.Gui = function(params){
     this.$div = $('<div/>');
     this.$parent = params.$parent;
     this.$parent.append(this.$div);
     this.workspace = params.workspace;
     this.tile = params.tile;
     
-    var options = new Toyz.API.Viewer.Types(this);
+    var options = new Toyz.Viewer.Types(this);
     for(var opt in options){
         if(options.hasOwnProperty(opt)){
             options[opt] = options[opt].name
@@ -355,7 +355,7 @@ Toyz.API.Viewer.Gui = function(params){
     );
 };
 
-Toyz.API.Viewer.contextMenu_items = function(workspace, tile_contents, options){
+Toyz.Viewer.contextMenu_items = function(workspace, tile_contents, options){
     var items = $.extend(true,{
         controls: {
             name: 'Control Panel',
@@ -368,7 +368,7 @@ Toyz.API.Viewer.contextMenu_items = function(workspace, tile_contents, options){
     return items;
 };
 
-Toyz.API.Viewer.Contents = function(params){
+Toyz.Viewer.Contents = function(params){
     this.type = 'Viewer';
     this.tile = params.tile;
     this.$tile_div = params.$tile_div;
@@ -386,7 +386,7 @@ Toyz.API.Viewer.Contents = function(params){
         callback: function(workspace, key, options){
             workspace[key](options);
         }.bind(null, workspace),
-        items: Toyz.API.Viewer.contextMenu_items(workspace, this, params.ctx_menu)
+        items: Toyz.Viewer.contextMenu_items(workspace, this, params.ctx_menu)
     })
     
     // Scroll stop
@@ -419,8 +419,9 @@ Toyz.API.Viewer.Contents = function(params){
     //};
     
     this.controls = this.init_controls({}, params.controls);
+    this.controls.$div.dialog('open');
 };
-Toyz.API.Viewer.Contents.prototype.set_window = function(viewer_left, viewer_top){
+Toyz.Viewer.Contents.prototype.set_window = function(viewer_left, viewer_top){
     var img_info = this.file_info.images[this.file_info.frame];
     var viewer = img_info.viewer;
     viewer.x0 = viewer_left;
@@ -431,7 +432,7 @@ Toyz.API.Viewer.Contents.prototype.set_window = function(viewer_left, viewer_top
     viewer.y_center = viewer.y0 + Math.round(viewer.height/2);
     //console.log('new viewer', this.file_info.images[this.file_info.frame].viewer);
 };
-Toyz.API.Viewer.Contents.prototype.update = function(params, param_val){
+Toyz.Viewer.Contents.prototype.update = function(params, param_val){
     // Allow user to either pass param_name, param_val to function or
     // dictionary with multiple parameters
     if(!(param_val===undefined)){
@@ -441,17 +442,17 @@ Toyz.API.Viewer.Contents.prototype.update = function(params, param_val){
         this[param] = params[param];
     }
 };
-Toyz.API.Viewer.Contents.prototype.rx_info = function(from, info_type, info){
+Toyz.Viewer.Contents.prototype.rx_info = function(from, info_type, info){
     
 };
-Toyz.API.Viewer.Contents.prototype.save = function(){
+Toyz.Viewer.Contents.prototype.save = function(){
     var tile = {
         type: this.type,
         settings: this.settings
     };
     return tile;
 };
-Toyz.API.Viewer.Contents.prototype.load_large_img = function(filepath){
+Toyz.Viewer.Contents.prototype.load_large_img = function(filepath){
     //console.log('loading image');
     this.workspace.websocket.send_task(
         {
@@ -482,10 +483,10 @@ Toyz.API.Viewer.Contents.prototype.load_large_img = function(filepath){
         }.bind(this)
     )
 };
-Toyz.API.Viewer.Contents.prototype.get_best_fit = function(width, height){
+Toyz.Viewer.Contents.prototype.get_best_fit = function(width, height){
     
 };
-Toyz.API.Viewer.Contents.prototype.get_tile_map = function(frame){
+Toyz.Viewer.Contents.prototype.get_tile_map = function(frame){
     var file_info = $.extend(true, {}, this.file_info);
     delete file_info['images'];
     this.workspace.websocket.send_task(
@@ -507,7 +508,7 @@ Toyz.API.Viewer.Contents.prototype.get_tile_map = function(frame){
         }.bind(this, frame)
     )
 };
-Toyz.API.Viewer.Contents.prototype.get_img_tiles = function(current_frame, tiles){
+Toyz.Viewer.Contents.prototype.get_img_tiles = function(current_frame, tiles){
     var img_info = $.extend(true, {}, this.file_info['images'][current_frame]);
     // No need to send a large json object with tile data that is not needed
     delete img_info['tiles'];
@@ -537,7 +538,7 @@ Toyz.API.Viewer.Contents.prototype.get_img_tiles = function(current_frame, tiles
         }
     }
 };
-Toyz.API.Viewer.Contents.prototype.rx_tile_info = function(
+Toyz.Viewer.Contents.prototype.rx_tile_info = function(
         current_frame, img_info, tile_idx, result){
     //console.log('result', result);
     //console.log('img_info', img_info);
@@ -562,14 +563,13 @@ Toyz.API.Viewer.Contents.prototype.rx_tile_info = function(
     }.bind(this, img, img_info, tile_idx);
     img.src = '/file'+img_info.tiles[tile_idx].new_filepath;
 };
-Toyz.API.Viewer.Contents.prototype.set_tile = function(settings){
+Toyz.Viewer.Contents.prototype.set_tile = function(settings){
     if(settings.img_type == 'large_img'){
         this.load_large_img(settings.filename);
     };
-    this.controls.$div.dialog('open');
 };
-Toyz.API.Viewer.Contents.prototype.init_controls = function(controls, divs){
-    var controls = $.extend(true, new Toyz.API.Viewer.Controls(this), controls);
+Toyz.Viewer.Contents.prototype.init_controls = function(controls, divs){
+    var controls = $.extend(true, new Toyz.Viewer.Controls(this), controls);
     var gui = {
         type: 'div',
         params: {}

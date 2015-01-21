@@ -47,25 +47,12 @@ Toyz.API.Highcharts.load_dependencies = function(callback, params){
     };
 };
 
-Toyz.API.Highcharts.contextMenu_items = function(workspace, tile_contents){
-    var items = $.extend(true,{
-        remove: {
-            name:"Remove selected points", 
-            callback: function(key, options){
-                this.remove_points();
-            }.bind(tile_contents)
-        },
-        high_sep: "--------------",
-    }, Toyz.Workspace.tile_contextMenu_items(workspace));
-    return items;
-};
-
 Toyz.API.Highcharts.Gui = function(params){
     this.$div = $('<div/>');
     this.$parent = params.$parent;
     this.$parent.append(this.$div);
     this.workspace = params.workspace;
-    this.tile = params.tile;
+    this.tile_contents = params.tile_contents;
     var gui = {
         type: 'div',
         params: {
@@ -325,6 +312,8 @@ Toyz.API.Highcharts.Gui.prototype.update_columns = function(event){
     //var data_source = event.currentTarget.value;
     var idx = $("input:radio[ name='series' ]:checked").val();
     idx = Number(idx.split('-')[1]);
+    //console.log('idx', idx);
+    //console.log('items', this.gui.params.params.series_div.params.series.items);
     var params = this.gui.params.params.series_div.params.series.items[idx].params;
     var data_source = params.data_source.$input.val();
     var $x_input = params.x_div.params.x.$input;
@@ -340,7 +329,7 @@ Toyz.API.Highcharts.Gui.prototype.update_columns = function(event){
 };
 
 Toyz.API.Highcharts.Contents = function(params){
-    this.type = 'Highcharts';
+    this.type = 'highcharts';
     this.tile = params.tile;
     this.$tile_div = params.$tile_div;
     this.$tile_div
@@ -352,12 +341,60 @@ Toyz.API.Highcharts.Contents = function(params){
     this.current_point = -1;
     //create tile context menu
     $.contextMenu({
-        selector: '.context-menu-highcharts',
+        selector: '#'+this.$tile_div.prop('id'),
         callback: function(workspace, key, options){
             workspace[key](options);
         }.bind(null, workspace),
-        items: Toyz.API.Highcharts.contextMenu_items(workspace, this)
+        items: this.contextMenu_items()
     })
+    
+    this.$div = $('<div/>').prop('title','Edit Tile');
+    this.gui_div = new Toyz.API.Highcharts.Gui({
+        $parent: this.$div,
+        workspace: workspace,
+        tile_contents: this
+    });
+    this.$div.dialog({
+        resizable: true,
+        draggable: true,
+        autoOpen: false,
+        modal: false,
+        width: 'auto',
+        maxHeight: $(window).height(),
+        position: {
+            my: "left top",
+            at: "center top",
+            of: window
+        },
+        buttons: {
+            Set: function(){
+                this.set_tile(this.gui_div.gui.getParams(this.gui_div.gui.params));
+                this.$div.dialog('close');
+            }.bind(this),
+            Cancel: function(){
+                this.$div.dialog('close');
+            }.bind(this)
+        }
+    });
+    //this.$div.dialog('open');
+};
+Toyz.API.Highcharts.Contents.prototype.contextMenu_items = function(){
+    var items = $.extend(true,{
+        remove: {
+            name: "Remove selected points", 
+            callback: function(key, options){
+                this.remove_points();
+            }.bind(this)
+        },
+        edit: {
+            name: "Edit chart",
+            callback: function(key, options){
+                this.$div.dialog('open');
+            }.bind(this)
+        },
+        high_sep: "--------------",
+    }, Toyz.Workspace.tile_contextMenu_items(this.workspace));
+    return items;
 };
 Toyz.API.Highcharts.Contents.prototype.update = function(params, param_val){
     // Allow user to either pass param_name, param_val to function or
@@ -663,6 +700,7 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
 };
 Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
     this.create_chart(settings);
+    this.gui_div.gui.setParams(this.gui_div.gui.params, settings, false);
 };
 Toyz.API.Highcharts.Contents.prototype.update_selected = 
         function(series_idx, points, info_type){

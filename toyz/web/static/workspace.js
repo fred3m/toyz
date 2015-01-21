@@ -4,23 +4,22 @@
 
 Toyz.namespace('Toyz.Workspace');
 
-Toyz.Workspace.load_api_dependencies = function(tile_api, callback){
-    if(!window.Toyz.hasOwnProperty('API') ||
-            window.Toyz.API[tile_api]===undefined ||
-            !window.Toyz.API[tile_api].dependencies_loaded()){
-        // Load the javascript for the api
+Toyz.Workspace.load_api_dependencies = function(tile_api, namespace, url, callback){
+    if(!Toyz.Core.exists(namespace) || 
+            !Toyz.Core.get_var(namespace).dependencies_loaded()){
         Toyz.Core.load_dependencies(
             dependencies={
-                js: ['/static/web/static/api/'+tile_api.toLowerCase()+'.js']
+                js: [url]
             }, 
-            callback = function(tile_api, callback){
-                Toyz.API[tile_api].load_dependencies(callback)
-            }.bind(null, tile_api, callback)
+            callback = function(ns, callback){
+                var namespace = Toyz.Core.get_var(ns);
+                namespace.load_dependencies(callback);
+            }.bind(null, namespace, callback)
         );
     }else{
         callback();
-    }
-}
+    };
+};
 
 Toyz.Workspace.contextMenu_items = function(workspace){
     var items = {
@@ -54,18 +53,30 @@ Toyz.Workspace.contextMenu_items = function(workspace){
     return items;
 };
 
-Toyz.Workspace.tile_contextMenu_items = function(workspace){
+Toyz.Workspace.tile_contextMenu_items = function(workspace, custom_tiles){
+    var tile_types = $.extend(true, {
+        highcharts: {
+            name: 'Highcharts',
+            namespace: 'Toyz.API.Highcharts',
+            url: '/static/web/static/api/highcharts.js'
+        },
+        viewer: {
+            name:'Image viewer',
+            namespace: 'Toyz.Viewer',
+            url: '/static/web/static/viewer.js'
+        }
+    }, custom_tiles);
+    
+    for(var tile in tile_types){
+        tile_types[tile].callback = function(key, options){
+            workspace.tiles[options.$trigger.prop('id')].load_api(key, options.commands[key]);
+        }
+    };
+    
     var items = {
         "tile_type": {
             name: "Tile Type",
-            items: {
-                'Highcharts': {name: 'Highcharts', callback: function(key, options){
-                    workspace.edit_tile(key, options);
-                }},
-                'Viewer': {name:'Image viewer', callback: function(key, options){
-                    workspace.edit_tile(key, options);
-                }}
-            }
+            items: tile_types
         },
         "remove_tile": {name:"Remove Tile"},
         "tile_sep": "--------------"
@@ -74,7 +85,7 @@ Toyz.Workspace.tile_contextMenu_items = function(workspace){
     return items;
 };
 
-Toyz.DataSource = function(workspace, id, params, $parent, radio_group, info){
+Toyz.Workspace.DataSource = function(workspace, id, params, $parent, radio_group, info){
     this.workspace = workspace;
     this.id = id;
     this.name = id;
@@ -102,7 +113,7 @@ Toyz.DataSource = function(workspace, id, params, $parent, radio_group, info){
         this.update(info);
     };
 };
-Toyz.DataSource.prototype.update = function(info, info_val){
+Toyz.Workspace.DataSource.prototype.update = function(info, info_val){
     // Allow user to either pass param_name, param_val to function or
     // dictionary with multiple parameters
     if(!(info_val===undefined)){
@@ -149,7 +160,7 @@ Toyz.DataSource.prototype.update = function(info, info_val){
         }
     };
 };
-Toyz.DataSource.prototype.remove = function(){
+Toyz.Workspace.DataSource.prototype.remove = function(){
     // Remove jQuery objects
     for(var param in this){
         if(param[0]=='$'){
@@ -161,7 +172,7 @@ Toyz.DataSource.prototype.remove = function(){
         tile.remove_source(this.name);
     };
 };
-Toyz.DataSource.prototype.save = function(){
+Toyz.Workspace.DataSource.prototype.save = function(){
     var save_params = {
         params: this.params,
         tiles: this.tiles,
@@ -169,7 +180,7 @@ Toyz.DataSource.prototype.save = function(){
     };
     return save_params;
 };
-Toyz.DataSource.prototype.rx_info = function(from, info_type, info){
+Toyz.Workspace.DataSource.prototype.rx_info = function(from, info_type, info){
     // If any points are removed, remove them from the data source
     if(info_type=='remove datapoints'){
         for(var col in this.data){
@@ -186,13 +197,29 @@ Toyz.DataSource.prototype.rx_info = function(from, info_type, info){
     };
 };
 
-Toyz.Tile = function(info){
+Toyz.Workspace.Tile = function(workspace, info){
+    this.workspace = workspace;
     this.contents = {
-        save: function(){}
+        save: function(){},
+        remove: function(){},
+        rx_info: function(){}
     };
+    
     this.update(info);
 };
-Toyz.Tile.prototype.update = function(info, info_val){
+Toyz.Workspace.Tile.prototype.load_api = function(tile_api, api_settings){
+    Toyz.Workspace.load_api_dependencies(
+        tile_api, 
+        api_settings.namespace,
+        api_settings.url,
+        this.update.bind(this,{
+            contents: {
+                api: api_settings.namespace
+            }
+        })
+    );
+};
+Toyz.Workspace.Tile.prototype.update = function(info, info_val){
     // Allow user to either pass param_name, param_val to function or
     // dictionary with multiple parameters
     if(!(info_val===undefined)){
@@ -201,10 +228,11 @@ Toyz.Tile.prototype.update = function(info, info_val){
     for(var prop in info){
         if(prop == 'contents'){
             //console.log('contents', info.contents);
-            this.contents = new Toyz.API[info.contents.api].Contents({
+            var namespace = Toyz.Core.get_var(info.contents.api);
+            this.contents = new namespace.Contents({
                 tile: this,
                 $tile_div: this.$inner_div,
-                workspace: info.contents.workspace
+                workspace: this.workspace
             });
             if(info.contents.hasOwnProperty('settings')){
                 this.contents.set_tile(info.contents.settings);
@@ -213,10 +241,6 @@ Toyz.Tile.prototype.update = function(info, info_val){
             this[prop] = info[prop];
         }
     };
-};
-Toyz.Tile.prototype.rx_info = function(info_type, info){
-};
-Toyz.Tile.prototype.remove = function(){
 };
 
 Toyz.Workspace.init_data_dialog = function(workspace, sources){
@@ -271,7 +295,7 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
             //console.log('added source to workspace', data_dialog.workspace)
             delete result.id;
             if(!(data_dialog.sources.hasOwnProperty(params.id))){
-                data_dialog.sources[params.id] = new Toyz.DataSource(
+                data_dialog.sources[params.id] = new Toyz.Workspace.DataSource(
                     data_dialog.workspace,
                     params.id, 
                     params.params, 
@@ -313,7 +337,8 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
             var src = data_dialog.sources[source];
             data_dialog.editing = source;
             if(!(source===undefined)){
-                workspace.new_data_gui.setParams(workspace.new_data_gui.params, src.params, false);
+                workspace.new_data_gui.setParams(
+                    workspace.new_data_gui.params, src.params, false);
                 workspace.$new_data_div.dialog('open');
             };
         },
@@ -357,7 +382,7 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
     return data_dialog;
 };
 
-Toyz.Workspace.TileDialog = function(workspace){
+/*Toyz.Workspace.TileDialog = function(workspace){
     this.$div = $('<div/>').prop('title','Edit Tile');
     this.gui_div = undefined;
     this.$div.dialog({
@@ -416,7 +441,7 @@ Toyz.Workspace.TileDialog.prototype.update = function(tile_api, tile){
         this.gui_div.gui.setParams(this.gui_div.gui.params, tile.contents.settings, false);
     };
 };
-
+*/
 
 Toyz.Workspace.init = function(params){
     var workspace = {
@@ -477,7 +502,7 @@ Toyz.Workspace.init = function(params){
             });
             
             // Initialize dialog to edit a tile's type and settings
-            workspace.tile_dialog = new Toyz.Workspace.TileDialog(workspace);
+            // workspace.tile_dialog = new Toyz.Workspace.TileDialog(workspace);
             
             // Create workspace context menu
             $.contextMenu({
@@ -645,7 +670,7 @@ Toyz.Workspace.init = function(params){
                 });
             $div.append($inner_div);
             workspace.$div.append($div);
-            workspace.tiles[inner_id] = new Toyz.Tile({
+            workspace.tiles[inner_id] = new Toyz.Workspace.Tile(workspace, {
                 id: inner_id,
                 $div: $div,
                 $inner_div: $inner_div,
@@ -658,12 +683,13 @@ Toyz.Workspace.init = function(params){
             
             // tile.remove() is a function that may differ depending on the
             // type of object displayed in the tile
-            workspace.tiles[my_id].remove();
+            workspace.tiles[my_id].contents.remove();
             delete workspace.tiles[my_id];
         },
-        edit_tile: function(key, options){
-            workspace.tile_dialog.load_api(key, workspace.tiles[options.$trigger.prop('id')]);
-        },
+        /*edit_tile: function(key, options){
+            //workspace.tile_dialog.load_api(key, workspace.tiles[options.$trigger.prop('id')]);
+            workspace.tiles[options.$trigger.prop('id')].load_api(key);
+        },*/
         save_tiles: function(){
             var tiles = {};
             for(var tile_id in workspace.tiles){
@@ -700,8 +726,13 @@ Toyz.Workspace.init = function(params){
                     tiles
                 );
             };
+            var all_apis = Toyz.Workspace.tile_contextMenu_items(workspace).tile_type.items;
+            console.log('all apis', all_apis);
+            console.log('api', api_list[0]);
             Toyz.Workspace.load_api_dependencies(
                 tile_api=api_list[0],
+                namespace=all_apis[api_list[0]].namespace,
+                url=all_apis[api_list[0]].url,
                 callback
             )
         },
@@ -715,7 +746,15 @@ Toyz.Workspace.init = function(params){
                     width: tiles[tile_id].width,
                     height: tiles[tile_id].height
                 });
-                Toyz.Workspace.load_api_dependencies(
+                var all_apis = Toyz.Workspace.tile_contextMenu_items(workspace).tile_type.items;
+                new_tiles[tile_id].update({
+                    contents: {
+                        workspace: workspace,
+                        api: all_apis[tiles[tile_id].contents.type].namespace,
+                        settings: tiles[tile_id].contents.settings
+                    }
+                });
+                /*Toyz.Workspace.load_api_dependencies(
                     tile_api=tiles[tile_id].contents.type,
                     callback=new_tiles[tile_id].update.bind(new_tiles[tile_id], {
                         contents: {
@@ -724,7 +763,7 @@ Toyz.Workspace.init = function(params){
                             settings: tiles[tile_id].contents.settings
                         }
                     })
-                );
+                );*/
             };
             workspace.tiles = new_tiles;
         }
