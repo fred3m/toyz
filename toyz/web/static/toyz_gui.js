@@ -48,7 +48,7 @@ Toyz.Gui.buildParamDiv = function(param, $div){
     if(param.hasOwnProperty('func')){
         var functions=param.func;
         for(var f in functions){
-            $input[f](functions[f]);
+            $input.on(f, functions[f]);
         };
     };
     if(param.hasOwnProperty('inputClass')){
@@ -617,12 +617,22 @@ Toyz.Gui.initParamList=function(pList,options){
                 };
             }else if(param.type == 'list'){
                 // remove the old items from the list
-                for(var i=0; i<param.items.length; i++){
-                    param.items[i].$div.remove();
+                if(set_all){
+                    for(var i=0; i<param.items.length; i++){
+                        param.items[i].$div.remove();
+                    };
+                    param.items = [];
+                    param.current_idx = 0;
                 };
-                param.items = [];
-                param.current_idx = 0;
                 if(param_values.hasOwnProperty(param.name)){
+                    // remove the old items from the list
+                    if(!set_all){
+                        for(var i=0; i<param.items.length; i++){
+                            param.items[i].$div.remove();
+                        };
+                        param.items = [];
+                        param.current_idx = 0;
+                    };
                     if(param.format == 'dict'){
                         var p_index = 0;
                         for(var key in param_values[param.name]){
@@ -661,11 +671,39 @@ Toyz.Gui.initParamList=function(pList,options){
                         }
                     };
                 };
-            }else if(param.type == 'input' || param.type == 'select'){
+            }else if(param.type == 'select'){
+                if(param_values.hasOwnProperty(param.name)){
+                    var pval = param_values[param.name];
+                    if(typeof pval==='object' && pval.hasOwnProperty('options')){
+                        if($.isArray(pval.options)){
+                            param.$input.empty();
+                            for(var i=0;i<pval.options.length; i++){
+                                $option=$('<option/>')
+                                    .html(pval.options[i])
+                                    .val(pval.options[i])
+                                param.$input.append($option);
+                            }
+                        }else{
+                            for(var opt in pval.options){
+                                $option=$('<option/>')
+                                    .html(pval.options[opt])
+                                    .val(opt)
+                                para.$input.append($option);
+                            };
+                        };
+                        if(pval.hasOwnProperty('value')){
+                            param.$input.val(pval.value);
+                        };
+                        param.$input.change();
+                    }else{
+                        param_list.setInput(param, param_values[param.name]);
+                    };
+                };
+            }else if(param.type == 'input'){
                 if(param_values.hasOwnProperty(param.name)){
                     param_list.setInput(param, param_values[param.name]);
                 };
-            }
+            };
         }
     },options);
     

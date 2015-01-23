@@ -14,6 +14,15 @@ Toyz.Viewer.load_dependencies = function(callback, params){
     callback();
 };
 
+Toyz.Viewer.Events = function(){
+    this.mousedown = [];
+    this.mouseup = [];
+    this.mousemove = [];
+    this.rx_datapoint = [];
+    this.rx_img = [];
+    this.set_viewer = [];
+};
+
 Toyz.Viewer.Types = function(tile_contents){
     this.img = {
         name:"image", 
@@ -46,6 +55,7 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-img-load',
         func: {
             click: function(){
+                this.file_dialog.$div.dialog('open');
             }.bind(parent)
         },
         prop: {
@@ -58,6 +68,11 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-first',
         func: {
             click: function(){
+                var file_info = this.frames[this.viewer_frame].file_info;
+                var all_frames = Object.keys(file_info.images);
+                if(file_info.frame != all_frames[0]){
+                    this.change_file_frame(all_frames[0]);
+                };
             }.bind(parent)
         },
         prop: {
@@ -70,6 +85,13 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-previous',
         func: {
             click: function(){
+                var file_info = this.frames[this.viewer_frame].file_info;
+                var all_frames = Object.keys(file_info.images);
+                var frame = file_info.frame;
+                if(all_frames.indexOf(frame)>0){
+                    frame = all_frames[all_frames.indexOf(frame)-1];
+                    this.change_file_frame(frame);
+                };
             }.bind(parent)
         },
         prop: {
@@ -83,8 +105,19 @@ Toyz.Viewer.Controls = function(parent){
         options: [],
         inputClass: 'viewer-ctrl-img-btn viewer-ctrl-select',
         func: {
-            change: function(){
-                
+            change: function(event){
+                if(event.currentTarget.value != this.frames[this.viewer_frame].file_info.frame){
+                    this.change_file_frame(event.currentTarget.value);
+                }
+            }.bind(parent)
+        },
+        events: {
+            rx_img: function(event){
+                var values = {conditions:{}, input_frame: {
+                    options: Object.keys(this.frames[event.viewer_frame].file_info.images),
+                    value: this.frames[event.viewer_frame].file_info.frame
+                }};
+                this.ctrl_panel.gui.setParams(this.ctrl_panel.gui.params, values, false);
             }.bind(parent)
         }
     };
@@ -92,6 +125,13 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-next',
         func: {
             click: function(){
+                var file_info = this.frames[this.viewer_frame].file_info;
+                var all_frames = Object.keys(file_info.images);
+                var frame = file_info.frame;
+                if(all_frames.indexOf(frame)<all_frames.length-1){
+                    frame = all_frames[all_frames.indexOf(frame)+1];
+                    this.change_file_frame(frame);
+                };
             }.bind(parent)
         },
         prop: {
@@ -104,6 +144,11 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-last',
         func: {
             click: function(){
+                var file_info = this.frames[this.viewer_frame].file_info;
+                var all_frames = Object.keys(file_info.images);
+                if(file_info.frame != all_frames[all_frames.length-1]){
+                    this.change_file_frame(all_frames[all_frames.length-1]);
+                };
             }.bind(parent)
         },
         prop: {
@@ -173,6 +218,9 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-viewer-add',
         func: {
             click: function(){
+                this.frames.push({});
+                this.viewer_frame++;
+                this.change_viewer_frame(this.viewer_frame);
             }.bind(parent)
         },
         prop: {
@@ -185,6 +233,18 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-viewer-remove',
         func: {
             click: function(){
+                if(this.frames.length>1){
+                    var remove = confirm("Are you sure you want to remove this viewer frame?");
+                    if(remove){
+                        this.frames.splice(this.viewer_frame,1);
+                        if(this.viewer_frame>this.frames.length-1){
+                            this.viewer_frame--;
+                        };
+                        this.change_viewer_frame(this.viewer_frame);
+                    };
+                }else{
+                    alert('View must always have one frame');
+                }
             }.bind(parent)
         },
         prop: {
@@ -197,6 +257,9 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-first',
         func: {
             click: function(){
+                if(this.viewer_frame!=0){
+                    this.change_viewer_frame(0);
+                };
             }.bind(parent)
         },
         prop: {
@@ -209,6 +272,9 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-previous',
         func: {
             click: function(){
+                if(this.viewer_frame>0){
+                    this.change_viewer_frame(this.viewer_frame-1);
+                }
             }.bind(parent)
         },
         prop: {
@@ -222,8 +288,10 @@ Toyz.Viewer.Controls = function(parent){
         options: [],
         inputClass: 'viewer-ctrl-viewer-btn viewer-ctrl-select',
         func: {
-            change: function(){
-                
+            change: function(event){
+                if(event.currentTarget.value != this.viewer_frame){
+                    this.change_viewer_frame(event.currentTarget.value);
+                };
             }.bind(parent)
         }
     };
@@ -231,6 +299,9 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-next',
         func: {
             click: function(){
+                if(this.viewer_frame<this.frames.length-1){
+                    this.change_viewer_frame(this.viewer_frame+1);
+                };
             }.bind(parent)
         },
         prop: {
@@ -243,6 +314,9 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-last',
         func: {
             click: function(){
+                if(this.viewer_frame != this.frames.length-1){
+                    this.change_viewer_frame(this.frames.length-1);
+                };
             }.bind(parent)
         },
         prop: {
@@ -318,12 +392,12 @@ Toyz.Viewer.Controls = function(parent){
     };
 };
 
-Toyz.Viewer.Gui = function(params){
+Toyz.Viewer.FileDialog = function(tile_contents){
     this.$div = $('<div/>');
-    this.$parent = params.$parent;
+    this.tile_contents = tile_contents;
+    //this.$parent = this.tile_contents.$tile_div;
+    this.$parent = $('body');
     this.$parent.append(this.$div);
-    this.workspace = params.workspace;
-    this.tile = params.tile;
     
     var options = new Toyz.Viewer.Types(this);
     for(var opt in options){
@@ -331,7 +405,6 @@ Toyz.Viewer.Gui = function(params){
             options[opt] = options[opt].name
         }
     };
-    //console.log('options', options);
     
     var gui = {
         type: 'div',
@@ -353,6 +426,30 @@ Toyz.Viewer.Gui = function(params){
             $parent: this.$div
         }
     );
+    
+    this.$div.dialog({
+        resizable: true,
+        draggable: true,
+        autoOpen: false,
+        modal: false,
+        width: 'auto',
+        title: 'Open Image',
+        maxHeight: $(window).height(),
+        position: {
+            my: "center top",
+            at: "center top",
+            of: window
+        },
+        buttons: {
+            Open: function(tile_contents){
+                tile_contents.set_tile(this.gui.getParams(this.gui.params));
+                this.$div.dialog('close');
+            }.bind(this, tile_contents),
+            Cancel: function(){
+                this.$div.dialog('close');
+            }.bind(this)
+        }
+    });
 };
 
 Toyz.Viewer.contextMenu_items = function(workspace, tile_contents, options){
@@ -360,7 +457,7 @@ Toyz.Viewer.contextMenu_items = function(workspace, tile_contents, options){
         controls: {
             name: 'Control Panel',
             callback: function(){
-                this.controls.$div.dialog('open');
+                this.ctrl_panel.$div.dialog('open');
             }.bind(tile_contents)
         },
         img_sep: "--------------"
@@ -368,6 +465,7 @@ Toyz.Viewer.contextMenu_items = function(workspace, tile_contents, options){
     return items;
 };
 
+//  Viewer as contents of Workspace tile ////////////////////////////////////
 Toyz.Viewer.Contents = function(params){
     this.type = 'Viewer';
     this.tile = params.tile;
@@ -376,8 +474,8 @@ Toyz.Viewer.Contents = function(params){
         .removeClass('context-menu-tile')
         .addClass('context-menu-viewer')
         .addClass('viewer-main-div');
-    this.$viewer = $('<div/>').addClass('viewer-div');
-    this.$tile_div.append(this.$viewer);
+    //this.$viewer = $('<div/>').addClass('viewer-div');
+    //this.$tile_div.append(this.$viewer);
     this.workspace = params.workspace;
     this.settings = {};
     //create tile context menu
@@ -398,10 +496,16 @@ Toyz.Viewer.Contents = function(params){
             //console.log('scroll:', this.$tile_div.scrollLeft(), this.$tile_div.scrollTop());
             //console.log('window:', this.file_info.images[this.file_info.frame].viewer);
             this.set_window(this.$tile_div.scrollLeft(), this.$tile_div.scrollTop())
-            this.get_tile_map(this.file_info.frame);
+            if(!(this.frames[this.viewer_frame].file_info===undefined)){
+                this.get_tile_map(
+                    this.viewer_frame, 
+                    this.frames[this.viewer_frame].file_info.frame
+                );
+            };
         }.bind(this), 250))
     }.bind(this));
     
+    // Use default control panel unless another is specified
     if(!params.hasOwnProperty('controls')){
         params.controls = {
             Image: ['load_img', 'first_frame', 'previous_frame', 
@@ -414,23 +518,38 @@ Toyz.Viewer.Contents = function(params){
             'Image Info': ['img_coords', 'physical_coords', 'pixel_val']
         }
     };
-    //if(!params.hasOwnProperty('legend_class')){
-    //    params.legend_class = 'viewer-legend-frame';
-    //};
     
-    this.controls = this.init_controls({}, params.controls);
-    this.controls.$div.dialog('open');
+    // Create control panel and bind any events to the viewer
+    var ctrl = this.init_controls({}, params.controls);
+    this.ctrl_panel = ctrl[0];
+    this.controls = ctrl[1];
+    this.events = new Toyz.Viewer.Events();
+    for(var ctrl in this.controls){
+        if(this.controls[ctrl].hasOwnProperty('events')){
+            for(var event in this.controls[ctrl].events){
+                this.events[event].push(this.controls[ctrl].events[event]);
+            }
+        }
+    };
+    this.ctrl_panel.$div.dialog('open');
+    
+    this.file_dialog = new Toyz.Viewer.FileDialog(this);
+    this.frames = [{}];
+    //this.viewer_frame = 0;
+    this.change_viewer_frame(0);
 };
 Toyz.Viewer.Contents.prototype.set_window = function(viewer_left, viewer_top){
-    var img_info = this.file_info.images[this.file_info.frame];
-    var viewer = img_info.viewer;
-    viewer.x0 = viewer_left;
-    viewer.xf = viewer.x0 + viewer.width;
-    viewer.y0 = img_info.scaled_height-img_info.viewer.height-viewer_top;
-    viewer.yf = viewer.y0 + img_info.viewer.height;
-    viewer.x_center = viewer.x0 + Math.round(viewer.width/2);
-    viewer.y_center = viewer.y0 + Math.round(viewer.height/2);
-    //console.log('new viewer', this.file_info.images[this.file_info.frame].viewer);
+    var file_info = this.frames[this.viewer_frame].file_info;
+    if(!(file_info===undefined)){
+        var img_info = file_info.images[file_info.frame];
+        var viewer = img_info.viewer;
+        viewer.x0 = viewer_left;
+        viewer.xf = viewer.x0 + viewer.width;
+        viewer.y0 = img_info.scaled_height-img_info.viewer.height-viewer_top;
+        viewer.yf = viewer.y0 + img_info.viewer.height;
+        viewer.x_center = viewer.x0 + Math.round(viewer.width/2);
+        viewer.y_center = viewer.y0 + Math.round(viewer.height/2);
+    };
 };
 Toyz.Viewer.Contents.prototype.update = function(params, param_val){
     // Allow user to either pass param_name, param_val to function or
@@ -470,24 +589,56 @@ Toyz.Viewer.Contents.prototype.load_large_img = function(filepath){
                     x_center: Math.round(this.$tile_div.width()),
                     y_center: Math.round(this.$tile_div.width()),
                     scale: -1
-                }
+                },
             }
         },
-        function(result){
+        function(frame, result){
             //console.log('file info', result.file_info);
-            this.file_info = result.file_info;
-            var img_info = this.file_info.images[this.file_info.frame];
-            this.$viewer.width(img_info.scaled_width);
-            this.$viewer.height(img_info.scaled_height);
-            this.get_img_tiles(this.file_info.frame, result.new_tiles);
-        }.bind(this)
+            this.frames[frame].file_info = result.file_info;
+            var img_info = result.file_info.images[result.file_info.frame];
+            this.frames[frame].$viewer = $('<div/>').addClass('viewer-div');
+            this.$tile_div.append(this.frames[frame].$viewer);
+            this.frames[frame].$viewer.width(img_info.scaled_width);
+            this.frames[frame].$viewer.height(img_info.scaled_height);
+            this.get_img_tiles(this.viewer_frame, result.file_info.frame, result.new_tiles);
+        }.bind(this, this.viewer_frame)
     )
 };
 Toyz.Viewer.Contents.prototype.get_best_fit = function(width, height){
     
 };
-Toyz.Viewer.Contents.prototype.get_tile_map = function(frame){
-    var file_info = $.extend(true, {}, this.file_info);
+Toyz.Viewer.Contents.prototype.get_img_info = function(viewer_frame, file_frame){
+    var file_info = $.extend(true, {}, this.frames[viewer_frame].file_info);
+    this.workspace.websocket.send_task(
+        {
+            module: 'toyz.web.tasks',
+            task: 'get_img_info',
+            parameters: {
+                file_info: file_info,
+                viewer: {
+                    width: this.$tile_div.width(),
+                    height: this.$tile_div.height(),
+                    scale: -1
+                },
+                frame: file_frame
+            }
+        },
+        function(viewer_frame, result){
+            var file_info = this.frames[viewer_frame].file_info;
+            file_info.frame = result.img_info.frame;
+            file_info.images[file_info.frame] = result.img_info;
+            if(!(this.frames[viewer_frame].hasOwnProperty('$viewer'))){
+                this.frames[viewer_frame].$viewer = $('<div/>').addClass('viewer-div');
+                this.$tile_div.append(this.frames[viewer_frame].$viewer);
+            };
+            this.frames[viewer_frame].$viewer.width(result.img_info.scaled_width);
+            this.frames[viewer_frame].$viewer.height(result.img_info.scaled_height);
+            this.get_img_tiles(viewer_frame, file_info.frame, result.new_tiles);
+        }.bind(this, viewer_frame)
+    );
+};
+Toyz.Viewer.Contents.prototype.get_tile_map = function(viewer_frame, file_frame){
+    var file_info = $.extend(true, {}, this.frames[viewer_frame].file_info);
     delete file_info['images'];
     this.workspace.websocket.send_task(
         {
@@ -495,24 +646,27 @@ Toyz.Viewer.Contents.prototype.get_tile_map = function(frame){
             task: 'get_tile_info',
             parameters: {
                 file_info: file_info,
-                img_info: this.file_info.images[frame]
+                img_info: this.frames[viewer_frame].file_info.images[file_frame]
             }
         },
-        function(frame, result){
-            this.file_info.images[frame].tiles = $.extend(
+        function(viewer_frame, file_frame, result){
+            this.frames[viewer_frame].file_info.images[file_frame].tiles = $.extend(
                 true, 
-                this.file_info.images[frame].tiles,
+                this.frames[viewer_frame].file_info.images[file_frame].tiles,
                 result.new_tiles
             );
-            this.get_img_tiles(frame, result.new_tiles)
-        }.bind(this, frame)
+            this.get_img_tiles(viewer_frame, file_frame, result.new_tiles)
+        }.bind(this, viewer_frame, file_frame)
     )
 };
-Toyz.Viewer.Contents.prototype.get_img_tiles = function(current_frame, tiles){
-    var img_info = $.extend(true, {}, this.file_info['images'][current_frame]);
+Toyz.Viewer.Contents.prototype.get_img_tiles = function(viewer_frame, file_frame, tiles){
+    var img_info = $.extend(
+        true, {}, 
+        this.frames[viewer_frame].file_info['images'][file_frame]
+    );
     // No need to send a large json object with tile data that is not needed
     delete img_info['tiles'];
-    var file_info = $.extend(true, {}, this.file_info);
+    var file_info = $.extend(true, {}, this.frames[viewer_frame].file_info);
     // No need to send a large json object with image data that is not needed
     delete file_info['images'];
     
@@ -520,7 +674,6 @@ Toyz.Viewer.Contents.prototype.get_img_tiles = function(current_frame, tiles){
     this.$tile_div.scrollLeft(img_info.viewer.x0);
     for(var tile_idx in tiles){
         if(tiles.hasOwnProperty(tile_idx)){
-            var current_frame = this.file_info['frame'];
             this.workspace.websocket.send_task(
                 {
                     module: 'toyz.web.tasks',
@@ -531,37 +684,37 @@ Toyz.Viewer.Contents.prototype.get_img_tiles = function(current_frame, tiles){
                         tile_info: tiles[tile_idx]
                     }
                 },
-                this.rx_tile_info.bind(this, current_frame, 
-                    this.file_info['images'][current_frame], tile_idx
-                )
+                this.rx_tile_info.bind(this, viewer_frame, file_frame, tile_idx)
             )
         }
-    }
+    };
+    for(var i=0; i<this.events['rx_img'].length; i++){
+        this.events['rx_img'][i]({
+            viewer_frame: viewer_frame,
+            file_frame: file_frame
+        });
+    };
 };
 Toyz.Viewer.Contents.prototype.rx_tile_info = function(
-        current_frame, img_info, tile_idx, result){
-    //console.log('result', result);
-    //console.log('img_info', img_info);
-    //console.log('current_frame', current_frame);
-    //console.log('tile_idx', tile_idx);
-    //console.log('tile', img_info['tiles'][tile_idx]);
-    
-    // load image from data url
-    var img = new Image();
-    img.onload = function(img, img_info, tile_idx) {
-        /*if(img_info.scale>1){
-            img.width = img.width*img_info.scale;
-        }*/
-        var tile = img_info.tiles[tile_idx];
-        var $img = $(img)
-            .addClass('viewer-tile-img')
-            .css({
-                left: tile.left+'px',
-                bottom: tile.bottom+'px'
-            });
-        this.$viewer.append($img);
-    }.bind(this, img, img_info, tile_idx);
-    img.src = '/file'+img_info.tiles[tile_idx].new_filepath;
+        viewer_frame, file_frame, tile_idx, result){
+    if(result.success){
+        var img_info = this.frames[viewer_frame].file_info.images[file_frame];
+        // load image from data url
+        var img = new Image();
+        img.onload = function(img, viewer_frame, img_info, tile_idx) {
+            var tile = img_info.tiles[tile_idx];
+            var $img = $(img)
+                .addClass('viewer-tile-img')
+                .css({
+                    left: tile.left+'px',
+                    bottom: tile.bottom+'px'
+                });
+            this.frames[viewer_frame].$viewer.append($img);
+        }.bind(this, img, viewer_frame, img_info, tile_idx);
+        img.src = '/file'+img_info.tiles[tile_idx].new_filepath;
+    }else{
+        console.log('tile did not need to be created');
+    };
 };
 Toyz.Viewer.Contents.prototype.set_tile = function(settings){
     if(settings.img_type == 'large_img'){
@@ -592,7 +745,8 @@ Toyz.Viewer.Contents.prototype.init_controls = function(controls, divs){
             $parent: $div
         }
     );
-    this.$tile_div.append($div);
+    //this.$tile_div.append($div);
+    $('body').append($div);
     var ctrl_panel = {
         gui: gui,
         $div: $div
@@ -613,5 +767,38 @@ Toyz.Viewer.Contents.prototype.init_controls = function(controls, divs){
         }
     }).css("font-size", "12px");
     
-    return ctrl_panel;
+    return [ctrl_panel, controls];
 };
+Toyz.Viewer.Contents.prototype.change_file_frame = function(new_frame){
+    var file_info = this.frames[this.viewer_frame].file_info;
+    this.frames[this.viewer_frame].$viewer.empty();
+    file_info.frame = event.currentTarget.value;
+    this.get_img_info(this.viewer_frame, new_frame);
+    
+};
+Toyz.Viewer.Contents.prototype.change_viewer_frame = function(new_frame){
+    var options = [];
+    this.viewer_frame = new_frame;
+    for(var i=0; i<this.frames.length; i++){
+        options.push(i);
+    };
+    var values = {
+        conditions:{}, 
+        input_viewer_frame: {
+            options: options,
+            value: new_frame
+        }
+    };
+    if(this.frames[this.viewer_frame].hasOwnProperty('file_info')){
+        values.input_frame = {
+            options: Object.keys(this.frames[new_frame].file_info.images),
+            value: this.frames[new_frame].file_info.frame
+        };
+    }
+    console.log('values', values);
+    this.ctrl_panel.gui.setParams(this.ctrl_panel.gui.params, values, false);
+    this.$tile_div.empty();
+    if(this.frames[this.viewer_frame].hasOwnProperty('$viewer')){
+        this.$tile_div.append(this.frames[this.viewer_frame].$viewer);
+    };
+}

@@ -57,7 +57,7 @@ Toyz.Core.core_js = [
 
 Toyz.Core.core_css = [
     "/third_party/jquery_ui_themes/{{user_theme}}/jquery-ui.min.css",
-    "/static/web/static/toyz.css?=",
+    "/static/web/static/toyz.css?=test",
     "/third_party/jquery-contextMenu/jquery.contextMenu.css"
 ];
 
@@ -280,6 +280,27 @@ Toyz.Core.check4key=function(obj,keys,errorMsg){
         }
     };
     return true;
+};
+
+// Sort an array filled with numbers
+Toyz.Core.sort_num = function(a,b){return a-b};
+// Sort an array filled with numbers as strings
+Toyz.Core.sort_num_str = function(a,b){return Number(a)-Number(b)};
+
+// Sort an array that contains json objects. To use call:
+//     my_array.sort(Toyz.Core.sort_num_key.bind(null, key_name))
+Toyz.Core.sort_num_key = function(key, a,b){return a[key]-b[key]};
+
+// Sort an array that contains json objects. To use call:
+//     my_array.sort(Toyz.Core.sort_num_key.bind(null, [key1, key2, key3, ...keyN])),
+// where the list of keys is in decreasing sort priority.
+Toyz.Core.sort_num_keys = function(keys, a, b){
+    for(var i=0, key=keys[i]; i<keys.length; i++){
+        if(a[key]!=b[key]){
+            return a[key]-b[key];
+        }
+    };
+    return 0;
 };
 
 // Initialize a file dialog

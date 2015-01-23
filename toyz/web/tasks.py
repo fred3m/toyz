@@ -562,7 +562,6 @@ def get_file_info(toyz_settings, tid, params):
         'file_info': file_info,
         'new_tiles': result['new_tiles']
     }
-    
     return response
 
 def get_img_info(toyz_settings, tid, params):
@@ -581,7 +580,8 @@ def get_img_info(toyz_settings, tid, params):
                 'Please contact your network administrator if you believe this is an error.')
     shortcuts = db_utils.get_param(toyz_settings.db, 'shortcuts', user_id=tid['user_id'])
     save_path = os.path.join(shortcuts['temp'], tid['session_id'], 'images')
-    img_info = viewer.get_img_info(params['file_info'], save_path, params['viewer'])
+    params['img_viewer'] = params.pop('viewer')
+    img_info = viewer.get_img_info(save_path=save_path, **params)
     
     result = get_tile_info(toyz_settings, tid, {
         'file_info': params['file_info'],
@@ -594,6 +594,7 @@ def get_img_info(toyz_settings, tid, params):
         'img_info': img_info,
         'new_tiles': result['new_tiles']
     }
+    
     return response
 
 def get_tile_info(toyz_settings, tid, params):
@@ -636,11 +637,11 @@ def get_img_tile(toyz_settings, tid, params):
                 'You do not have permission to view the requested file.'
                 'Please contact your network administrator if you believe this is an error.')
     
-    viewer.create_tile(params['file_info'], params['img_info'], params['tile_info'])
+    created = viewer.create_tile(params['file_info'], params['img_info'], params['tile_info'])
     
     response = {
         'id': 'tile created',
-        'status': 'success'
+        'success': created
     }
     
     return response

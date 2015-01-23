@@ -39,7 +39,7 @@ def get_file_info(filepath, tile_height=200, tile_width=400):
             raise ToyzJobError("FITS file does not contain any recognized image hdu's")
     else:
         file_info['images'] = {'0':{}}
-        file_info['frame'] = 0
+        file_info['frame'] = '0'
     
     return file_info
 
@@ -66,7 +66,7 @@ def get_best_fit(data_width, data_height, img_viewer):
 def get_img_info(file_info, save_path, img_viewer=None,
         frame=None, scale=None, colormap=None, px_min=None, px_max=None):
     if frame is None:
-        frame = int(next(iter(file_info['images'])))
+        frame = next(iter(file_info['images']))
     
     if file_info['ext'] == 'fits' or file_info['ext'] == 'fits.fz':
         try:
@@ -80,7 +80,7 @@ def get_img_info(file_info, save_path, img_viewer=None,
         # No need to check, since numpy is a dependence of astropy
         import numpy as np
         hdulist = pyfits.open(file_info['filepath'])
-        data = hdulist[frame].data
+        data = hdulist[int(frame)].data
         height, width = data.shape
         if px_min is None:
             px_min = float(data.min())
@@ -145,20 +145,11 @@ def scale_data(file_info, img_info, tile_info, data):
             tile_info['x0_idx']:tile_info['xf_idx']]
         data = np.kron(data, np.ones((img_info['scale'],img_info['scale'])))
         #data = zoom(data, img_info['scale'], order=0)
-        print('data size', data.shape)
     elif img_info['scale']<1 and img_info['scale']>0:
         tile_width = min(file_info['tile_width'],
             int((img_info['width']-tile_info['x0_idx'])*img_info['scale'])-1)
         tile_height = min(file_info['tile_height'],
             int((img_info['height']-tile_info['y0_idx'])*img_info['scale'])-1)
-        print('tile_width', tile_width)
-        print('tile_height', tile_height)
-        print('width', img_info['width'])
-        print('height', img_info['height'])
-        print('x0_idx', tile_info['x0_idx'])
-        print('y0_idx', tile_info['y0_idx'])
-        print('yf_idx', tile_info['yf_idx'])
-        print('scale', img_info['scale'])
         
         xmax = min(img_info['width']-1, tile_info['xf_idx'])
         ymax = min(img_info['height']-1, tile_info['yf_idx'])
@@ -265,7 +256,7 @@ def create_tile(file_info, img_info, tile_info):
             raise ToyzJobError("You must have matplotlib installed to load FITS images")
         
         hdulist = pyfits.open(file_info['filepath'])
-        data = hdulist[img_info['frame']].data
+        data = hdulist[int(img_info['frame'])].data
         data = scale_data(file_info, img_info, tile_info, data)
         # FITS images have a flipped y-axis from what browsers and other image formats expect
         data = np.flipud(data)
@@ -291,7 +282,13 @@ def create_tile(file_info, img_info, tile_info):
             (img_info['tile_width']*img_info['scale'], 
             img_info['tile_height']*img_info['scale']),
             Image.ANTIALIAS)
-    
-    path = os.path.dirname(tile_info['new_filepath'])
-    core.create_paths([path])
-    img.save(tile_info['new_filepath'])
+    width, height = img.size
+    print('width:', width)
+    print('height', height)
+    if width>0 and height>0:
+        path = os.path.dirname(tile_info['new_filepath'])
+        core.create_paths([path])
+        img.save(tile_info['new_filepath'])
+    else:
+        return False
+    return True

@@ -376,7 +376,6 @@ Toyz.API.Highcharts.Contents = function(params){
             }.bind(this)
         }
     });
-    //this.$div.dialog('open');
 };
 Toyz.API.Highcharts.Contents.prototype.contextMenu_items = function(){
     var items = $.extend(true,{
