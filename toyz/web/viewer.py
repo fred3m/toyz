@@ -44,10 +44,10 @@ def get_file_info(filepath, tile_height=200, tile_width=400):
     return file_info
 
 def get_window(viewer):
-    viewer['x0']=int(viewer['x_center']-viewer['width']/viewer['scale']/2)
-    viewer['y0']=int(viewer['y_center']-viewer['height']/viewer['scale']/2)
-    viewer['xf']=int(viewer['x0']+viewer['width']/viewer['scale'])
-    viewer['yf']=int(viewer['y0']+viewer['height']/viewer['scale'])
+    viewer['left']=int(viewer['x_center']-viewer['width']/2)
+    viewer['bottom']=int(viewer['y_center']-viewer['height']/2)
+    viewer['right']=int(viewer['left']+viewer['width'])
+    viewer['top']=int(viewer['bottom']+viewer['height'])
     return viewer
 
 def get_best_fit(data_width, data_height, img_viewer):
@@ -57,8 +57,8 @@ def get_best_fit(data_width, data_height, img_viewer):
     x_scale = img_viewer['width']/data_width*.97
     y_scale = img_viewer['height']/data_height*.97
     scale = min(y_scale, x_scale)
-    img_viewer['x_center'] = data_width/2
-    img_viewer['y_center'] = data_height/2
+    img_viewer['x_center'] = int(math.floor(data_width/2*scale))
+    img_viewer['y_center'] = int(math.floor(data_height/2*scale))
     img_viewer['scale'] = scale
     img_viewer = get_window(img_viewer)
     return img_viewer
@@ -91,7 +91,7 @@ def get_img_info(file_info, save_path, img_viewer=None,
     else:
         # For non-FITS formats, only a single large image is loaded, which 
         try:
-            import Image
+            from PIL import Image
         except ImportError:
             raise ToyzJobError(
                 "You must have PIL (Python Imaging Library) installed to "
@@ -111,9 +111,13 @@ def get_img_info(file_info, save_path, img_viewer=None,
             raise ToyzJobError("You must either supply a scale or image viewer parameters")
         if img_viewer['scale']<0:
             img_viewer = get_best_fit(width, height, img_viewer)
+        else:
+            img_viewer = get_window(img_viewer)
         scale = img_viewer['scale']
     elif img_viewer is None:
         img_viewer = {}
+    
+    #print('img_viewer', img_viewer)
     
     img_info = {
         'frame': frame,
@@ -132,6 +136,7 @@ def get_img_info(file_info, save_path, img_viewer=None,
     img_info['columns'] = int(math.ceil(img_info['scaled_width']/file_info['tile_width']))
     img_info['rows'] = int(math.ceil(img_info['scaled_height']/file_info['tile_height']))
     img_info['viewer'] = img_viewer
+    #print('img_info:', img_info)
     return img_info
 
 def scale_data(file_info, img_info, tile_info, data):
@@ -168,23 +173,37 @@ def get_tile_info(file_info, img_info):
     Get info for all tiles available in the viewer. If the tile has not been loaded yet,
     it is added to the new_tiles array.
     """
-    x0 = img_info['viewer']['x0']
-    y0 = img_info['viewer']['y0']
-    xf = img_info['viewer']['xf']
-    yf = img_info['viewer']['yf']
+    x0 = img_info['viewer']['left']/img_info['scale']
+    y0 = img_info['viewer']['bottom']/img_info['scale']
+    xf = img_info['viewer']['right']/img_info['scale']
+    yf = img_info['viewer']['top']/img_info['scale']
+    
+    #print('previous tiles', img_info['tiles'])
+    #print('tile dims', x0,y0,xf,yf)
+    #print('viewer dims', img_info['viewer']['left'],img_info['viewer']['bottom'],
+    #    img_info['viewer']['right'], img_info['viewer']['top'])
     
     all_tiles = []
     new_tiles = {}
     
-    minCol = int(max(0,math.floor(x0/file_info['tile_width'])))
-    maxCol=int(min(img_info['columns'],math.ceil(xf/file_info['tile_width'])))
-    minRow = int(max(0,math.floor(y0/file_info['tile_height'])))
-    maxRow = int(min(img_info['rows'],math.ceil(yf/file_info['tile_height'])))
+    #minCol = int(max(0,math.floor(x0/file_info['tile_width'])))
+    #maxCol=int(min(img_info['columns'],math.ceil(xf/file_info['tile_width'])))
+    #minRow = int(max(0,math.floor(y0/file_info['tile_height'])))
+    #maxRow = int(min(img_info['rows'],math.ceil(yf/file_info['tile_height'])))
+    minCol = int(max(1,math.floor(img_info['viewer']['left']/file_info['tile_width'])))-1
+    maxCol=int(min(img_info['columns'],
+        math.ceil(img_info['viewer']['right']/file_info['tile_width'])))
+    minRow = int(max(1,math.floor(img_info['viewer']['bottom']/file_info['tile_height'])))-1
+    maxRow = int(min(img_info['rows'],
+        math.ceil(img_info['viewer']['top']/file_info['tile_height'])))
+    
+    #print('cols:', minCol, maxCol, img_info['columns'])
+    #print('rows:', minRow, maxRow, img_info['rows'])
     
     block_width = int(math.ceil(file_info['tile_width']/img_info['scale']))
     block_height = int(math.ceil(file_info['tile_height']/img_info['scale']))
-    file_info['tile_height'] = block_height * img_info['scale']
-    file_info['tile_width'] = block_width * img_info['scale']
+    #file_info['tile_height'] = block_height * img_info['scale']
+    #file_info['tile_width'] = block_width * img_info['scale']
     
     for row in range(minRow,maxRow):
         y0 = row*file_info['tile_height']
@@ -227,11 +246,12 @@ def get_tile_info(file_info, img_info):
                     'y': row*file_info['tile_height']
                 }
                 new_tiles[str(col)+','+str(row)] = tile
+    print('new tiles', new_tiles.keys())
     return all_tiles, new_tiles
 
 def create_tile(file_info, img_info, tile_info):
     try:
-        import Image
+        from PIL import Image
     except ImportError:
         raise ToyzJobError(
             "You must have PIL (Python Imaging Library) installed to "
@@ -262,9 +282,9 @@ def create_tile(file_info, img_info, tile_info):
         data = np.flipud(data)
         
         #TODO: remove the following test lines
-        #img_info['px_min'] = 0
-        #img_info['px_max'] = 500
-        #img_info['colormap'] = 'afmhot'
+        img_info['px_min'] = 0
+        img_info['px_max'] = 500
+        img_info['colormap'] = 'afmhot'
         
         norm = Normalize(img_info['px_min'], img_info['px_max'], True)
         colormap = getattr(cmap, img_info['colormap'])
@@ -283,12 +303,12 @@ def create_tile(file_info, img_info, tile_info):
             img_info['tile_height']*img_info['scale']),
             Image.ANTIALIAS)
     width, height = img.size
-    print('width:', width)
-    print('height', height)
+    #print('width:', width)
+    #print('height', height)
     if width>0 and height>0:
         path = os.path.dirname(tile_info['new_filepath'])
         core.create_paths([path])
-        img.save(tile_info['new_filepath'])
+        img.save(tile_info['new_filepath'], format='PNG')
     else:
         return False
     return True

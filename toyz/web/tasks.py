@@ -569,7 +569,7 @@ def get_img_info(toyz_settings, tid, params):
     Map a large image into a set of tiles that make up the larger image
     """
     import toyz.web.viewer as viewer
-    
+    print('************************************************')
     core.check4keys(params, ['viewer', 'file_info'])
     if tid['user_id']!='admin':
         permissions = file_access.get_parent_permissions(
@@ -594,7 +594,7 @@ def get_img_info(toyz_settings, tid, params):
         'img_info': img_info,
         'new_tiles': result['new_tiles']
     }
-    
+    print('************************************************')
     return response
 
 def get_tile_info(toyz_settings, tid, params):

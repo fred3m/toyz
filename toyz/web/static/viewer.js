@@ -158,11 +158,22 @@ Toyz.Viewer.Controls = function(parent){
         },
     };
     // Zoom controls
+    this.zoom_input = {
+        inputClass: 'viewer-ctrl-zoom-btn viewer-ctrl-input',
+        func: {
+            change: function(event){
+                if(this.change_scale===true){
+                    this.set_scale(event.currentTarget.value);
+                };
+            }.bind(parent)
+        },
+    };
     this.zoom_out = {
         inputClass: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-out',
         func: {
-            click: function(){
-            }.bind(parent)
+            click: function(zoom_input, event){
+                this.press_zoom('out', zoom_input.$input);
+            }.bind(parent, this.zoom_input)
         },
         prop: {
             type: 'image',
@@ -173,8 +184,9 @@ Toyz.Viewer.Controls = function(parent){
     this.zoom_in = {
         inputClass: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-in',
         func: {
-            click: function(){
-            }.bind(parent)
+            click: function(zoom_input, event){
+                this.press_zoom('in', zoom_input.$input);
+            }.bind(parent, this.zoom_input)
         },
         prop: {
             type: 'image',
@@ -186,6 +198,7 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-bestfit',
         func: {
             click: function(){
+                this.set_scale(-1);
             }.bind(parent)
         },
         prop: {
@@ -198,19 +211,13 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-fullsize',
         func: {
             click: function(){
+                this.set_scale(1);
             }.bind(parent)
         },
         prop: {
             type: 'image',
             title: 'zoom to 100%',
             value: ''
-        },
-    };
-    this.zoom_input = {
-        inputClass: 'viewer-ctrl-zoom-btn viewer-ctrl-input',
-        func: {
-            click: function(){
-            }.bind(parent)
         },
     };
     // Viewer controls
@@ -379,16 +386,45 @@ Toyz.Viewer.Controls = function(parent){
         type: 'lbl',
         lbl: 'Coordinates: ',
         inputClass: 'viewer-ctrl-info-btn viewer-ctrl-info-coord-div',
+        events: {
+            mousemove: function(ctrls, event){
+                var $input = ctrls.img_coords.$input;
+                var file_info = this.frames[this.viewer_frame].file_info;
+                if(!(file_info===undefined) && file_info.hasOwnProperty('frame') &&
+                    file_info.images[file_info.frame].hasOwnProperty('height')
+                ){
+                    var img_info = file_info.images[file_info.frame];
+                    var coords = 
+                        (Math.round(
+                            (event.target.offsetLeft+event.offsetX)/img_info.scale*1000
+                        )/1000).toString()
+                        +','+(Math.round((img_info.height
+                             -(event.target.offsetTop+event.offsetY)/img_info.scale)*1000
+                        )/1000).toString();
+                    $input.text(coords);
+                };
+            }.bind(parent, this)
+        }
     };
     this.physical_coords = {
         type: 'lbl',
         lbl: 'Physical Coords: ',
         inputClass: 'viewer-ctrl-info-btn viewer-ctrl-info-coord-div',
+        events: {
+            mousemove: function(ctrls, event){
+                
+            }.bind(parent, this)
+        }
     };
     this.pixel_val = {
         type: 'lbl',
         lbl: 'Pixel Value: ',
         inputClass: 'viewer-ctrl-info-btn',
+        events: {
+            mousemove: function(ctrls, event){
+                
+            }.bind(parent, this)
+        }
     };
 };
 
@@ -505,6 +541,13 @@ Toyz.Viewer.Contents = function(params){
         }.bind(this), 250))
     }.bind(this));
     
+    // Update coords on mouse move
+    this.$tile_div.mousemove(function(event){
+        for(var i=0; i<this.events.mousemove.length; i++){
+            this.events.mousemove[i](event);
+        };
+    }.bind(this));
+    
     // Use default control panel unless another is specified
     if(!params.hasOwnProperty('controls')){
         params.controls = {
@@ -543,12 +586,12 @@ Toyz.Viewer.Contents.prototype.set_window = function(viewer_left, viewer_top){
     if(!(file_info===undefined)){
         var img_info = file_info.images[file_info.frame];
         var viewer = img_info.viewer;
-        viewer.x0 = viewer_left;
-        viewer.xf = viewer.x0 + viewer.width;
-        viewer.y0 = img_info.scaled_height-img_info.viewer.height-viewer_top;
-        viewer.yf = viewer.y0 + img_info.viewer.height;
-        viewer.x_center = viewer.x0 + Math.round(viewer.width/2);
-        viewer.y_center = viewer.y0 + Math.round(viewer.height/2);
+        viewer.left = viewer_left;
+        viewer.right = viewer.left + viewer.width;
+        viewer.bottom = img_info.scaled_height-img_info.viewer.height-viewer_top;
+        viewer.top = viewer.bottom + img_info.viewer.height;
+        viewer.x_center = viewer.left + Math.round(viewer.width/2);
+        viewer.y_center = viewer.bottom + Math.round(viewer.height/2);
     };
 };
 Toyz.Viewer.Contents.prototype.update = function(params, param_val){
@@ -582,10 +625,10 @@ Toyz.Viewer.Contents.prototype.load_large_img = function(filepath){
                 viewer: {
                     width: this.$tile_div.width(),
                     height: this.$tile_div.height(),
-                    x0: 0,
-                    y0: 0,
-                    xf: this.$tile_div.width(),
-                    yf: this.$tile_div.height(),
+                    left: 0,
+                    bottom: 0,
+                    right: this.$tile_div.width(),
+                    top: this.$tile_div.height(),
                     x_center: Math.round(this.$tile_div.width()),
                     y_center: Math.round(this.$tile_div.width()),
                     scale: -1
@@ -609,17 +652,24 @@ Toyz.Viewer.Contents.prototype.get_best_fit = function(width, height){
 };
 Toyz.Viewer.Contents.prototype.get_img_info = function(viewer_frame, file_frame){
     var file_info = $.extend(true, {}, this.frames[viewer_frame].file_info);
+    var img_viewer = {
+        width: this.$tile_div.width(),
+        height: this.$tile_div.height(),
+        scale: -1
+    };
+    if(file_info.images.hasOwnProperty(file_frame) && file_info.images[file_frame].viewer){
+        img_viewer = file_info.images[file_frame].viewer;
+        console.log('changing window', img_viewer);
+    }else{
+        console.log('file frame', file_frame, file_info.images[file_frame]);
+    };
     this.workspace.websocket.send_task(
         {
             module: 'toyz.web.tasks',
             task: 'get_img_info',
             parameters: {
                 file_info: file_info,
-                viewer: {
-                    width: this.$tile_div.width(),
-                    height: this.$tile_div.height(),
-                    scale: -1
-                },
+                viewer: img_viewer,
                 frame: file_frame
             }
         },
@@ -670,10 +720,17 @@ Toyz.Viewer.Contents.prototype.get_img_tiles = function(viewer_frame, file_frame
     // No need to send a large json object with image data that is not needed
     delete file_info['images'];
     
-    this.$tile_div.scrollTop(img_info.scaled_height-img_info.viewer.height-img_info.viewer.y0);
-    this.$tile_div.scrollLeft(img_info.viewer.x0);
+    this.$tile_div.scrollTop(
+        img_info.scaled_height-img_info.viewer.height-img_info.viewer.bottom
+    );
+    this.$tile_div.scrollLeft(img_info.viewer.left);
+    
+    //console.log('scaled dims', img_info.scaled_width, img_info.scaled_height);
+    //console.log('scrolling to',img_info.viewer.left,img_info.scaled_height-img_info.viewer.height-img_info.viewer.bottom);
+    //console.log('viewer set for scrolling', img_info.viewer);
     for(var tile_idx in tiles){
         if(tiles.hasOwnProperty(tile_idx)){
+            //console.log('tile', tiles[tile_idx]);
             this.workspace.websocket.send_task(
                 {
                     module: 'toyz.web.tasks',
@@ -694,6 +751,12 @@ Toyz.Viewer.Contents.prototype.get_img_tiles = function(viewer_frame, file_frame
             file_frame: file_frame
         });
     };
+    // Avoid a loop since changing the scale triggers the viewer to reload the image
+    this.change_scale = false;
+    this.ctrl_panel.gui.setParams(this.ctrl_panel.gui.params, {
+        zoom_input: Number(Math.round(img_info.viewer.scale*10000)/10000)
+    }, false);
+    this.change_scale = true;
 };
 Toyz.Viewer.Contents.prototype.rx_tile_info = function(
         viewer_frame, file_frame, tile_idx, result){
@@ -795,10 +858,59 @@ Toyz.Viewer.Contents.prototype.change_viewer_frame = function(new_frame){
             value: this.frames[new_frame].file_info.frame
         };
     }
-    console.log('values', values);
+    //console.log('values', values);
     this.ctrl_panel.gui.setParams(this.ctrl_panel.gui.params, values, false);
     this.$tile_div.empty();
     if(this.frames[this.viewer_frame].hasOwnProperty('$viewer')){
         this.$tile_div.append(this.frames[this.viewer_frame].$viewer);
     };
 }
+Toyz.Viewer.Contents.prototype.get_scale_index = function(scale){
+    var index={
+        previous:Toyz.Viewer.scales[1],
+        next:Toyz.Viewer.scales[Toyz.Viewer.scales.length-1]
+    };
+    for(var i=1;i<Toyz.Viewer.scales.length;i++){
+        if(scale>Toyz.Viewer.scales[i]){
+            index.previous=Toyz.Viewer.scales[i];
+        }else if(scale<Toyz.Viewer.scales[i]){
+            index.next=Toyz.Viewer.scales[i];
+            return index;
+        }else if(scale==Toyz.Viewer.scales[i]){
+            if(i>0){
+                index.previous=Toyz.Viewer.scales[i-1];
+            }else{
+                index.previous=Toyz.Viewer.scales[i];
+            };
+            if(i<Toyz.Viewer.scales.length-1){
+                index.next=Toyz.Viewer.scales[i+1];
+            }else{
+                index.next=Toyz.Viewer.scales[i];
+            };
+            return index;
+        }
+    };
+    return index;
+};
+Toyz.Viewer.Contents.prototype.press_zoom = function(direction, $scale){
+    var index = this.get_scale_index($scale.val());
+    if(direction=='in'){
+        $scale.val(index.next);
+    }else if(direction=='out'){
+        $scale.val(index.previous);
+    }else{
+        alert("ERROR: unexpected zoom direction, please check your code");
+    };
+    this.set_scale($scale.val());
+};
+Toyz.Viewer.Contents.prototype.set_scale = function(scale){
+    var file_info = this.frames[this.viewer_frame].file_info;
+    var old_scale = file_info.images[file_info.frame].viewer.scale;
+    this.frames[this.viewer_frame].$viewer.empty();
+    file_info.images[file_info.frame].viewer.x_center = 
+        scale/old_scale*file_info.images[file_info.frame].viewer.x_center;
+    file_info.images[file_info.frame].viewer.y_center = 
+        scale/old_scale*file_info.images[file_info.frame].viewer.y_center;
+    file_info.images[file_info.frame].viewer.scale = Number(scale);
+    this.get_img_info(this.viewer_frame, file_info.frame);
+};
