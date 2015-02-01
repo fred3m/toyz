@@ -336,7 +336,8 @@ Toyz.Viewer.Controls = function(parent){
     this.rect = {
         inputClass: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-resize',
         func: {
-            click: function(){
+            click: function(event){
+                this.change_active_tool('rect', event.currentTarget);
             }.bind(parent)
         },
         prop: {
@@ -344,11 +345,58 @@ Toyz.Viewer.Controls = function(parent){
             title: 'select rectangle to zoom',
             value: ''
         },
+        events: {
+            mousedown: function(event){
+                if(this.tools.active_tool=='rect'){
+                    this.tools.rect.down_position = {
+                        x: event.target.offsetLeft+event.offsetX,
+                        y: event.target.offsetTop+event.offsetY
+                    };
+                    console.log('down_position', this.tools.rect.down_position);
+                    this.tools.rect.$rect = Toyz.Viewer.DrawingTools.draw_rect(
+                        this.frames[this.viewer_frame].$viewer, 
+                        this.tools.rect.down_position.x,
+                        this.tools.rect.down_position.y,
+                        1, 1
+                    );
+                }; 
+            }.bind(parent),
+            mousemove: function(event){
+                if(this.mousedown && this.tools.rect.hasOwnProperty('down_position')){
+                    var old_pos = this.tools.rect.down_position;
+                    var new_pos = {
+                        x: event.target.offsetLeft+event.offsetX,
+                        y: event.target.offsetTop+event.offsetY
+                    };
+                    this.tools.rect.$rect.width(new_pos.x-old_pos.x);
+                    this.tools.rect.$rect.height(new_pos.y-old_pos.y);
+                }
+            }.bind(parent),
+            mouseup: function(event){
+                if(this.tools.rect.hasOwnProperty('down_position')){
+                    var old_pos = this.tools.rect.down_position;
+                    var new_pos = {
+                        x: event.target.offsetLeft+event.offsetX,
+                        y: event.target.offsetTop+event.offsetY
+                    };
+                    var file_info = this.frames[this.viewer_frame].file_info;
+                    var img_info = file_info.images[file_info.frame];
+                    var x_scale = img_info.viewer.width/(new_pos.x-old_pos.x);
+                    var y_scale = img_info.viewer.height/(new_pos.y-old_pos.y);
+                    var scale = Math.min(x_scale, y_scale)*img_info.scale;
+                    img_info.viewer.x_center = Math.round((new_pos.x+old_pos.x)/2);
+                    img_info.viewer.y_center = Math.round((new_pos.y+old_pos.y)/2);
+                    this.set_scale(scale);
+                    delete this.tools.rect.down_position;
+                };
+            }.bind(parent)
+        }
     };
     this.center = {
         inputClass: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-center',
         func: {
-            click: function(){
+            click: function(event){
+                this.change_active_tool('center', event.currentTarget);
             }.bind(parent)
         },
         prop: {
@@ -356,11 +404,24 @@ Toyz.Viewer.Controls = function(parent){
             title: 'center image on click',
             value: ''
         },
+        events: {
+            mousedown: function(event){
+                if(this.tools.active_tool=='center'){
+                    var x = event.target.offsetLeft+event.offsetX;
+                    var y = event.target.offsetTop+event.offsetY;
+                    var file_info = this.frames[this.viewer_frame].file_info;
+                    var img_info = file_info.images[file_info.frame];
+                    this.$tile_div.scrollLeft(x-Math.round(img_info.viewer.width/2));
+                    this.$tile_div.scrollTop(y-Math.round(img_info.viewer.height/2));
+                };
+            }.bind(parent)
+        }
     };
     this.hist = {
         inputClass: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-hist',
         func: {
             click: function(){
+                this.change_active_tool('hist', event.currentTarget);
             }.bind(parent)
         },
         prop: {
@@ -373,6 +434,7 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-surface',
         func: {
             click: function(){
+                this.change_active_tool('surface', event.currentTarget);
             }.bind(parent)
         },
         prop: {
@@ -542,10 +604,27 @@ Toyz.Viewer.Contents = function(params){
         }.bind(this), 250))
     }.bind(this));
     
-    // Update coords on mouse move
+    // Mousedown functions
+    this.mousedown = false;
+    this.$tile_div.mousedown(function(event){
+        this.mousedown = true;
+        for(var i=0; i<this.events.mousedown.length; i++){
+            this.events.mousedown[i](event);
+        };
+    }.bind(this));
+    
+    // Mousemove functions
     this.$tile_div.mousemove(function(event){
         for(var i=0; i<this.events.mousemove.length; i++){
             this.events.mousemove[i](event);
+        };
+    }.bind(this));
+    
+    // Mouseup functions
+    this.$tile_div.mouseup(function(event){
+        this.mousedown = false;
+        for(var i=0; i<this.events.mouseup.length; i++){
+            this.events.mouseup[i](event);
         };
     }.bind(this));
     
@@ -560,7 +639,12 @@ Toyz.Viewer.Contents = function(params){
             Zoom: ['zoom_out', 'zoom_in', 'zoom_bestfit', 'zoom_fullsize', 'zoom_input'],
             Tools: ['rect', 'center', 'hist', 'surface'],
             'Image Info': ['img_coords', 'physical_coords', 'pixel_val']
-        }
+        };
+    };
+    // Setup variables used by different tools
+    this.tools = {active_tool: ''};
+    for(var i=0; i<params.controls.Tools.length; i++){
+        this.tools[params.controls.Tools[i]] = {};
     };
     
     // Create control panel and bind any events to the viewer
@@ -637,7 +721,7 @@ Toyz.Viewer.Contents.prototype.load_large_img = function(filepath){
             }
         },
         function(frame, result){
-            console.log('file info', result.file_info);
+            //console.log('file info', result.file_info);
             this.frames[frame].file_info = result.file_info;
             var img_info = result.file_info.images[result.file_info.frame];
             this.frames[frame].$viewer = $('<div/>').addClass('viewer-div');
@@ -660,9 +744,9 @@ Toyz.Viewer.Contents.prototype.get_img_info = function(viewer_frame, file_frame)
     };
     if(file_info.images.hasOwnProperty(file_frame) && file_info.images[file_frame].viewer){
         img_viewer = file_info.images[file_frame].viewer;
-        console.log('changing window', img_viewer);
+        //console.log('changing window', img_viewer);
     }else{
-        console.log('file frame', file_frame, file_info.images[file_frame]);
+        console.log('file frame, img_info', file_frame, file_info.images[file_frame]);
     };
     this.workspace.websocket.send_task(
         {
@@ -729,7 +813,7 @@ Toyz.Viewer.Contents.prototype.get_img_tiles = function(viewer_frame, file_frame
     //console.log('viewer set for scrolling', img_info.viewer);
     for(var tile_idx in tiles){
         if(tiles.hasOwnProperty(tile_idx)){
-            console.log('tile', tiles[tile_idx]);
+            //console.log('tile', tiles[tile_idx]);
             this.workspace.websocket.send_task(
                 {
                     module: 'toyz.web.tasks',
@@ -782,6 +866,7 @@ Toyz.Viewer.Contents.prototype.rx_tile_info = function(
             this.frames[viewer_frame].$viewer.append($img);
         }.bind(this, img, viewer_frame, img_info, tile_idx);
         img.src = '/file'+img_info.tiles[tile_idx].new_filepath;
+        img.ondragstart = function(){return false;};
     }else{
         console.log('tile did not need to be created');
     };
@@ -929,4 +1014,53 @@ Toyz.Viewer.Contents.prototype.get_coords = function(x, y, img_info){
         x = img_info.width*img_info.scale-x;
     };
     return [x,y];
+};
+Toyz.Viewer.Contents.prototype.change_active_tool = function(new_tool, new_btn){
+    if(!(this.tools.$active_btn===undefined)){
+        this.tools.$active_btn.css('background-color', '#DEDEDE');
+    };
+    this.tools.$active_btn = $(new_btn);
+    this.tools.$active_btn.css('background-color', '#AAAAAA');
+    this.tools.active_tool = new_tool;
+}
+Toyz.Viewer.DrawingTools = {
+    draw_circle: function($div, x, y, radius, css, group){
+        var style = $.extend(true, {
+            border: "1px solid red",
+            width: 2*radius,
+            height: 2*radius,
+            left: x+'px',
+            top: y+'px',
+            'border-radius': '50%',
+            position: 'absolute'
+        }, css);
+        var $circle = $('<div/>')
+            .addClass('viewer-circle-div')
+            .css(style);
+        if(!(group===undefined)){
+            $circle.addClass(group);
+        };
+        $div.append($circle);
+        return $circle;
+    },
+    draw_rect: function($div, x, y, width, height, css, group){
+        var style = $.extend(true, {
+            border: "2px solid red",
+            width: width,
+            height: height,
+            left: x+'px',
+            top: y+'px',
+            position: 'absolute'
+        }, css);
+        console.log('rect style', style);
+        var $rect = $('<div/>')
+            .addClass('viewer-rect-div')
+            .addClass('')
+            .css(style);
+        if(!(group===undefined)){
+            $rect.addClass(group);
+        };
+        $div.append($rect);
+        return $rect;
+    }
 };

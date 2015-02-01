@@ -153,28 +153,35 @@ def scale_data(file_info, img_info, tile_info, data):
     if img_info['scale']==1:
         data = data[tile_info['y0_idx']:tile_info['yf_idx'],
             tile_info['x0_idx']:tile_info['xf_idx']]
-    elif img_info['scale']>1:
-        #from scipy.ndimage.interpolation import zoom
-        data = data[tile_info['y0_idx']:tile_info['yf_idx'],
-            tile_info['x0_idx']:tile_info['xf_idx']]
-        data = np.kron(data, np.ones((img_info['scale'],img_info['scale'])))
-        #data = zoom(data, img_info['scale'], order=0)
-    elif img_info['scale']<1 and img_info['scale']>0:
-        tile_width = min(file_info['tile_width'],
-            int((img_info['width']-tile_info['x0_idx'])*img_info['scale'])-1)
-        tile_height = min(file_info['tile_height'],
-            int((img_info['height']-tile_info['y0_idx'])*img_info['scale'])-1)
-        
-        xmax = min(img_info['width']-1, tile_info['xf_idx'])
-        ymax = min(img_info['height']-1, tile_info['yf_idx'])
-        
-        xIdx=np.linspace(tile_info['x0_idx'], xmax, tile_width)
-        yIdx=np.linspace(tile_info['y0_idx'], ymax, tile_height)
-        xIdx=np.array(xIdx,np.int)
-        yIdx=np.reshape(np.array(yIdx,np.int),(yIdx.size,1))
-        data = data[yIdx,xIdx]
     else:
-        raise ToyzJobError('Scale must be a positive number')
+        try:
+            import scipy.ndimage
+            print('using scipy')
+            data = data[tile_info['y0_idx']:tile_info['yf_idx'],
+                tile_info['x0_idx']:tile_info['xf_idx']]
+            data = scipy.ndimage.zoom(data, img_info['scale'], order=0)
+        except ImportError:
+            if img_info['scale']>1:
+                data = data[tile_info['y0_idx']:tile_info['yf_idx'],
+                    tile_info['x0_idx']:tile_info['xf_idx']]
+                data = np.kron(data, np.ones((img_info['scale'],img_info['scale'])))
+                #data = zoom(data, img_info['scale'], order=0)
+            elif img_info['scale']<1 and img_info['scale']>0:
+                tile_width = min(file_info['tile_width'],
+                    int((img_info['width']-tile_info['x0_idx'])*img_info['scale'])-1)
+                tile_height = min(file_info['tile_height'],
+                    int((img_info['height']-tile_info['y0_idx'])*img_info['scale'])-1)
+        
+                xmax = min(img_info['width']-1, tile_info['xf_idx'])
+                ymax = min(img_info['height']-1, tile_info['yf_idx'])
+        
+                xIdx=np.linspace(tile_info['x0_idx'], xmax, tile_width)
+                yIdx=np.linspace(tile_info['y0_idx'], ymax, tile_height)
+                xIdx=np.array(xIdx,np.int)
+                yIdx=np.reshape(np.array(yIdx,np.int),(yIdx.size,1))
+                data = data[yIdx,xIdx]
+            else:
+                raise ToyzJobError('Scale must be a positive number')
     return data
 
 def get_tile_info(file_info, img_info):
@@ -182,18 +189,6 @@ def get_tile_info(file_info, img_info):
     Get info for all tiles available in the viewer. If the tile has not been loaded yet,
     it is added to the new_tiles array.
     """
-    #viewer_xmin, viewer_xmax = sorted([img_info['viewer']['left'],img_info['viewer']['right']])
-    #viewer_ymin, viewer_ymax = sorted([img_info['viewer']['bottom'],img_info['viewer']['top']])
-    
-    #x0 = viewer_xmin/img_info['scale']
-    #xf = viewer_xmax/img_info['scale']
-    #y0 = viewer_xmax/img_info['scale']
-    #yf = viewer_ymax/img_info['scale']
-    #print('previous tiles', img_info['tiles'])
-    #print('tile dims', x0,y0,xf,yf)
-    #print('viewer dims', img_info['viewer']['left'],img_info['viewer']['bottom'],
-    #    img_info['viewer']['right'], img_info['viewer']['top'])
-    
     all_tiles = []
     new_tiles = {}
     if img_info['invert_x']:
@@ -212,9 +207,6 @@ def get_tile_info(file_info, img_info):
     minRow = int(max(1,math.floor(ymin/file_info['tile_height'])))-1
     maxRow = int(min(img_info['rows'],math.ceil(ymax/file_info['tile_height'])))
     
-    #print('cols:', minCol, maxCol, img_info['columns'])
-    #print('rows:', minRow, maxRow, img_info['rows'])
-    
     block_width = int(math.ceil(file_info['tile_width']/img_info['scale']))
     block_height = int(math.ceil(file_info['tile_height']/img_info['scale']))
     
@@ -222,9 +214,6 @@ def get_tile_info(file_info, img_info):
         y0 = row*file_info['tile_height']
         yf = (row+1)*file_info['tile_height']
         y0_idx = int(y0/img_info['scale'])
-        #yf_idx = int(math.ceil(yf/img_info['scale']))
-        #y0_idx = block_height * row
-        #yf_idx = block_height * (row+1)
         yf_idx = min(y0_idx + block_height, img_info['height'])
         for col in range(minCol,maxCol):
             all_tiles.append(str(col)+','+str(row))
@@ -232,9 +221,6 @@ def get_tile_info(file_info, img_info):
                 x0 = col*file_info['tile_width']
                 xf = (col+1)*file_info['tile_width']
                 x0_idx = int(x0/img_info['scale'])
-                #xf_idx = int(math.ceil(xf/img_info['scale']))
-                #x0_idx = block_width * col
-                #xf_idx = block_width * (col+1)
                 xf_idx = min(x0_idx+block_width, img_info['width'])
                 filename_params = [file_info['filename'], 
                     x0_idx, xf_idx, y0_idx, yf_idx, 
@@ -326,13 +312,8 @@ def create_tile(file_info, img_info, tile_info):
             tile_info['x0_idx'], tile_info['y0_idx'], 
             tile_info['xf_idx'], 
             tile_info['yf_idx']))
-        print('width', tile_info['xf_idx']-tile_info['x0_idx'])
-        print('height', tile_info['yf_idx']-tile_info['y0_idx'])
-        print('img size', img.size)
-        img = img.resize((tile_info['width'], tile_info['height']),Image.ANTIALIAS)
+        img = img.resize((tile_info['width'], tile_info['height']),Image.NEAREST)
     width, height = img.size
-    print('width:', width)
-    print('height', height)
     if width>0 and height>0:
         path = os.path.dirname(tile_info['new_filepath'])
         core.create_paths([path])
