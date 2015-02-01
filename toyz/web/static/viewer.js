@@ -394,13 +394,14 @@ Toyz.Viewer.Controls = function(parent){
                     file_info.images[file_info.frame].hasOwnProperty('height')
                 ){
                     var img_info = file_info.images[file_info.frame];
+                    var x = event.target.offsetLeft+event.offsetX;
+                    var y = event.target.offsetTop+event.offsetY;
+                    var xy = this.get_coords(x, y, img_info);
+                    x = xy[0];
+                    y = xy[1];
                     var coords = 
-                        (Math.round(
-                            (event.target.offsetLeft+event.offsetX)/img_info.scale*1000
-                        )/1000).toString()
-                        +','+(Math.round((img_info.height
-                             -(event.target.offsetTop+event.offsetY)/img_info.scale)*1000
-                        )/1000).toString();
+                        (Math.round(x/img_info.scale*1000)/1000).toString()+','
+                        +(Math.round(y/img_info.scale*1000)/1000).toString();
                     $input.text(coords);
                 };
             }.bind(parent, this)
@@ -588,10 +589,10 @@ Toyz.Viewer.Contents.prototype.set_window = function(viewer_left, viewer_top){
         var viewer = img_info.viewer;
         viewer.left = viewer_left;
         viewer.right = viewer.left + viewer.width;
-        viewer.bottom = img_info.scaled_height-img_info.viewer.height-viewer_top;
-        viewer.top = viewer.bottom + img_info.viewer.height;
         viewer.x_center = viewer.left + Math.round(viewer.width/2);
-        viewer.y_center = viewer.bottom + Math.round(viewer.height/2);
+        viewer.top = viewer_top;
+        viewer.bottom = viewer.top+viewer.height;
+        viewer.y_center = viewer.top + Math.round(viewer.height/2);
     };
 };
 Toyz.Viewer.Contents.prototype.update = function(params, param_val){
@@ -636,7 +637,7 @@ Toyz.Viewer.Contents.prototype.load_large_img = function(filepath){
             }
         },
         function(frame, result){
-            //console.log('file info', result.file_info);
+            console.log('file info', result.file_info);
             this.frames[frame].file_info = result.file_info;
             var img_info = result.file_info.images[result.file_info.frame];
             this.frames[frame].$viewer = $('<div/>').addClass('viewer-div');
@@ -720,9 +721,7 @@ Toyz.Viewer.Contents.prototype.get_img_tiles = function(viewer_frame, file_frame
     // No need to send a large json object with image data that is not needed
     delete file_info['images'];
     
-    this.$tile_div.scrollTop(
-        img_info.scaled_height-img_info.viewer.height-img_info.viewer.bottom
-    );
+    this.$tile_div.scrollTop(img_info.viewer.top);
     this.$tile_div.scrollLeft(img_info.viewer.left);
     
     //console.log('scaled dims', img_info.scaled_width, img_info.scaled_height);
@@ -730,7 +729,7 @@ Toyz.Viewer.Contents.prototype.get_img_tiles = function(viewer_frame, file_frame
     //console.log('viewer set for scrolling', img_info.viewer);
     for(var tile_idx in tiles){
         if(tiles.hasOwnProperty(tile_idx)){
-            //console.log('tile', tiles[tile_idx]);
+            console.log('tile', tiles[tile_idx]);
             this.workspace.websocket.send_task(
                 {
                     module: 'toyz.web.tasks',
@@ -766,12 +765,20 @@ Toyz.Viewer.Contents.prototype.rx_tile_info = function(
         var img = new Image();
         img.onload = function(img, viewer_frame, img_info, tile_idx) {
             var tile = img_info.tiles[tile_idx];
+            var tile_pos = {};
+            if(img_info.invert_x){
+                tile_pos['right'] = tile.right+'px';
+            }else{
+                tile_pos['left'] = tile.left+'px';
+            };
+            if(img_info.invert_y){
+                tile_pos['bottom'] = tile.bottom+'px';
+            }else{
+                tile_pos['top'] = tile.top+'px';
+            }
             var $img = $(img)
                 .addClass('viewer-tile-img')
-                .css({
-                    left: tile.left+'px',
-                    bottom: tile.bottom+'px'
-                });
+                .css(tile_pos);
             this.frames[viewer_frame].$viewer.append($img);
         }.bind(this, img, viewer_frame, img_info, tile_idx);
         img.src = '/file'+img_info.tiles[tile_idx].new_filepath;
@@ -913,4 +920,13 @@ Toyz.Viewer.Contents.prototype.set_scale = function(scale){
         scale/old_scale*file_info.images[file_info.frame].viewer.y_center;
     file_info.images[file_info.frame].viewer.scale = Number(scale);
     this.get_img_info(this.viewer_frame, file_info.frame);
+};
+Toyz.Viewer.Contents.prototype.get_coords = function(x, y, img_info){
+    if(img_info.invert_y===true){
+        y = img_info.height*img_info.scale-y;
+    };
+    if(img_info.invert_x===true){
+        x = img_info.width*img_info.scale-x;
+    };
+    return [x,y];
 };

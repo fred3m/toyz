@@ -45,9 +45,9 @@ def get_file_info(filepath, tile_height=200, tile_width=400):
 
 def get_window(viewer):
     viewer['left']=int(viewer['x_center']-viewer['width']/2)
-    viewer['bottom']=int(viewer['y_center']-viewer['height']/2)
+    viewer['bottom']=int(viewer['y_center']+viewer['height']/2)
     viewer['right']=int(viewer['left']+viewer['width'])
-    viewer['top']=int(viewer['bottom']+viewer['height'])
+    viewer['top']=int(viewer['bottom']-viewer['height'])
     return viewer
 
 def get_best_fit(data_width, data_height, img_viewer):
@@ -67,6 +67,11 @@ def get_img_info(file_info, save_path, img_viewer=None,
         frame=None, scale=None, colormap=None, px_min=None, px_max=None):
     if frame is None:
         frame = next(iter(file_info['images']))
+    
+    #TODO: For now I always invert the y-axis for fits files. Change this in the future
+    # to allow the user to specify
+    invert_x = False
+    invert_y = False
     
     if file_info['ext'] == 'fits' or file_info['ext'] == 'fits.fz':
         try:
@@ -88,6 +93,8 @@ def get_img_info(file_info, save_path, img_viewer=None,
              px_max = float(data.max())
         if colormap is None:
             colormap = 'Spectral'
+        
+        invert_y = True
     else:
         # For non-FITS formats, only a single large image is loaded, which 
         try:
@@ -130,7 +137,9 @@ def get_img_info(file_info, save_path, img_viewer=None,
         'px_min': px_min,
         'px_max': px_max,
         'colormap': colormap,
-        'save_path': save_path
+        'save_path': save_path,
+        'invert_x': invert_x,
+        'invert_y': invert_y
     }
     
     img_info['columns'] = int(math.ceil(img_info['scaled_width']/file_info['tile_width']))
@@ -173,11 +182,13 @@ def get_tile_info(file_info, img_info):
     Get info for all tiles available in the viewer. If the tile has not been loaded yet,
     it is added to the new_tiles array.
     """
-    x0 = img_info['viewer']['left']/img_info['scale']
-    y0 = img_info['viewer']['bottom']/img_info['scale']
-    xf = img_info['viewer']['right']/img_info['scale']
-    yf = img_info['viewer']['top']/img_info['scale']
+    #viewer_xmin, viewer_xmax = sorted([img_info['viewer']['left'],img_info['viewer']['right']])
+    #viewer_ymin, viewer_ymax = sorted([img_info['viewer']['bottom'],img_info['viewer']['top']])
     
+    #x0 = viewer_xmin/img_info['scale']
+    #xf = viewer_xmax/img_info['scale']
+    #y0 = viewer_xmax/img_info['scale']
+    #yf = viewer_ymax/img_info['scale']
     #print('previous tiles', img_info['tiles'])
     #print('tile dims', x0,y0,xf,yf)
     #print('viewer dims', img_info['viewer']['left'],img_info['viewer']['bottom'],
@@ -185,25 +196,27 @@ def get_tile_info(file_info, img_info):
     
     all_tiles = []
     new_tiles = {}
-    
-    #minCol = int(max(0,math.floor(x0/file_info['tile_width'])))
-    #maxCol=int(min(img_info['columns'],math.ceil(xf/file_info['tile_width'])))
-    #minRow = int(max(0,math.floor(y0/file_info['tile_height'])))
-    #maxRow = int(min(img_info['rows'],math.ceil(yf/file_info['tile_height'])))
-    minCol = int(max(1,math.floor(img_info['viewer']['left']/file_info['tile_width'])))-1
-    maxCol=int(min(img_info['columns'],
-        math.ceil(img_info['viewer']['right']/file_info['tile_width'])))
-    minRow = int(max(1,math.floor(img_info['viewer']['bottom']/file_info['tile_height'])))-1
-    maxRow = int(min(img_info['rows'],
-        math.ceil(img_info['viewer']['top']/file_info['tile_height'])))
+    if img_info['invert_x']:
+        pass
+    else:
+        xmin = img_info['viewer']['left']
+        xmax = img_info['viewer']['right']
+    if img_info['invert_y']:
+        ymin = img_info['height']*img_info['scale'] - img_info['viewer']['bottom']
+        ymax = img_info['height']*img_info['scale'] - img_info['viewer']['top']
+    else:
+        ymin = img_info['viewer']['top']
+        ymax = img_info['viewer']['bottom']
+    minCol = int(max(1,math.floor(xmin/file_info['tile_width'])))-1
+    maxCol=int(min(img_info['columns'],math.ceil(xmax/file_info['tile_width'])))
+    minRow = int(max(1,math.floor(ymin/file_info['tile_height'])))-1
+    maxRow = int(min(img_info['rows'],math.ceil(ymax/file_info['tile_height'])))
     
     #print('cols:', minCol, maxCol, img_info['columns'])
     #print('rows:', minRow, maxRow, img_info['rows'])
     
     block_width = int(math.ceil(file_info['tile_width']/img_info['scale']))
     block_height = int(math.ceil(file_info['tile_height']/img_info['scale']))
-    #file_info['tile_height'] = block_height * img_info['scale']
-    #file_info['tile_width'] = block_width * img_info['scale']
     
     for row in range(minRow,maxRow):
         y0 = row*file_info['tile_height']
@@ -212,7 +225,7 @@ def get_tile_info(file_info, img_info):
         #yf_idx = int(math.ceil(yf/img_info['scale']))
         #y0_idx = block_height * row
         #yf_idx = block_height * (row+1)
-        yf_idx = y0_idx + block_height
+        yf_idx = min(y0_idx + block_height, img_info['height'])
         for col in range(minCol,maxCol):
             all_tiles.append(str(col)+','+str(row))
             if str(col)+','+str(row) not in img_info['tiles']:
@@ -222,18 +235,20 @@ def get_tile_info(file_info, img_info):
                 #xf_idx = int(math.ceil(xf/img_info['scale']))
                 #x0_idx = block_width * col
                 #xf_idx = block_width * (col+1)
-                xf_idx = x0_idx+block_width
+                xf_idx = min(x0_idx+block_width, img_info['width'])
                 filename_params = [file_info['filename'], 
                     x0_idx, xf_idx, y0_idx, yf_idx, 
                     "{0:.3f}".format(img_info['scale']), img_info['colormap'], 
                     "{0:.2f}".format(img_info['px_min']), "{0:.2f}".format(img_info['px_max'])]
                 new_filename = '_'.join([str(f) for f in filename_params])
                 new_filepath = os.path.join(img_info['save_path'], new_filename+'.png')
+                tile_width = int((xf_idx-x0_idx)*img_info['scale'])
+                tile_height = int((yf_idx-y0_idx)*img_info['scale'])
                 tile = {
-                    'bottom': y0,
-                    'top': yf,
                     'left': x0,
                     'right': xf,
+                    'top': y0,
+                    'bottom': yf,
                     'y0_idx': y0_idx,
                     'yf_idx': yf_idx,
                     'x0_idx': x0_idx,
@@ -243,8 +258,16 @@ def get_tile_info(file_info, img_info):
                     'row': row,
                     'col': col,
                     'x': col*file_info['tile_width'],
-                    'y': row*file_info['tile_height']
+                    'y': row*file_info['tile_height'],
+                    'width': tile_width,
+                    'height': tile_height
                 }
+                if img_info['invert_y']:
+                    tile['top'] = yf
+                    tile['bottom'] = y0
+                if img_info['invert_x']:
+                    tile['left'] = xf
+                    tile['right'] = x0
                 new_tiles[str(col)+','+str(row)] = tile
     print('new tiles', new_tiles.keys())
     return all_tiles, new_tiles
@@ -258,7 +281,7 @@ def create_tile(file_info, img_info, tile_info):
             "open files of this type"
         )
     
-    if file_info['ext'] == 'fits' or file_ext['ext'] == 'fits.fz':
+    if file_info['ext'] == 'fits' or file_info['ext'] == 'fits.fz':
         try:
             import astropy.io.fits as pyfits
         except ImportError:
@@ -279,7 +302,10 @@ def create_tile(file_info, img_info, tile_info):
         data = hdulist[int(img_info['frame'])].data
         data = scale_data(file_info, img_info, tile_info, data)
         # FITS images have a flipped y-axis from what browsers and other image formats expect
-        data = np.flipud(data)
+        if img_info['invert_y']:
+            data = np.flipud(data)
+        if img_info['invert_x']:
+            data = np.fliplr(data)
         
         #TODO: remove the following test lines
         img_info['px_min'] = 0
@@ -295,16 +321,18 @@ def create_tile(file_info, img_info, tile_info):
         # For non-FITS formats, only a single large image is loaded, which 
         import numpy as np
         
-        img = Image.open(img_info['filepath'])
-        img = img.crop((tile_info['left'], tile_info['bottom'], 
-            img_info['tile_width'], img_info['tile_height']))
-        img = img.resize(
-            (img_info['tile_width']*img_info['scale'], 
-            img_info['tile_height']*img_info['scale']),
-            Image.ANTIALIAS)
+        img = Image.open(file_info['filepath'])
+        img = img.crop((
+            tile_info['x0_idx'], tile_info['y0_idx'], 
+            tile_info['xf_idx'], 
+            tile_info['yf_idx']))
+        print('width', tile_info['xf_idx']-tile_info['x0_idx'])
+        print('height', tile_info['yf_idx']-tile_info['y0_idx'])
+        print('img size', img.size)
+        img = img.resize((tile_info['width'], tile_info['height']),Image.ANTIALIAS)
     width, height = img.size
-    #print('width:', width)
-    #print('height', height)
+    print('width:', width)
+    print('height', height)
     if width>0 and height>0:
         path = os.path.dirname(tile_info['new_filepath'])
         core.create_paths([path])
