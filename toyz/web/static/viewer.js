@@ -724,6 +724,7 @@ Toyz.Viewer.Contents.prototype.load_large_img = function(filepath){
             //console.log('file info', result.file_info);
             this.frames[frame].file_info = result.file_info;
             var img_info = result.file_info.images[result.file_info.frame];
+            this.$tile_div.empty();
             this.frames[frame].$viewer = $('<div/>').addClass('viewer-div');
             this.$tile_div.append(this.frames[frame].$viewer);
             this.frames[frame].$viewer.width(img_info.scaled_width);
