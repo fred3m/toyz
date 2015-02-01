@@ -955,7 +955,11 @@ Toyz.Viewer.Contents.prototype.change_viewer_frame = function(new_frame){
     this.ctrl_panel.gui.setParams(this.ctrl_panel.gui.params, values, false);
     this.$tile_div.empty();
     if(this.frames[this.viewer_frame].hasOwnProperty('$viewer')){
+        var file_info = this.frames[this.viewer_frame].file_info;
+        var img_info = file_info.images[file_info.frame];
         this.$tile_div.append(this.frames[this.viewer_frame].$viewer);
+        this.$tile_div.scrollTop(img_info.viewer.top);
+        this.$tile_div.scrollLeft(img_info.viewer.left);
     };
 }
 Toyz.Viewer.Contents.prototype.get_scale_index = function(scale){
