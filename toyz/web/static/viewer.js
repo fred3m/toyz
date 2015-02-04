@@ -182,6 +182,9 @@ Toyz.Viewer.Controls = function(parent){
     // Zoom controls
     this.zoom_input = {
         inputClass: 'viewer-ctrl-zoom-btn viewer-ctrl-input',
+        prop: {
+            type: 'Number'
+        },
         func: {
             change: function(event){
                 var file_info = this.frames[this.viewer_frame].file_info;
@@ -878,6 +881,7 @@ Toyz.Viewer.Contents.prototype.get_img_info = function(viewer_frame, file_frame)
     }else{
         img_info.viewer = viewer;
     };
+    console.log('img_info', img_info);
     this.workspace.websocket.send_task(
         {
             module: 'toyz.web.tasks',
@@ -1112,23 +1116,25 @@ Toyz.Viewer.Contents.prototype.set_scale = function(viewer_frame, scale){
     var file_info = this.frames[viewer_frame].file_info;
     var img_info = file_info.images[file_info.frame];
     this.frames[viewer_frame].$viewer.empty();
+    
+    var old_scale = file_info.images[file_info.frame].viewer.scale;
+    img_info.viewer.x_center = scale/old_scale*img_info.viewer.x_center;
+    img_info.viewer.y_center = scale/old_scale*img_info.viewer.y_center;
+    img_info.viewer.scale = Number(scale);
+    
     if(file_info.img_type == 'img'){
         var $scaled_img = img_info.$img.clone();
-        img_info.scale = scale;
-        img_info.viewer.scale = scale;
+        img_info.scale = img_info.viewer.scale;
         $scaled_img.css({
             width: $scaled_img[0].width*scale,
             height: $scaled_img[0].height*scale
         });
         this.frames[viewer_frame].$viewer.append($scaled_img);
+        this.$tile_div.scrollLeft(img_info.viewer.x_center-img_info.viewer.width/2);
+        this.$tile_div.scrollTop(img_info.viewer.y_center-img_info.viewer.height/2);
     }else if(file_info.img_type=='large_img'){
-        var old_scale = file_info.images[file_info.frame].viewer.scale;
-        img_info.viewer.x_center = scale/old_scale*img_info.viewer.x_center;
-        img_info.viewer.y_center = scale/old_scale*img_info.viewer.y_center;
-        img_info.viewer.scale = Number(scale);
         img_info.tiles = {};
     };
-    //console.log('scale', img_info.viewer.scale)
     this.update(viewer_frame, 'scale', img_info.viewer.scale);
 };
 Toyz.Viewer.Contents.prototype.get_coords = function(x, y, img_info){
