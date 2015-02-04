@@ -223,7 +223,9 @@ Toyz.Workspace.Tile.prototype.update = function(info, info_val){
     // Allow user to either pass param_name, param_val to function or
     // dictionary with multiple parameters
     if(!(info_val===undefined)){
-        info = {info:info_val};
+        var temp = {}
+        temp[info] = info_val;
+        info = temp;
     };
     for(var prop in info){
         if(prop == 'contents'){

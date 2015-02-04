@@ -190,6 +190,31 @@ Toyz.Core.jobsocketInit=function(options){
     return jobsocket;
 };
 
+Toyz.Core.set_debugger = function(groups, clearall){
+    if(typeof groups==='string'){
+        groups = [groups];
+    };
+    clearall = clearall || false;
+    if(clearall===true || !Toyz.Core.hasOwnProperty('debug_groups')){
+        Toyz.Core.debug_groups = [];
+    };
+    for(var i=0; i<groups.length; i++){
+        Toyz.Core.debug_groups.push(groups[i]);
+    };
+};
+
+Toyz.Core.Debug = function(groups){
+    if(typeof groups==='string'){
+        groups = [groups];
+    };
+    for(var i=0; i<groups.length; i++){
+        if(Toyz.Core.debug_groups.indexOf(groups[i])>-1){
+            console.log('caller ', Toyz.Core.Debug.caller.name);
+            console.log('arguments', Toyz.Core.Debug.caller.arguments);
+        };
+    };
+};
+
 // Object to log server data to the user
 // element: an HTML textarea element on the webpage
 Toyz.Core.Logger=function(element){
