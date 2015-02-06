@@ -244,7 +244,7 @@ Toyz.Viewer.Controls = function(parent){
         inputClass: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-bestfit',
         func: {
             click: function(){
-                var file_info = this.frames[this.viewer_frame];
+                var file_info = this.frames[this.viewer_frame].file_info;
                 var img_info = file_info.images[file_info.frame];
                 x_scale = img_info.viewer.width/img_info.width*.97;
                 y_scale = img_info.viewer.height/img_info.height*.97
@@ -521,6 +521,13 @@ Toyz.Viewer.Controls = function(parent){
                     file_info.images[file_info.frame].hasOwnProperty('height')
                 ){
                     var img_info = file_info.images[file_info.frame];
+                    if(typeof event.offsetX === "undefined" || 
+                        typeof event.offsetY === "undefined"
+                    ) {
+                       var targetOffset = $(event.target).offset();
+                       event.offsetX = event.pageX - targetOffset.left;
+                       event.offsetY = event.pageY - targetOffset.top;
+                    };
                     var x = event.target.offsetLeft+event.offsetX;
                     var y = event.target.offsetTop+event.offsetY;
                     var xy = this.get_coords(x, y, img_info);
@@ -632,7 +639,7 @@ Toyz.Viewer.contextMenu_items = function(workspace, tile_contents, options){
 
 //  Viewer as contents of Workspace tile ////////////////////////////////////
 Toyz.Viewer.Contents = function(params){
-    this.type = 'Viewer';
+    this.type = 'viewer';
     this.tile = params.tile;
     this.$tile_div = params.$tile_div;
     this.$tile_div
@@ -754,15 +761,57 @@ Toyz.Viewer.Contents.prototype.update = function(viewer_frame, updates, updates_
             updates.hasOwnProperty('colormap') ||
             updates.hasOwnProperty('file_frame')
         ){
-            this.get_img_info(this.viewer_frame, file_info.frame);
+            this.get_img_info(viewer_frame, file_info.frame);
         }else if(updates.hasOwnProperty('position')){
-            this.get_tile_map(this.viewer_frame, file_info.frame);
+            this.get_tile_map(viewer_frame, file_info.frame);
         };
     };
 };
+Toyz.Viewer.Contents.prototype.set_tile = function(settings){
+    console.log('settings', settings);
+    this.frames = [];
+    var add_viewer_frame = this.ctrl_panel.gui.getParam('add_viewer_frame');
+    var input_viewer_frame = this.ctrl_panel.gui.getParam('input_viewer_frame');
+    input_viewer_frame.$input.empty();
+    for(var i=0;i<settings.frames.length; i++){
+        add_viewer_frame.$input.click();
+        var file_info = settings.frames[i].file_info;
+        this.load_img({
+            file_info: file_info,
+            img_info: file_info.images[file_info.frame]
+        }, i);
+    };
+    this.change_viewer_frame(settings.viewer_frame);
+};
+Toyz.Viewer.Contents.prototype.rx_info = function(from, info_type, info){
+};
+Toyz.Viewer.Contents.prototype.save = function(){
+    var frames = [];
+    for(var i=0; i<this.frames.length; i++){
+        var file_info = $.extend(true, {}, this.frames[i].file_info);
+        var img_info = file_info.images[file_info.frame];
+        img_info.tiles = {};
+        if(img_info.hasOwnProperty('$img')){
+            delete img_info.$img;
+        };
+        frames[i] = {
+            file_info: file_info
+        };
+    };
+    var tile = {
+        type: this.type,
+        settings: {
+            viewer_frame: this.viewer_frame,
+            frames: frames
+        }
+    };
+    console.log('save tile', tile)
+    return tile;
+};
 Toyz.Viewer.Contents.prototype.set_window = function(
         viewer_frame, viewer_left, viewer_top){
-            var file_info = this.frames[viewer_frame].file_info;
+    var file_info = this.frames[viewer_frame].file_info;
+    //console.log('set window viewer frame', viewer_frame);
     if(!(file_info===undefined)){
         var img_info = file_info.images[file_info.frame];
         var viewer = img_info.viewer;
@@ -775,45 +824,29 @@ Toyz.Viewer.Contents.prototype.set_window = function(
     };
     this.update(viewer_frame, 'position', viewer);
 };
-Toyz.Viewer.Contents.prototype.rx_info = function(from, info_type, info){
-};
-Toyz.Viewer.Contents.prototype.save = function(){
-    var frames = [];
-    for(var i=0; i<this.frames.length; i++){
-        var file_info = $.extend(true, {}, this.frames[i].file_info);
-        var img_info = file_info.images[file_info.frame];
-        img_info.tiles = {};
-        frames[i] = {
-            file_info: file_info
-        }
-    };
-    var tile = {
-        type: this.type,
-        settings: {
-            viewer_frame: this.viewer_frame,
-            frames: frames
-        }
-    };
-    return tile;
-};
 Toyz.Viewer.Contents.prototype.load_img = function(settings, viewer_frame){
+    //console.log('viewer frame in load_img', viewer_frame);
     //console.log('loading image', settings);
     if(settings.file_info.img_type=='img'){
         //console.log('single image');
-        settings.file_info.images = {'0':{
-            scale: 1,
-            viewer: {
-                width: this.$tile_div.width(),
-                height: this.$tile_div.height(),
-                top: 0,
-                left: 0,
-                right: this.$tile_div.width(),
-                bottom: this.$tile_div.height(),
-                x_center: Math.round(this.$tile_div.width()/2),
-                y_center: Math.round(this.$tile_div.height()/2),
-                scale: 1
-            }
-        }};
+        if(!settings.file_info.hasOwnProperty('images') ||
+            !settings.file_info.images['0'].hasOwnProperty('viewer')
+        ){
+            settings.file_info.images = {'0':{
+                scale: 1,
+                viewer: {
+                    width: this.$tile_div.width(),
+                    height: this.$tile_div.height(),
+                    top: 0,
+                    left: 0,
+                    right: this.$tile_div.width(),
+                    bottom: this.$tile_div.height(),
+                    x_center: Math.round(this.$tile_div.width()/2),
+                    y_center: Math.round(this.$tile_div.height()/2),
+                    scale: 1
+                }
+            }};
+        }
         this.frames[viewer_frame].file_info = settings.file_info;
         this.frames[viewer_frame].file_info.frame = '0';
         this.$tile_div.empty();
@@ -852,9 +885,11 @@ Toyz.Viewer.Contents.prototype.load_img = function(settings, viewer_frame){
                 //console.log('file info', result.file_info);
                 this.frames[viewer_frame].file_info = result.file_info;
                 var img_info = result.file_info.images[result.file_info.frame];
-                this.$tile_div.empty();
                 this.frames[viewer_frame].$viewer = $('<div/>').addClass('viewer-div');
-                this.$tile_div.append(this.frames[viewer_frame].$viewer);
+                if(viewer_frame==this.viewer_frame){
+                    this.$tile_div.empty();
+                    this.$tile_div.append(this.frames[viewer_frame].$viewer);
+                };
                 this.frames[viewer_frame].$viewer.width(img_info.scaled_width);
                 this.frames[viewer_frame].$viewer.height(img_info.scaled_height);
                 this.rx_img_info(viewer_frame, result.file_info.frame, img_info);
@@ -866,6 +901,7 @@ Toyz.Viewer.Contents.prototype.load_img = function(settings, viewer_frame){
     }
 };
 Toyz.Viewer.Contents.prototype.get_img_info = function(viewer_frame, file_frame){
+    //console.log('viewer frame in get_img_info', viewer_frame);
     var file_info = $.extend(true, {}, this.frames[viewer_frame].file_info);
     var viewer = {
         width: this.$tile_div.width(),
@@ -881,7 +917,7 @@ Toyz.Viewer.Contents.prototype.get_img_info = function(viewer_frame, file_frame)
     }else{
         img_info.viewer = viewer;
     };
-    console.log('img_info', img_info);
+    //console.log('img_info', img_info);
     this.workspace.websocket.send_task(
         {
             module: 'toyz.web.tasks',
@@ -897,6 +933,9 @@ Toyz.Viewer.Contents.prototype.get_img_info = function(viewer_frame, file_frame)
             file_info.images[file_info.frame] = result.img_info;
             if(!(this.frames[viewer_frame].hasOwnProperty('$viewer'))){
                 this.frames[viewer_frame].$viewer = $('<div/>').addClass('viewer-div');
+            };
+            if(this.viewer_frame==viewer_frame){
+                //this.$tile_div.empty();
                 this.$tile_div.append(this.frames[viewer_frame].$viewer);
             };
             this.frames[viewer_frame].$viewer.width(result.img_info.scaled_width);
@@ -917,8 +956,8 @@ Toyz.Viewer.Contents.prototype.rx_img_info = function(viewer_frame, file_frame, 
 };
 Toyz.Viewer.Contents.prototype.get_tile_map = function(viewer_frame, file_frame){
     var file_info = $.extend(true, {}, this.frames[viewer_frame].file_info);
+    //console.log('viewer frame in get_tile_map', viewer_frame,file_info);
     delete file_info['images'];
-    //console.log('img_info', this.frames[viewer_frame].file_info.images[file_frame]);
     this.workspace.websocket.send_task(
         {
             module: 'toyz.web.tasks',
@@ -940,17 +979,18 @@ Toyz.Viewer.Contents.prototype.get_tile_map = function(viewer_frame, file_frame)
 };
 Toyz.Viewer.Contents.prototype.get_img_tiles = function(viewer_frame, file_frame, tiles){
     var file_info = $.extend(true, {}, this.frames[viewer_frame].file_info);
+    //console.log('viewer frame in get_img_tiles', viewer_frame, file_info);
     var img_info = file_info.images[file_frame];
-    // No need to send a large json object with image data that is not needed
+    // No need to send a large json object with unnecessary data
     delete file_info['images'];
     delete img_info['tiles'];
     
-    this.$tile_div.scrollTop(img_info.viewer.top);
-    this.$tile_div.scrollLeft(img_info.viewer.left);
+    if(this.viewer_frame==viewer_frame){
+        //console.log('scrolling in img_tiles');
+        this.$tile_div.scrollTop(img_info.viewer.top);
+        this.$tile_div.scrollLeft(img_info.viewer.left);
+    };
     
-    //console.log('scaled dims', img_info.scaled_width, img_info.scaled_height);
-    //console.log('scrolling to',img_info.viewer.left,img_info.scaled_height-img_info.viewer.height-img_info.viewer.bottom);
-    //console.log('viewer set for scrolling', img_info.viewer);
     for(var tile_idx in tiles){
         if(tiles.hasOwnProperty(tile_idx)){
             //console.log('tile', tiles[tile_idx]);
@@ -1001,9 +1041,6 @@ Toyz.Viewer.Contents.prototype.rx_tile_info = function(
         console.log('tile did not need to be created');
     };
 };
-Toyz.Viewer.Contents.prototype.set_tile = function(settings){
-    
-};
 Toyz.Viewer.Contents.prototype.init_controls = function(controls, divs){
     var controls = $.extend(true, new Toyz.Viewer.Controls(this), controls);
     var gui = {
@@ -1053,26 +1090,27 @@ Toyz.Viewer.Contents.prototype.init_controls = function(controls, divs){
     return [ctrl_panel, controls];
 };
 Toyz.Viewer.Contents.prototype.change_file_frame = function(new_frame){
-    var file_info = this.frames[this.viewer_frame].file_info;
-    this.frames[this.viewer_frame].$viewer.empty();
+    var viewer_frame = this.viewer_frame;
+    var file_info = this.frames[viewer_frame].file_info;
+    this.frames[viewer_frame].$viewer.empty();
     file_info.frame = new_frame;
-    this.update(this.viewer_frame, 'file_frame', file_info.frame);
-    //this.get_img_info(this.viewer_frame, new_frame);
+    this.update(viewer_frame, 'file_frame', file_info.frame);
 };
 Toyz.Viewer.Contents.prototype.change_viewer_frame = function(new_frame){
     var options = [];
     this.viewer_frame = new_frame;
     this.$tile_div.empty();
-    if(this.frames[this.viewer_frame].hasOwnProperty('$viewer')){
-        var file_info = this.frames[this.viewer_frame].file_info;
-        this.$tile_div.append(this.frames[this.viewer_frame].$viewer);
+    if(this.frames[new_frame].hasOwnProperty('$viewer')){
+        var file_info = this.frames[new_frame].file_info;
+        this.$tile_div.append(this.frames[new_frame].$viewer);
         if(file_info.hasOwnProperty('images')){
+            //console.log('changing viewer frame', this.viewer_frame, new_frame);
             var img_info = file_info.images[file_info.frame];
             this.$tile_div.scrollTop(img_info.viewer.top);
             this.$tile_div.scrollLeft(img_info.viewer.left);
         };
     };
-    this.update(this.viewer_frame, 'viewer_frame', this.viewer_frame);
+    this.update(new_frame, 'viewer_frame', new_frame);
 };
 Toyz.Viewer.Contents.prototype.get_scale_index = function(scale){
     var index={
@@ -1130,8 +1168,11 @@ Toyz.Viewer.Contents.prototype.set_scale = function(viewer_frame, scale){
             height: $scaled_img[0].height*scale
         });
         this.frames[viewer_frame].$viewer.append($scaled_img);
-        this.$tile_div.scrollLeft(img_info.viewer.x_center-img_info.viewer.width/2);
-        this.$tile_div.scrollTop(img_info.viewer.y_center-img_info.viewer.height/2);
+        if(this.viewer_frame==viewer_frame){
+            //console.log('scrolling in set scale');
+            this.$tile_div.scrollLeft(img_info.viewer.x_center-img_info.viewer.width/2);
+            this.$tile_div.scrollTop(img_info.viewer.y_center-img_info.viewer.height/2);
+        };
     }else if(file_info.img_type=='large_img'){
         img_info.tiles = {};
     };

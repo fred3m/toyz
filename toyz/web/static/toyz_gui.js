@@ -532,7 +532,7 @@ Toyz.Gui.initParamList=function(pList,options){
                     subset = param.params;
                     subset = $.extend({}, subset, param.paramSets);
                 }else if(param.type == 'list'){
-                    if(param.format=='none'){
+                    if(param.format == 'none'){
                         subset = param.items;
                     };
                 };

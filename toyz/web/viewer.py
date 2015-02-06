@@ -163,7 +163,7 @@ def get_img_info(file_info, img_info):
     return img_info
 
 def get_tile_filename(file_info, img_info, x0_idx, xf_idx, y0_idx, yf_idx):
-    filename_params = [file_info['filename'], 
+    filename_params = [file_info['filename'], file_info['frame'],
         x0_idx, xf_idx, y0_idx, yf_idx, 
         "{0:.3f}".format(img_info['scale']), img_info['colormap'], 
         "{0:.2f}".format(img_info['px_min']), "{0:.2f}".format(img_info['px_max'])]
@@ -205,10 +205,6 @@ def get_tile_info(file_info, img_info):
         for col in range(minCol,maxCol):
             all_tiles.append(str(col)+','+str(row))
             tile_idx = str(col)+','+str(row)
-            print('frame', file_info['frame'])
-            print('tile idx:', tile_idx)
-            if tile_idx in img_info['tiles']:
-                print('tile:{0}\n'.format(img_info['tiles'][tile_idx]))
             if (tile_idx not in img_info['tiles'] or 
                     'loaded' not in img_info['tiles'][tile_idx] or
                     not img_info['tiles'][tile_idx]['loaded']):
@@ -257,7 +253,6 @@ def scale_data(file_info, img_info, tile_info, data):
     else:
         try:
             import scipy.ndimage
-            print('using scipy')
             data = data[tile_info['y0_idx']:tile_info['yf_idx'],
                 tile_info['x0_idx']:tile_info['xf_idx']]
             data = scipy.ndimage.zoom(data, img_info['scale'], order=0)

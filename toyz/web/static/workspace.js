@@ -245,7 +245,7 @@ Toyz.Workspace.Tile.prototype.update = function(info, info_val){
     };
 };
 
-Toyz.Workspace.init_data_dialog = function(workspace, sources){
+Toyz.Workspace.init_data_dialog = function(workspace){
     sources = {} || sources;
     var params = workspace.params.data_sources;
     
@@ -258,16 +258,15 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
         sources: {},
         editing:'',
         radio_group: 'data_src',
-        callback: undefined,
         workspace: workspace,
-        load_src: function(params, data_name){
+        load_src: function(callback, params, data_name){
             var data_id = data_dialog.editing;
             if(data_dialog.editing==''){
                 data_id = 'data-'+(data_dialog.src_index++).toString();
             };
             if(data_name===undefined){
                 data_name=data_id;
-            }
+            };
             var src_params = $.extend(true, {}, params);
             
             // Load data from server
@@ -284,7 +283,7 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
                         file_options: src_params
                     }
                 },
-                data_dialog.add_src,
+                data_dialog.add_src.bind(data_dialog, callback),
                 {
                     id: data_id,
                     name: data_name,
@@ -293,7 +292,7 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
             );
             return data_id;
         },
-        add_src: function(result, params){
+        add_src: function(callback, result, params){
             //console.log('added source to workspace', data_dialog.workspace)
             delete result.id;
             if(!(data_dialog.sources.hasOwnProperty(params.id))){
@@ -309,7 +308,7 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
             data_dialog.sources[params.id].update(result)
             workspace.$new_data_div.dialog('close');
             data_dialog.editing = '';
-            if(!(data_dialog.callback===undefined)){
+            if(!(callback===undefined)){
                 callback();
             }
         },
@@ -344,13 +343,27 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
                 workspace.$new_data_div.dialog('open');
             };
         },
-        update_sources: function(sources, replace, callback){
-            data_dialog.callback = callback;
+        // Synchronously load sources
+        update_sources: function(src_list, replace, callback){
+            console.log('sources:', sources);
             if(replace){
                 data_dialog.remove_all_sources();
             };
-            for(var src in sources){
-                data_id = data_dialog.load_src(sources[src].params, sources[src].name);
+            var src_list = Object.keys(sources);
+            if(src_list.length==0){
+                console.log('length = 0');
+                callback();
+            }else if(src_list.length==1){
+                console.log('length = 1');
+                data_dialog.load_src(callback, src_list[0].params, src_list[0].name);
+            }else{
+                console.log('length > 1');
+                data_dialog.load_src(data_dialog.update_sources.bind(
+                    null, 
+                    src_list.slice(1, src_list.length),
+                    false,
+                    callback
+                ));
             };
         },
     }, params.options);
@@ -378,8 +391,6 @@ Toyz.Workspace.init_data_dialog = function(workspace, sources){
             }
         }
     });
-    
-    data_dialog.update_sources(sources);
     
     return data_dialog;
 };
@@ -480,7 +491,7 @@ Toyz.Workspace.init = function(params){
                             var params = workspace.new_data_gui.getParams(
                                 workspace.new_data_gui.params
                             );
-                            workspace.data_sources.load_src(params);
+                            workspace.data_sources.load_src(undefined, params);
                         },
                         Cancel: function(){
                             workspace.$new_data_div.dialog('close');
@@ -566,14 +577,21 @@ Toyz.Workspace.init = function(params){
         // First load all of the data sources, then update the tiles once all of the
         // data has been loaded from the server
         update_workspace: function(result){
+            console.log('load result', result);
+            var sources = Object.keys(result.settings.sources);
+            var src_list = [];
+            for(var i=0; i<sources;i++){
+                src_list.push(result.settings.sources[sources[i]]);
+            };
             workspace.name = result.work_id;
             workspace.data_sources.update_sources(
-                result.settings.sources, 
+                src_list, 
                 replace=true,
                 callback = function(tiles){
                     this.load_tiles(tiles);
                 }.bind(workspace, result.settings.tiles)
             );
+            console.log('done updating');
         },
         share_workspace: function(){
         },
@@ -643,6 +661,7 @@ Toyz.Workspace.init = function(params){
             return tiles;
         },
         load_tiles: function(tiles){
+            console.log('load tiles', tiles);
             var api_list = [];
             for(var tile_id in tiles){
                 if(api_list.indexOf(tiles[tile_id].contents.type)==-1){
@@ -666,6 +685,10 @@ Toyz.Workspace.init = function(params){
             var all_apis = Toyz.Workspace.tile_contextMenu_items(workspace).tile_type.items;
             console.log('all apis', all_apis);
             console.log('api', api_list[0]);
+            if(!all_apis.hasOwnProperty(api_list[0])){
+                alert("API not found in toyz")
+                throw "API not found in toyz"
+            };
             Toyz.Workspace.load_api_dependencies(
                 tile_api=api_list[0],
                 namespace=all_apis[api_list[0]].namespace,
