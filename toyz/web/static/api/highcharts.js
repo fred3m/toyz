@@ -698,6 +698,7 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
     this.$tile_div.highcharts(chart_params);
 };
 Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
+    console.log('Highcharts settings', settings);
     this.create_chart(settings);
     this.gui_div.gui.setParams(this.gui_div.gui.params, settings, false);
 };

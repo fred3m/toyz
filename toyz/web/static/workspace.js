@@ -260,6 +260,7 @@ Toyz.Workspace.init_data_dialog = function(workspace){
         radio_group: 'data_src',
         workspace: workspace,
         load_src: function(callback, params, data_name){
+            console.log('loading source', params, data_name);
             var data_id = data_dialog.editing;
             if(data_dialog.editing==''){
                 data_id = 'data-'+(data_dialog.src_index++).toString();
@@ -293,7 +294,7 @@ Toyz.Workspace.init_data_dialog = function(workspace){
             return data_id;
         },
         add_src: function(callback, result, params){
-            //console.log('added source to workspace', data_dialog.workspace)
+            console.log('added source to workspace', data_dialog.workspace)
             delete result.id;
             if(!(data_dialog.sources.hasOwnProperty(params.id))){
                 data_dialog.sources[params.id] = new Toyz.Workspace.DataSource(
@@ -345,11 +346,10 @@ Toyz.Workspace.init_data_dialog = function(workspace){
         },
         // Synchronously load sources
         update_sources: function(src_list, replace, callback){
-            console.log('sources:', sources);
+            console.log('sources:', src_list);
             if(replace){
                 data_dialog.remove_all_sources();
             };
-            var src_list = Object.keys(sources);
             if(src_list.length==0){
                 console.log('length = 0');
                 callback();
@@ -580,7 +580,7 @@ Toyz.Workspace.init = function(params){
             console.log('load result', result);
             var sources = Object.keys(result.settings.sources);
             var src_list = [];
-            for(var i=0; i<sources;i++){
+            for(var i=0; i<sources.length;i++){
                 src_list.push(result.settings.sources[sources[i]]);
             };
             workspace.name = result.work_id;
@@ -678,7 +678,7 @@ Toyz.Workspace.init = function(params){
             }else{
                 callback = workspace.load_tile_apis.bind(
                     null,
-                    api_list.slice(1,apli_list.length),
+                    api_list.slice(1,api_list.length),
                     tiles
                 );
             };
