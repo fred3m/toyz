@@ -53,6 +53,11 @@ Toyz.API.Highcharts.Gui = function(params){
     this.$parent.append(this.$div);
     this.workspace = params.workspace;
     this.tile_contents = params.tile_contents;
+    
+    var sources = {};
+    for(var src in this.workspace.sources){
+        sources[src] = this.workspace.sources[src].name;
+    };
     var gui = {
         type: 'div',
         params: {
@@ -101,7 +106,7 @@ Toyz.API.Highcharts.Gui = function(params){
                                 data_source: {
                                     type: 'select',
                                     lbl: 'data source',
-                                    options: Object.keys(this.workspace.data_sources.sources),
+                                    options: sources,
                                     func: {
                                         change: this.update_columns.bind(this)
                                     }
@@ -320,7 +325,8 @@ Toyz.API.Highcharts.Gui.prototype.update_columns = function(event){
     var $y_input = params.y_div.params.y.$input;
     $x_input.empty();
     $y_input.empty();
-    for(var col in workspace.data_sources.sources[data_source].data){
+    console.log('workspace', this.workspace);
+    for(var col in this.workspace.sources[data_source].data){
         var x_opt = $('<option/>').val(col).html(col);
         var y_opt = $('<option/>').val(col).html(col);
         $x_input.append(x_opt);
@@ -426,8 +432,33 @@ Toyz.API.Highcharts.Contents.prototype.rx_info = function(from, info_type, info)
                 };
             };
         };
-    }else if(info_type='remove datapoints'){
+    }else if(info_type=='remove datapoints'){
         this.create_chart(this.settings);
+    }else if(info_type=='data update'){
+        console.log('updating');
+        var data_source = this.workspace.sources[from];
+        var params = this.gui_div.gui.params.params.series_div.params.series.items[idx].params;
+        // The source must have been updated, so update the chart
+        if(params.data_source.options.hasOwnProperty(data_source)){
+            for(var s in this.settings.series){
+                if(this.settings.series[s].data_source==from){
+                    this.create_chart(this.settings);
+                };
+            };
+            if(params.data_source.options[data_source] != data_source.name){
+                delete params.data_source.options[data_source];
+                params.data_source.$input.find('[value='+data_source.id+']').remove();
+            }
+        };
+        // If the data source is a new source, or the name has changed, add it to the available sources
+        if(!params.data_source.options.hasOwnProperty(data_source)){
+            var $opt = $('<option/>')
+                .html(data_source.name)
+                .val(data_source.id);
+            params.data_source.$input.append($opt);
+            params.data_source.options[data_source.id] = data_source.name;
+            params.data_source.$input.change();
+        };
     };
 };
 Toyz.API.Highcharts.Contents.prototype.save = function(){
@@ -452,17 +483,22 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
     var x_lbls = [];
     var y_lbls = [];
     
-    if(!(this.settings.subtitle===undefined || this.settings.subtitle=='') || this.settings.subtitle===null){
+    if(!(this.settings.subtitle===undefined || 
+        this.settings.subtitle=='') || 
+        this.settings.subtitle===null
+    ){
         chart_params.subtitle={text: this.settings.subtitle};
     };
     for(var i=0; i<this.settings.series.length; i++){
         var data_source = this.settings.series[i].data_source;
-        var data = this.workspace.data_sources.sources[data_source].data;
+        var data = this.workspace.sources[data_source].data;
+        console.log('source', data_source, 'data:', data);
         
         // Add data points to chart
         var x = this.settings.series[i].x;
         var y = this.settings.series[i].y;
         var this_data = [];
+        console.log('x:',x,'y:',y);
         for(var j=0; j<data[x].length; j++){
             this_data.push({
                 x:data[x][j], 
@@ -705,7 +741,7 @@ Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
 Toyz.API.Highcharts.Contents.prototype.update_selected = 
         function(series_idx, points, info_type){
     var data_source = this.settings.series[series_idx].data_source;
-    this.workspace.data_sources.sources[data_source].rx_info(
+    this.workspace.sources[data_source].rx_info(
         from=this.tile.id,
         info_type=info_type,
         info={
@@ -728,7 +764,7 @@ Toyz.API.Highcharts.Contents.prototype.remove_points = function(){
         pts.sort(function(a,b){return a-b});
     };
     
-    this.workspace.data_sources.sources[this.settings.series[0].data_source].rx_info(
+    this.workspace.sources[this.settings.series[0].data_source].rx_info(
         from='',
         info_type='remove datapoints',
         info={
