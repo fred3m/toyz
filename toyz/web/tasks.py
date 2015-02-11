@@ -443,7 +443,7 @@ def get_io_info(toyz_settings, tid, params):
                             'options': val['file_types'].keys()
                         }
                     },
-                    'paramSets': val['file_types']
+                    'param_sets': val['file_types']
                 }
             }
         }
@@ -460,7 +460,7 @@ def get_io_info(toyz_settings, tid, params):
                         'options': io.io_modules.keys()
                     }
                 },
-                'paramSets': param_sets
+                'param_sets': param_sets
             }
         }
     }

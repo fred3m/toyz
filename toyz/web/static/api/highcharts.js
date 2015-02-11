@@ -306,12 +306,10 @@ Toyz.API.Highcharts.Gui = function(params){
             }
         }
     };
-    this.gui = Toyz.Gui.initParamList(
-        gui,
-        options = {
-            $parent: this.$div
-        }
-    );
+    this.gui = Toyz.Gui.Gui({
+        params: gui,
+        $parent: this.$div
+    });
 };
 Toyz.API.Highcharts.Gui.prototype.update_columns = function(event){
     //var data_source = event.currentTarget.value;
@@ -374,7 +372,7 @@ Toyz.API.Highcharts.Contents = function(params){
         },
         buttons: {
             Set: function(){
-                this.set_tile(this.gui_div.gui.getParams(this.gui_div.gui.params));
+                this.set_tile(this.gui_div.gui.get());
                 this.$div.dialog('close');
             }.bind(this),
             Cancel: function(){
@@ -736,7 +734,10 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
 Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
     console.log('Highcharts settings', settings);
     this.create_chart(settings);
-    this.gui_div.gui.setParams(this.gui_div.gui.params, settings, false);
+    this.gui_div.gui.set_params({
+        values: settings,
+        set_all: false
+    });
 };
 Toyz.API.Highcharts.Contents.prototype.update_selected = 
         function(series_idx, points, info_type){

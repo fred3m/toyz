@@ -3,715 +3,724 @@
 // License: MIT
 
 Toyz.namespace('Toyz.Gui');
-
-// For some odd reason the value of a checkbox is not true/false as one would expect. 
-// This returns the 'correct' value of an element, even if it is a checkbox. 
-// This also returns a number instead of a string if the input type='number'
-Toyz.Gui.val=function($e){
-    if(!($e instanceof jQuery)){
-        $e=$($e);
-    };
-    
-    if($e.prop('type')=='checkbox'){
-        return $e.prop('checked');
-    }else if($e.prop('type')=='number'){
-        return Number($e.val());
+// Add a parameters value(s) to a params list
+Toyz.Gui.get_param = function(param){
+    var params = {};
+    if(param.type=='div' || param.type=='conditional'){
+        params = param.get();
     }else{
-        return $e.val();
-    }
+        params[param.name] = param.get();
+    };
+    return params;
 };
-
-// Given a parameter, its parent div, and a key,
-// build a parameter div object that can be used
-// later to find the value of the parameter
-Toyz.Gui.buildParamDiv = function(param, $div){
-    var $input=$('<'+param.type+'/>');
-    var $paramDiv=$('<div/>');
-    // If the user defines a css class for the div, include it
-    if(param.hasOwnProperty('divClass')){
-        $paramDiv.addClass(param.divClass);
-    }else{
-        $paramDiv.addClass('paramDiv-default');
+// Toyz.Gui.set_param current options:
+// param: Toyz.Gui.Param (or similar) parameter to set
+// values: dict of values, key = gui param name, value = new value
+// change: whether or not to call the params 'onchange' function after being set
+// set_all: if set_all===true, the param will have it's values (and options) cleared,
+// even if it isn't specified in values
+Toyz.Gui.set_param = function(options){
+    if(options.param.type=='div' || options.param.type=='conditional'){
+        var options = $.extend(true, {}, options);
+        var param = options.param;
+        delete options.param;
+        param.set(options);
+    }else if(options.values.hasOwnProperty(options.param.name)){
+        options.param.set(options.values[options.param.name], {
+            change: options.change,
+            set_all: options.set_all
+        });
     };
-    if(param.hasOwnProperty('divCss')){
-        $paramDiv.css(param.divCss);
+};
+// Base Class for gui parameters. The constructor is used to build a div that
+// holds an input DOM element and it's label (if one is specified).
+Toyz.Gui.Param = function(param){
+    this.init(param);
+    var $input=$('<'+this.type+'/>');
+    var $param_div=$('<div/>');
+    // If the user defines a css class for the div, include it
+    if(this.hasOwnProperty('div_class')){
+        $param_div.addClass(this.div_class);
+    }else{
+        $param_div.addClass('param_div-default');
+    };
+    if(this.hasOwnProperty('div_css')){
+        $param_div.css(this.div_css);
     };
     // If properties for the parameter have been defined
-    if(param.hasOwnProperty('prop')){
-        $input.prop(param.prop);
+    if(this.hasOwnProperty('prop')){
+        $input.prop(this.prop);
     };
     // If css specific to the parameter are defined
-    if(param.hasOwnProperty('css')){
-        $input.css(param.css);
+    if(this.hasOwnProperty('css')){
+        $input.css(this.css);
     };
     // Functions, such as 'click' or 'over'
-    if(param.hasOwnProperty('func')){
-        var functions=param.func;
+    if(this.hasOwnProperty('func')){
+        var functions=this.func;
         for(var f in functions){
             $input.on(f, functions[f]);
         };
     };
-    if(param.hasOwnProperty('inputClass')){
-        $input.addClass(param.inputClass);
+    if(this.hasOwnProperty('input_class')){
+        $input.addClass(this.input_class);
     }
     // Tooltip title
-    if(param.hasOwnProperty('title')){
-        $paramDiv.prop('title',param.title);
-    };
-    // For select boxes, populate the drop down list an default value
-    if(param.type=='select'){
-        // If the user has specified an order, use it
-        if(param.hasOwnProperty('order')){
-            for(var i=0; i<param.order.length; i++){
-                var opt = param.order[i];
-                $option=$('<option/>')
-                    .html(param.options[opt])
-                    .val(opt)
-                $input.append($option);
-            }
-        }else{
-            if($.isArray(param.options)){
-                for(var i=0;i<param.options.length; i++){
-                    $option=$('<option/>')
-                        .html(param.options[i])
-                        .val(param.options[i])
-                    $input.append($option);
-                }
-            }else{
-                for(var opt in param.options){
-                    $option=$('<option/>')
-                        .html(param.options[opt])
-                        .val(opt)
-                    $input.append($option);
-                };
-            };
-        };
-        if(param.hasOwnProperty('defaultVal')){
-            $input.val(param.defaultVal);
-        };
+    if(this.hasOwnProperty('title')){
+        $param_div.prop('title',this.title);
     };
     
     // Add a label
     var $lbl=$('<label/>')
-        .html(param.name)
-    if(param.hasOwnProperty('lbl')){
-        $lbl.html(param.lbl);
+        .html(this.name)
+    if(this.hasOwnProperty('lbl')){
+        $lbl.html(this.lbl);
         
-        if(param.hasOwnProperty('lblClass')){
-           $lbl.addClass(param.lblClass);
+        if(this.hasOwnProperty('lbl_class')){
+           $lbl.addClass(this.lbl_class);
         }else{
             $lbl.addClass('lbl-default');
         };
-        if(param.hasOwnProperty('lblCss')){
-            $lbl.css(param.lblCss);
+        if(this.hasOwnProperty('lbl_css')){
+            $lbl.css(this.lbl_css);
         };
-        $paramDiv.append($lbl);
+        $param_div.append($lbl);
     };
-    $paramDiv.append($input);
-    $div.append($paramDiv);
+    $param_div.append($input);
+    $div.append($param_div);
     
     // Some parameters may have units associated with them
     // Units are given as an array, which will be converted into a
     // dropdown box if there is more than one unit in the array
-    if(param.hasOwnProperty('units')){
-        if(param.units.length>1){
-            param.$units=$('<select/>');
-            for(var i=0; i<param.units.length; i++){
+    if(this.hasOwnProperty('units')){
+        if(this.units.length>1){
+            this.$units=$('<select/>');
+            for(var i=0; i<this.units.length; i++){
                 var $option=$('<option/>')
-                    .html(param.units[i]);
-                    param.$units.append($option);
+                    .html(this.units[i]);
+                    this.$units.append($option);
             }
         }else{
-            param.$units=$('<label/>')
-                .html(param.units);
+            this.$units=$('<label/>')
+                .html(this.units);
         };
-        if(param.hasOwnProperty('unitClass')){
-            param.$units.addClass(param.unitClass);
+        if(this.hasOwnProperty('unit_class')){
+            this.$units.addClass(this.unit_class);
         };
-        $paramDiv.append(param.$units);
+        $param_div.append(this.$units);
     };
-    param.$lbl=$lbl;
-    param.$input=$input;
+    this.$lbl=$lbl;
+    this.$input=$input;
     
     // Special types of parameters may also be used, for example
     // a path with a button to open a file dialog
-    if(param.hasOwnProperty('file_dialog')){
+    if(this.hasOwnProperty('file_dialog')){
         //console.log('file dialog:', param);
-        if(!param.hasOwnProperty('css')){
-            param.$input.prop('size',80);
+        if(!this.hasOwnProperty('css')){
+            this.$input.prop('size',80);
         };
         
         var $btn = $('<button/>')
             .html('...')
             .css('margin-left','5px');
-        $btn.click(function(param) {
-            return function(){
-                console.log('param in click function');
-                var file_dir = '$user$';
-                if(param.$input.val() != ''){
-                    file_dir = param.$input.val();
-                };
-                file_dialog.load_directory(file_dir,function(){
+        $btn.click(function(){
+            console.log('param in click function');
+            var file_dir = '$user$';
+            if(this.$input.val() != ''){
+                file_dir = this.$input.val();
+            };
+            this.gui.file_dialog.load_directory({
+                path: file_dir,
+                callback: function(){
                     var path = "";
-                    if(!(file_dialog.path===null)){
+                    if(!(this.gui.file_dialog.path===null)){
                         path = file_dialog.path;
                     };
-                    if(!(file_dialog.files.$select.val()===null)){
-                        path = path + file_dialog.files.$select.val();
+                    if(!(this.gui.file_dialog.files.$select.val()===null)){
+                        path = path + this.gui.file_dialog.files.$select.val();
                     }
-                    param.$input.val(path);
-                });
-            }
-        }(param));
-        $paramDiv.append($btn);
+                    this.$input.val(path);
+                }
+            });
+        }.bind(this));
+        $param_div.append($btn);
         param.$btn = $btn;
     };
-    param.$div = $paramDiv;
-    return param;
+    
+    this.$div = $param_div;
+};
+Toyz.Gui.Param.prototype.init = function(param){
+    for(var p in param){
+        this[p] = param[p];
+    };
+};
+// For some odd reason the value of a checkbox is not true/false as one would expect. 
+// This returns the 'correct' value of an element, even if it is a checkbox. 
+// This also returns a number instead of a string if the input type='number'
+Toyz.Gui.Param.prototype.get = function(){
+    var val;
+    if(this.$input.prop('type')=='checkbox'){
+        val = this.$input.prop('checked');
+    }else if(this.$input.prop('type')=='number'){
+        val = Number(this.$input.val());
+    }else if(this.type=='button'){
+        // Do nothing
+    }else{
+        val = this.$input.val();
+    };
+    if(this.hasOwnProperty('units')){
+        if(this.units.length>1){
+            val=[val,this.$units.val()];
+        }
+    };
+    return val;
+};
+Toyz.Gui.Param.prototype.set = function(value, options){
+    options = $.extend(true, {
+        change: true
+    }, options);
+    var val = value;
+    if(this.hasOwnProperty('units')){
+        val = value[0];
+        this.$units.val(value[1]);
+    };
+    if(this.$input.prop('type')=='checkbox'){
+        this.$input.prop('checked', val);
+    }else{
+        this.$input.val(val);
+    };
+    if(options.change===true){
+        this.$input.change();
+    };
 };
 
+Toyz.Gui.Div = function(param){
+    var $div;
+    this.init(param);
+    this.$div=$('<div/>');
+    
+    // If a legend is given, create a fieldset to hold a group of parameters
+    if(this.hasOwnProperty('legend')){
+        var $fieldset = $('<fieldset/>');
+        var $legend = $("<legend/>")
+            .html(this.legend)
+        if(this.hasOwnProperty('legend_class')){
+            $legend.addClass(this.legend_class);
+        }else{
+            $legend.addClass('collapsible');
+        };
+        if(this.hasOwnProperty('legend_css')){
+            $legend.css(this.legend_css);
+        }
+        $div = $('<div/>');
+        $fieldset.append($legend);
+        $fieldset.append($div);
+        this.$div.append($fieldset);
+    }else{
+        $div = this.$div
+    };
+
+    if(this.hasOwnProperty('css')){
+        this.$div.css(this.css);
+    };
+    if(this.hasOwnProperty('div_class')){
+        this.$div.addClass(this.div_class);
+    };
+    // If properties for the parameter have been defined
+    if(this.hasOwnProperty('prop')){
+        this.$div.prop(this.prop);
+    };
+    // Functions, such as 'click' or 'over'
+    if(this.hasOwnProperty('func')){
+        var functions=this.func;
+        for(var f in functions){
+            this.$div[f](functions[f]);
+        };
+    };
+    this.build_sub_params();
+};
+Toyz.Gui.Div.prototype = new Toyz.Gui.Param();
+Toyz.Gui.Div.prototype.constructor = Toyz.Gui.Div;
+Toyz.Gui.Div.prototype.build_sub_params = function(){
+    for(var key in this.params){
+        this.params[key] = this.gui.build_gui(this.params[key], this.$div, key);
+    };
+    for(var key in this.optional){
+        var legend = this.optional[key].lbl;
+        //delete param.optional[key].lbl;
+        var opt_param = {
+            type: 'conditional',
+            selector: {},
+            param_sets: {
+                true: {
+                    type: 'div',
+                    params: {}
+                },
+                false: {type:'div', params:{}}
+            }
+        }
+        opt_param.selector['use_'+key] = {
+            lbl: 'set '+ key,
+            prop: {
+                type: 'checkbox',
+                checked: false
+            }
+        }
+        opt_param.param_sets[true].params[key] = this.optional[key]
+        this.params[key] = this.gui.build_gui(opt_param, this.$div, key);
+    }
+};
+Toyz.Gui.Div.prototype.get = function(){
+    var params = {conditions:{}};
+    for(var p in this.params){
+        params = $.extend(true, params, Toyz.Gui.get_param(this.params[p]));
+    };
+    for(var p in this.optional){
+        params = $.extend(true, params, Toyz.Gui.get_param(this.optional[p]));
+    };
+    return params;
+};
+Toyz.Gui.Div.prototype.set = function(options){
+    options = $.extend(true, {
+        change: true,
+        set_all: false
+    },options)
+    for(var p in this.params){
+        Toyz.Gui.set_param($.extend(true,options, {
+            param: this.params[p]
+        }));
+    };
+    this.set_optional(options);
+};
+Toyz.Gui.Div.prototype.set_optional = function(options){
+    for(var p in this.optional){
+        var vals = options.values;
+        if(options.values.hasOwnProperty('conditions')){
+            vals = $.extend(true, vals, options.values.conditions);
+        };
+        Toyz.Gui.set_param($.extend(true, options, {
+            params: this.optional[p], 
+            values: vals
+        }));
+    };
+};
+
+Toyz.Gui.Conditional = function(param){
+    Toyz.Gui.Div.call(this, param);
+};
+Toyz.Gui.Conditional.prototype = new Toyz.Gui.Div();
+Toyz.Gui.Conditional.prototype.constructor = Toyz.Gui.Conditional;
+Toyz.Gui.Conditional.prototype.build_sub_params = function(){
+    var key;
+    var pVal;
+    for(var p in this.selector){
+        if(this.selector.hasOwnProperty(p)){
+            key = p;
+        };
+    };
+    this.selector = this.selector[key];
+    if(!this.selector.hasOwnProperty('type')){
+        this.selector.type = 'input';
+    };
+    this.selector = this.gui.build_gui(this.selector, this.$div, key);
+    pVal = Toyz.Gui.val(this.selector.$input);
+    this.selector.old_val = pVal;
+    // Change the subset of parameters when the selector is changed
+    this.selector.$input.change(function(){
+        var old_set = this.param_sets[this.selector.old_val];
+        var pVal = Toyz.Gui.val(this.selector.$input);
+        var new_set = this.param_sets[pVal];
+        old_set.old_display = old_set.$div.css('display');
+        old_set.$div.css('display','none');
+        new_set.$div.css('display',new_set.old_display);
+        this.selector.old_val = pVal;
+    }.bind(this));
+
+    for(var pSet in this.param_sets){
+        //console.log(key,paramSet);
+        var newSet = this.param_sets[pSet];
+        newSet.$div = $('<div/>');
+        newSet = this.gui.build_gui(newSet, this.$div, pSet);
+        newSet.old_display = newSet.$div.css('display');
+        newSet.$div.css('display','none');
+    };
+    
+    var keyVal = Toyz.Gui.val(this.selector.$input);
+    //console.log('conditional:',key,'selector:', selector, keyVal)
+    var selected = this.param_sets[keyVal];
+    selected.$div.css('display', selected.$div.css('display', selected.old_display));
+};
+Toyz.Gui.Conditional.prototype.get = function(){
+    var params = {conditions:{}};
+    params.conditions[this.selector.name] = this.selector.get();
+    for(var p in this.param_sets){
+        params = $.extend(true, params, Toyz.Gui.get_param(this.param_sets[p]));
+    };
+    for(var p in this.optional){
+        params = $.extend(true, params, Toyz.Gui.get_param(this.optional[p]));
+    };
+    return params;
+};
+Toyz.Gui.Conditional.prototype.set = function(options){
+    if(options.values.hasOwnProperty('conditions') && 
+        options.values.conditions.hasOwnProperty(this.selector.name)
+    ){
+        var value = options.values.conditions[this.selector.name];
+        var opt = $.extend(true, {}, options);
+        delete opt.values;
+        this.selector.set(value, opt);
+    };
+    var selected = this.selector.get();
+    // only set conditional values that are selected, unless select_all is true
+    if(options.set_all){
+        for(p in this.param_sets){
+            Toyz.Gui.set_param($.extend(true,options, {
+                param: this.param_sets[p]
+            }));
+        };
+    }else if(this.param_sets.hasOwnProperty(selected)){
+        Toyz.Gui.set_param($.extend(true,options, {
+            param: this.param_sets[selected]
+        }));
+    };
+    this.set_optional(options);
+};
+
+Toyz.Gui.List = function(){
+    this.$div=$('<div/>');
+    if(this.hasOwnProperty('ordered') && this.ordered==true){
+        this.$list=$('<ol/>');
+    }else{
+        this.$list=$('<ul/>');
+    };
+    if(!this.hasOwnProperty('items')){
+        this.items = [];
+    };
+    if(!this.hasOwnProperty('format')){
+        this.format = 'list';
+    };
+    
+    var $button_div=$('<div/>');
+    this.$div.append(this.$list);
+    this.$div.append($button_div);
+    this.current_idx = 0;
+    this.key_name = this.name+'-';
+    
+    if(!this.hasOwnProperty('buttons')){
+        this.buttons={
+            add:{
+                type:'button',
+                lbl:'',
+                prop:{
+                    innerHTML:'+'
+                },
+                div_css:{
+                    float: 'left'
+                },
+                func:{
+                    click: this.add_item.bind(this)
+                }
+            },
+            remove:{
+                type:'button',
+                lbl:'',
+                prop:{
+                    innerHTML:'-'
+                },
+                div_css:{
+                    float:'left'
+                },
+                func:{
+                    click:this.remove_item.bind(this)
+                }
+            }
+        }
+    };
+    for(var button in this.buttons){
+        this.buttons[button] = this.gui.build_param_div(this.buttons[button],$button_div);
+    };
+};
+Toyz.Gui.List.prototype = new Toyz.Gui.Param();
+Toyz.Gui.List.prototype.constructor = Toyz.Gui.List;
+Toyz.Gui.List.prototype.get = function(){
+    var params = {conditions:{}};
+    if(this.format == 'dict'){
+        params[this.name] = {};
+        for(var i=0; i<this.items.length; i++){
+            var item_values = {};
+            item_values = Toyz.Gui.get_param(this.items[i]);
+            if(item_values.hasOwnProperty('value')){
+                params[this.name][item_values.key] = item_values.value;
+            }else{
+                console.log('item values', item_values)
+                throw Error("Depreciated list type in "+this.name);
+                //var key = item_values.key;
+                //delete item_values.key;
+                //delete item_values.conditions;
+                //params[this.name][key] = item_values;
+            }
+        };
+    }else if(this.format == 'list'){
+        params[this.name] = [];
+        for(var i=0; i<this.items.length; i++){
+            params[this.name].push(Toyz.Gui.get_param(this.items[i]));
+        };
+    }else if(param.format == 'custom'){
+        params[this.name] = this.get_val();
+    }else{
+        throw Error("Invalid parameter format for list "+this.name);
+    };
+};
+Toyz.Gui.List.prototype.set = function(values, options){
+    // remove the old items from the list
+    for(var i=0; i<this.items.length; i++){
+        this.items[i].$div.remove();
+    };
+    this.items = [];
+    this.current_idx = 0;
+    
+    if(this.format == 'dict'){
+        var p_index = 0;
+        for(var key in values){
+            this.add_item();
+            Toyz.Gui.set_param($.extend(true, options, {
+                param: this.items[p_index].params.key,
+                value: key
+            }));
+            Toyz.Gui.set_param($.extend(true, options, {
+                param: this.items[p_index].params.value,
+                value: values[key]
+            }));
+            p_index++;
+        };
+    }else if(this.format == 'list'){
+        for(var i=0; i<values.length; i++){
+            this.add_item();
+            Toyz.Gui.set_param($.extend(true, options, {
+                param: this.items[i],
+                value: values[i]
+            }));
+        };
+    };
+};
+Toyz.Gui.List.prototype.add_item = function(){
+    var $li = $('<li/>');
+    var $radio = $('<input/>')
+        .prop('type', 'radio')
+        .prop('name', this.name)
+        .prop('checked', true)
+        .css('float','left')
+    if(!(this.hasOwnProperty('items'))){
+        this.items=[];
+    };
+    
+    var new_key = this.name + '-' + this.current_idx++;
+    $radio.prop('value', new_key);
+    $li.prop('id', new_key);
+    var new_item = $.extend(true, {}, this.newItem);
+    new_item = this.gui.build_gui(new_item, $li, new_key);
+    new_item.$div.prepend($radio);
+    $li.append(new_item.$div);
+    new_item.$radio = $radio;
+    new_item.$item = $li;
+    // Select the current series if any item in the div is clicked
+    new_item.$div.click(function(){
+        this.$radio.prop('checked', true);
+    }.bind(new_item));
+    this.items.push(new_item);
+    this.$list.append($li);
+    if(new_item.hasOwnProperty('init')){
+        new_item.init(new_item);
+    };
+};
+Toyz.Gui.List.prototype.remove_item = function(){
+    if(this.items.length==0){
+        return;
+    };
+    var item_name = $('input[name='+this.name+']:checked').val();
+    var item;
+    for(var i=0; i<this.items.length;i++){
+        if(this.items[i].$radio.val()==item_name){
+            item = i;
+        }
+    };
+    // remove all jquery objects from the page and
+    // select the previous item in the list (if it exists)
+    this.items[item].$item.remove();
+    this.items.splice(item,1);
+    if(item>0){
+        this.items[item-1].$radio.prop('checked', true);
+    }else if(this.items.length>0){
+        this.items[item].$radio.prop('checked', true);
+    };
+};
+Toyz.Gui.List.prototype.get_selected_id = function(){
+    return $('input[name='+this.name+']:checked').val();
+};
+Toyz.Gui.List.prototype.get_selected_param = function(){
+    var item_name = $('input[name='+this.name+']:checked').val();
+    var item;
+    for(var i=0; i<this.items.length;i++){
+        if(this.items[i].$radio.val()==item_name){
+            item = i;
+        }
+    };
+    return this.items[item];
+};
+
+Toyz.Gui.Select = function(){
+    param_init().bind(this);
+    
+    // If the user has specified an order, use it
+    if(this.hasOwnProperty('order')){
+        for(var i=0; i<this.order.length; i++){
+            var opt = this.order[i];
+            $option=$('<option/>')
+                .html(this.options[opt])
+                .val(opt)
+            $input.append($option);
+        }
+    }else{
+        if($.isArray(this.options)){
+            for(var i=0;i<this.options.length; i++){
+                $option=$('<option/>')
+                    .html(this.options[i])
+                    .val(this.options[i])
+                $input.append($option);
+            }
+        }else{
+            for(var opt in this.options){
+                $option=$('<option/>')
+                    .html(this.options[opt])
+                    .val(opt)
+                $input.append($option);
+            };
+        };
+    };
+    if(this.hasOwnProperty('defaultVal')){
+        $input.val(this.defaultVal);
+    };
+};
+Toyz.Gui.Select.prototype = new Toyz.Gui.Param();
+Toyz.Gui.Select.prototype.constructor = Toyz.Gui.Select;
+Toyz.Gui.Select.prototype.set = function(value, options){
+    if(value.hasOwnProperty('options')){
+        this.$input.empty();
+        if($.isArray(value.options)){
+            for(var i=0;i<value.options.length; i++){
+                $option=$('<option/>')
+                    .html(value.options[i])
+                    .val(value.options[i])
+                this.$input.append($option);
+            }
+        }else{
+            for(var opt in value.options){
+                $option=$('<option/>')
+                    .html(value.options[opt])
+                    .val(opt)
+                this.$input.append($option);
+            };
+        };
+        if(value.hasOwnProperty('value')){
+            Toyz.Gui.Param.set.call(this, value.value, options);
+        };
+    }else{
+        Toyz.Gui.Param.set.call(this, value, options);
+    };
+};
+
+Toyz.Gui.Gui = function(options){
+    if(!options.hasOwnProperty('$parent')){
+        throw Error("Toyz Gui requires a '$parent' div to hold the parameters");
+    };
+    if(!options.hasOwnProperty('params')){
+        throw Error("Toyz Gui requires parameters");
+    };
+    if(!options.params.type=='div'){
+        throw Error("Toyz Gui requires the root level of the gui to be a 'div' type")
+    };
+    // A key to all of the parameters, so that an individual parameter can be
+    // easily accessed
+    this.params = {};
+    this.events = {};
+    for(var opt in options){
+        this[opt] = options[opt];
+    };
+    // If a file dialog wasn't specified in options, create a file dialog for all of the
+    // file parameters
+    if(!this.hasOwnProperty('file_dialog')){
+        this.file_dialog = new Toyz.Core.FileDialog();
+    };
+    this.build_gui(params, this.$parent, 'root');
+    if(options.hasOwnProperty('default')){
+        this.set_params({values:options.default});
+    };
+};
 // Parse a parameter (param) to see if it is a div containing a subset of parameters
 // param: parameter JSON object
 // $parent: jquery object that is the parent for the new parameter
 // key: name of the parameter
-Toyz.Gui.initParams=function(param, $parent, key){
+Toyz.Gui.Gui.prototype.build_gui = function(param, $parent, key){
     //console.log('param:', key, param);
+    // Check to make sure that multiple parameters don't have the same key
+    if(this.params.hasOwnProperty(key)){
+        throw Error("Multiple entries found for "+key)
+    };
     // The default type of a parameter is an input
     if(!param.hasOwnProperty('type')){
         param.type = 'input';
     };
     param.name = key;
+    
+    if(param.hasOwnProperty('events')){
+        for(var event in param.events){
+            if(!this.events.hasOwnProperty(event)){
+                this.events[event] = [];
+            };
+            this.events[event].push(this.events[event]);
+        };
+    };
+    var gui_param = {};
     // Allow for custom parameters to be inserted
     if(param.type == 'custom'){
-        $parent.append(param.$div);
-    }else if(param.type=='div' || param.type=='conditional'){
-        var $div;
-        param.$div=$('<div/>');
-        
-        // If a legend is given, create a fieldset to hold a group of parameters
-        if(param.hasOwnProperty('legend')){
-            var $fieldset = $('<fieldset/>');
-            var $legend = $("<legend/>")
-                .html(param.legend)
-            if(param.hasOwnProperty('legendClass')){
-                $legend.addClass(param.legendClass);
-            }else{
-                $legend.addClass('collapsible');
-            };
-            if(param.hasOwnProperty('legendCss')){
-                $legend.css(param.legendCss);
-            }
-            $div = $('<div/>');
-            $fieldset.append($legend);
-            $fieldset.append($div);
-            param.$div.append($fieldset);
-        }else{
-            $div = param.$div
-        };
-
-        if(param.hasOwnProperty('css')){
-            param.$div.css(param.css);
-        };
-        if(param.hasOwnProperty('divClass')){
-            param.$div.addClass(param.divClass);
-        };
-        // If properties for the parameter have been defined
-        if(param.hasOwnProperty('prop')){
-            param.$div.prop(param.prop);
-        };
-        // Functions, such as 'click' or 'over'
-        if(param.hasOwnProperty('func')){
-            var functions=param.func;
-            for(var f in functions){
-                param.$div[f](functions[f]);
-            };
-        };
-        if(param.type == 'conditional'){
-            //console.log('conditional ',key,'found')
-            var pKey;
-            var pVal;
-            for(var p in param.selector){
-                if(param.selector.hasOwnProperty(p)){
-                    pKey = p;
-                };
-            };
-            var selector = param.selector[pKey];
-        
-            if(!selector.hasOwnProperty('type')){
-                selector.type = 'input';
-            };
-            
-            //selector = Toyz.Gui.buildParamDiv(selector,$div);
-            selector = Toyz.Gui.initParams(selector,$div,pKey);
-            pVal = Toyz.Gui.val(selector.$input);
-            selector.old_val = pVal;
-            selector.$input.change(function(selector,param){
-                return function(){
-                    var old_set = param.paramSets[selector.old_val];
-                    var pVal = Toyz.Gui.val(selector.$input);
-                    var new_set = param.paramSets[pVal];
-                    old_set.old_display = old_set.$div.css('display');
-                    old_set.$div.css('display','none');
-                    new_set.$div.css('display',new_set.old_display);
-                    selector.old_val = pVal;
-                }
-            }(selector,param));
-        
-            for(var pSet in param.paramSets){
-                //console.log(key,paramSet);
-                var newSet = param.paramSets[pSet];
-                newSet.$div = $('<div/>');
-                newSet = Toyz.Gui.initParams(newSet, $div, pSet);
-                newSet.old_display = newSet.$div.css('display');
-                newSet.$div.css('display','none');
-            };
-            
-            var keyVal = Toyz.Gui.val(selector.$input);
-            //console.log('conditional:',key,'selector:', selector, keyVal)
-            var selected = param.paramSets[keyVal];
-            selected.$div.css('display', selected.$div.css('display', selected.old_display));
-        }else{
-            for(var key in param.params){
-                param.params[key] = Toyz.Gui.initParams(param.params[key], $div, key);
-            };
-            for(var key in param.optional){
-                var legend = param.optional[key].lbl;
-                //delete param.optional[key].lbl;
-                var opt_param = {
-                    type: 'conditional',
-                    selector: {},
-                    paramSets: {
-                        true: {
-                            type: 'div',
-                            params: {}
-                        },
-                        false: {type:'div', params:{}}
-                    }
-                }
-                opt_param.selector['use_'+key] = {
-                    lbl: 'set '+ key,
-                    prop: {
-                        type: 'checkbox',
-                        checked: false
-                    }
-                }
-                opt_param.paramSets[true].params[key] = param.optional[key]
-                param.params[key] = Toyz.Gui.initParams(opt_param, $div, key);
-            }
-        };
-        
-        $parent.append(param.$div);
+        gui_param = param;
+    }else if(param.type=='div'){
+        gui_param = new Toyz.Gui.Div(param, param.name, this);
+    }else if(param.type=='conditional'){
+        gui_param = new Toyz.Gui.Conditional(param, param.name, this);
     }else if(param.type=='list'){
-        param.$div=$('<div/>');
-        if(param.hasOwnProperty('ordered') && param.ordered==true){
-            param.$list=$('<ol/>');
-        }else{
-            param.$list=$('<ul/>');
-        };
-        if(!param.hasOwnProperty('items')){
-            param.items = [];
-        };
-        if(!param.hasOwnProperty('format')){
-            param.format = 'list';
-        };
-        
-        var $button_div=$('<div/>');
-        param.$div.append(param.$list);
-        param.$div.append($button_div);
-        param.current_idx = 0;
-        param.key_name = param.name+'-';
-        
-        param.getSelectedName = function(){
-            return $('input[name='+param.name+']:checked').val();
-        };
-        param.getSelectedParam = function(param){
-            return function(){
-                var item_name = $('input[name='+param.name+']:checked').val();
-                var item;
-                for(var i=0; i<param.items.length;i++){
-                    if(param.items[i].$radio.val()==item_name){
-                        item = i;
-                    }
-                };
-                return param.items[item];
-            }
-        }(param);
-        
-        if(!param.hasOwnProperty('buttons')){
-            param.buttons={
-                add:{
-                    type:'button',
-                    lbl:'',
-                    prop:{
-                        innerHTML:'+'
-                    },
-                    divCss:{
-                        float: 'left'
-                    },
-                    func:{
-                        click:function(param){
-                            return function(){
-                                var $li = $('<li/>');
-                                var $radio = $('<input/>')
-                                    .prop('type', 'radio')
-                                    .prop('name', param.name)
-                                    .prop('checked', true)
-                                    .css('float','left')
-                                if(!(param.hasOwnProperty('items'))){
-                                    param.items=[];
-                                };
-                                
-                                var new_key = param.name + '-' + param.current_idx++;
-                                $radio.prop('value', new_key);
-                                $li.prop('id', new_key);
-                                var new_item = $.extend(true, {}, param.newItem);
-                                new_item = Toyz.Gui.initParams(new_item, $li, new_key);
-                                new_item.$div.prepend($radio);
-                                $li.append(new_item.$div);
-                                new_item.$radio = $radio;
-                                new_item.$item = $li;
-                                // Select the current series if any item in the div is clicked
-                                new_item.$div.click(function(){
-                                    this.$radio.prop('checked', true);
-                                }.bind(new_item));
-                                param.items.push(new_item);
-                                param.$list.append($li);
-                                if(new_item.hasOwnProperty('init')){
-                                    new_item.init(new_item);
-                                };
-                            }
-                        }(param)
-                    }
-                },
-                remove:{
-                    type:'button',
-                    lbl:'',
-                    prop:{
-                        innerHTML:'-'
-                    },
-                    divCss:{
-                        float:'left'
-                    },
-                    func:{
-                        click:function(param){
-                            return function(){
-                                if(param.items.length==0){
-                                    return;
-                                };
-                                var item_name = $('input[name='+param.name+']:checked').val();
-                                var item;
-                                for(var i=0; i<param.items.length;i++){
-                                    if(param.items[i].$radio.val()==item_name){
-                                        item = i;
-                                    }
-                                };
-                                // remove all jquery objects from the page and
-                                // select the previous item in the list (if it exists)
-                                param.items[item].$item.remove();
-                                //delete param.items[item];
-                                param.items.splice(item,1);
-                                if(item>0){
-                                    param.items[item-1].$radio.prop('checked', true);
-                                }else if(param.items.length>0){
-                                    param.items[item].$radio.prop('checked', true);
-                                };
-                            }
-                        }(param)
-                    }
-                }
-            }
-        };
-        for(var button in param.buttons){
-            param.buttons[button]=Toyz.Gui.buildParamDiv(param.buttons[button],$button_div);
-        };
-        $parent.append(param.$div);
+        gui_param = new Toyz.Gui.List(param, param.name, this);
+    }else if(param.type=='select'){
+        gui_param = new Toyz.Gui.Select(param, param.name, this);
     }else{
-        param=Toyz.Gui.buildParamDiv(param, $parent);
+        gui_param = new Toyz.Gui.Param(param, param.name, this);
     };
-
-    return param;
+    $parent.append(gui_param.$div);
+    this.params[gui_param.name] = gui_param;
+    
+    return gui_param;
 };
-
-// Given a list of parameters, parse the list and build a gui for the user
-// to set parameters
-Toyz.Gui.initParamList=function(pList,options){
-    options=$.extend(true,{},options);
-    var param_list=$.extend(true,{
-        params:Toyz.Gui.initParams(pList, options.$parent, 'param-list'),
-        // Find the value of every parameter and subset of parameters in the param_list
-        parseParam:function(params, param_name, param){
-            if(param.type == 'custom'){
-                params[param_name] = param.getVal();
-            }else if(param.type=='div' || param.type=='conditional'){
-                params = $.extend(true, params, param_list.getParams(param));
-            }else if(param.type == 'list'){
-                if(param.format == 'dict'){
-                    params[param_name] = {};
-                    for(var i=0; i<param.items.length; i++){
-                        var item_values = {};
-                        param_list.parseParam(item_values, param.items[i].name, param.items[i]);
-                        if(item_values.hasOwnProperty('value')){
-                            params[param_name][item_values.key] = item_values.value;
-                        }else{
-                            var key = item_values.key;
-                            delete item_values.key;
-                            delete item_values.conditions;
-                            params[param_name][key] = item_values;
-                        }
-                    };
-                }else if(param.format == 'list'){
-                    var local_list = [];
-                    for(var i=0; i<param.items.length; i++){
-                        var val = param_list.parseParam({}, param.items[i].name, param.items[i]);
-                        //console.log('item_values:',val);
-                        local_list.push(val);
-                    };
-                    params[param_name] = local_list;
-                }else if(param.format == 'none'){
-                    params[param_name] = [];
-                    for(var i=0; i<param.items.length; i++){
-                        var item_values = {};
-                        param_list.parseParam(item_values, param_name, param.items[i]);
-                        params[param_name].push(item_values);
-                    };
-                }else if(param.format == 'custom'){
-                    params[param_name] = param.getVal();
-                }else{
-                    throw Error("Invalid parameter format");
-                };
-            }else if(param.type== 'button'){
-                // do nothing, no need to get button parameters
-            }else{
-                var val=Toyz.Gui.val(param.$input);
-                if(param.hasOwnProperty('units')){
-                    if(param.units.length>1){
-                        val=[val,param.$units.val()];
-                    }
-                };
-                params[param_name]=val;
-                return val;
-            };
-        },
-        // Load the values of every parameter in the list
-        getParams:function(paramDiv){
-            // Extract only the parameters that are visible (in the case of conditional or optional parameters)
-            //console.log('paramDiv:', paramDiv);
-            
-            var params = {conditions:{}};
-            //console.log('paramDiv:',paramDiv);
-            if(paramDiv.type == 'conditional'){
-                var pKey;
-                for(var param in paramDiv.selector){
-                    if(paramDiv.selector.hasOwnProperty(param)){
-                        pKey = param;
-                    };
-                };
-                params.conditions[pKey] = Toyz.Gui.val(paramDiv.selector[pKey].$input);
-                var subset = param_list.getParams(
-                    paramDiv.paramSets[Toyz.Gui.val(paramDiv.selector[pKey].$input)]
-                );
-                for(var subParam in subset){
-                    params[subParam] = subset[subParam];
-                };
-                params['conditions'][pKey] = Toyz.Gui.val(paramDiv.selector[pKey].$input);
-            };
-            for(var param_name in paramDiv.params){
-                var param = paramDiv.params[param_name];
-                param_list.parseParam(params, param_name, param);
-            };
-            
-            return params;
-        },
-        // Get the value of a single parameter in the list
-        getParam: function(target_param){
-            function findParam(param){
-                var subset = {};
-                if(param.type == 'div'){
-                    subset = param.params;
-                }else if(param.type == 'conditional'){
-                    subset = param.params;
-                    subset = $.extend({}, subset, param.paramSets);
-                }else if(param.type == 'list'){
-                    if(param.format == 'none'){
-                        subset = param.items;
-                    };
-                };
-                //console.log('param', param);
-                //console.log('subset', subset);
-                var result = {};
-                for(p in subset){
-                    if(p==target_param){
-                        return subset[p];
-                    };
-                    result = findParam(subset[p]);
-                    if(!($.isEmptyObject(result))){
-                        return result;
-                    }
-                };
-                
-                return result;
-            };
-            var param = findParam(param_list.params);
-            if($.isEmptyObject(param)){
-                alert('Could not find '+target_param+' in getParam');
-            };
-            return param;
-        },
-        setInput: function(param, value){
-            if(param.$input.prop('type') == 'checkbox'){
-                param.$input.prop('checked', value);
-                param.$input.change();
-            }else{
-                param.$input.val(value);
-                param.$input.change();
-            };
-        },
-        // Given a set of parameter values, set the appropriate fields for each parameter
-        setParams: function(param, param_values, set_all){
-            if(set_all===undefined){
-                throw 'set_all must be specified';
-            };
-            //console.log('param_values:', param_values);
-            if(param.type == 'div'){
-                for(p in param.params){
-                    param_list.setParams(param.params[p], param_values, set_all);
-                };
-                for(p in param.optional){
-                    var pv = param_values;
-                    if(param_values.hasOwnProperty('conditions')){
-                        pv = $.extend(true, pv, param_values.conditions);
-                    }
-                    param_list.setParams(param.optional[p], pv, set_all);
-                };
-            }else if (param.type == 'conditional'){
-                // There will only be one entry here, but we don't know its name
-                var pKey;
-                for(p in param.selector){
-                    if(param.selector.hasOwnProperty(p)){
-                        pKey=p;
-                    };
-                };
-                if(param_values.hasOwnProperty('conditions')){
-                    param_list.setParams(param.selector[pKey], param_values.conditions, set_all);
-                };
-                var selected = Toyz.Gui.val(param.selector[pKey].$input);
-                
-                // only set conditional values that are selected, unless select_all is true
-                if(set_all){
-                    for(p in param.paramSets){
-                        param_list.setParams(param.paramSets[p], param_values, true);
-                    };
-                }else if(param.paramSets.hasOwnProperty(selected)){
-                    param_list.setParams(param.paramSets[selected], param_values, false);
-                }else{
-                };
-                
-                for(p in param.optional){
-                    if(param.optional.hasOwnProperty(p)){
-                        var pv = param_values;
-                        if(param_values.hasOwnProperty('conditions')){
-                            pv = $.extend(true, pv, param_values.conditions);
-                        }
-                        param_list.setParams(param.optional[p], pv, set_all);
-                    };
-                };
-            }else if(param.type == 'list'){
-                // remove the old items from the list
-                if(set_all){
-                    for(var i=0; i<param.items.length; i++){
-                        param.items[i].$div.remove();
-                    };
-                    param.items = [];
-                    param.current_idx = 0;
-                };
-                if(param_values.hasOwnProperty(param.name)){
-                    // remove the old items from the list
-                    if(!set_all){
-                        for(var i=0; i<param.items.length; i++){
-                            param.items[i].$div.remove();
-                        };
-                        param.items = [];
-                        param.current_idx = 0;
-                    };
-                    if(param.format == 'dict'){
-                        var p_index = 0;
-                        for(var key in param_values[param.name]){
-                            param.buttons.add.$input.click();
-                            param_list.setInput(param.items[p_index].params['key'], key);
-                            if(param.items[p_index].params['value'].type == 'input' ||
-                                    param.items[p_index].params['value'].type == 'select'){
-                                param_list.setInput(
-                                    param.items[p_index++].params['value'], 
-                                    param_values[param.name][key]
-                                );
-                            }else{
-                                param_list.setParams(
-                                    param.items[p_index++].params['value'], 
-                                    param_values[param.name][key],
-                                    set_all
-                                );
-                            };
-                        }
-                    }else if(param.format == 'list'){
-                        for(var i=0; i<param_values[param.name].length; i++){
-                            param.buttons.add.$input.click();
-                            param_list.setInput(
-                                param.items[i],
-                                param_values[param.name][i]
-                            );
-                        }
-                    }else if(param.format == 'none'){
-                        for(var i=0; i<param_values[param.name].length; i++){
-                            param.buttons.add.$input.click();
-                            for(item_key in param_values[param.name][i]){
-                                param_list.setParams(
-                                    param.items[i],param_values[param.name][i],set_all
-                                );
-                            }
-                        }
-                    };
-                };
-            }else if(param.type == 'select'){
-                if(param_values.hasOwnProperty(param.name)){
-                    var pval = param_values[param.name];
-                    if(typeof pval==='object' && pval.hasOwnProperty('options')){
-                        if($.isArray(pval.options)){
-                            param.$input.empty();
-                            for(var i=0;i<pval.options.length; i++){
-                                $option=$('<option/>')
-                                    .html(pval.options[i])
-                                    .val(pval.options[i])
-                                param.$input.append($option);
-                            }
-                        }else{
-                            for(var opt in pval.options){
-                                $option=$('<option/>')
-                                    .html(pval.options[opt])
-                                    .val(opt)
-                                para.$input.append($option);
-                            };
-                        };
-                        if(pval.hasOwnProperty('value')){
-                            param.$input.val(pval.value);
-                        };
-                        param.$input.change();
-                    }else{
-                        param_list.setInput(param, param_values[param.name]);
-                    };
-                };
-            }else if(param.type == 'input'){
-                if(param_values.hasOwnProperty(param.name)){
-                    param_list.setInput(param, param_values[param.name]);
-                };
-            };
-        }
-    },options);
-    
-    if(options.hasOwnProperty('default')){
-        param_list.setParams(param_list.params, options.default, true);
+Toyz.Gui.Gui.prototype.get = function(){
+    var params = {conditions:{}};
+    for(var param in this.params){
+        params = $.extend(true, params, Toyz.Gui.get_param(this.params[param]));
     };
-    
-    return param_list;
+    return params;
+};
+// Toyz.Gui.set_params current options:
+// values: dict of values, key = gui param name, value = new value
+// change: whether or not to call the params 'onchange' function after being set
+// set_all: if set_all===true, the param will have it's values (and options) cleared,
+// even if it isn't specified in values
+Toyz.Gui.Gui.prototype.set_params = function(options){
+    if(!options.hasOwnProperty('values')){
+        throw Error("You must include values to set!");
+    };
+    var options = $.extend(true, {
+        change: true,
+        set_all: false
+    }, options);
+    this.params.set(options);
 };
 
 // Two dimensional slider
