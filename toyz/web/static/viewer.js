@@ -590,7 +590,7 @@ Toyz.Viewer.FileDialog = function(tile_contents){
             }
         }
     };
-    this.gui = Toyz.Gui.Gui({
+    this.gui = new Toyz.Gui.Gui({
         params: gui,
         $parent: this.$div
     });
@@ -1057,7 +1057,7 @@ Toyz.Viewer.Contents.prototype.init_controls = function(controls, divs){
         gui.params[div] = this_div;
     };
     var $div = $('<div/>');
-    gui = Toyz.Gui.Gui({
+    gui = new Toyz.Gui.Gui({
         params: gui,
         $parent: $div
     });

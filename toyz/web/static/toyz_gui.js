@@ -20,6 +20,10 @@ Toyz.Gui.get_param = function(param){
 // set_all: if set_all===true, the param will have it's values (and options) cleared,
 // even if it isn't specified in values
 Toyz.Gui.set_param = function(options){
+    //console.log('options', options);
+    if(!options.hasOwnProperty('values')){
+        throw Error("set_param must be given a 'values' key");
+    };
     if(options.param.type=='div' || options.param.type=='conditional'){
         var options = $.extend(true, {}, options);
         var param = options.param;
@@ -87,7 +91,6 @@ Toyz.Gui.Param = function(param){
         $param_div.append($lbl);
     };
     $param_div.append($input);
-    $div.append($param_div);
     
     // Some parameters may have units associated with them
     // Units are given as an array, which will be converted into a
@@ -124,7 +127,6 @@ Toyz.Gui.Param = function(param){
             .html('...')
             .css('margin-left','5px');
         $btn.click(function(){
-            console.log('param in click function');
             var file_dir = '$user$';
             if(this.$input.val() != ''){
                 file_dir = this.$input.val();
@@ -175,7 +177,12 @@ Toyz.Gui.Param.prototype.get = function(){
     };
     return val;
 };
+// Define separate set_param and set functions so that inherited classes
+// that overwrite set will still inherit set_params (for example, see Toyz.Gui.Select)
 Toyz.Gui.Param.prototype.set = function(value, options){
+    this.set_param(value, options);
+};
+Toyz.Gui.Param.prototype.set_param = function(value, options){
     options = $.extend(true, {
         change: true
     }, options);
@@ -194,56 +201,59 @@ Toyz.Gui.Param.prototype.set = function(value, options){
     };
 };
 
-Toyz.Gui.Div = function(param){
-    var $div;
-    this.init(param);
-    this.$div=$('<div/>');
-    
-    // If a legend is given, create a fieldset to hold a group of parameters
-    if(this.hasOwnProperty('legend')){
-        var $fieldset = $('<fieldset/>');
-        var $legend = $("<legend/>")
-            .html(this.legend)
-        if(this.hasOwnProperty('legend_class')){
-            $legend.addClass(this.legend_class);
+Toyz.Gui.Div = function(options){
+    //console.log('options in DIV', options);
+    if(!(options===undefined)){
+        var param = options.param;
+        this.init(param);
+        
+        // If a legend is given, create a fieldset to hold a group of parameters
+        if(this.hasOwnProperty('legend')){
+            this.$div = $('<fieldset/>');
+            var $legend = $("<legend/>")
+                .html(this.legend)
+            if(this.hasOwnProperty('legend_class')){
+                $legend.addClass(this.legend_class);
+            }else{
+                $legend.addClass('collapsible');
+            };
+            if(this.hasOwnProperty('legend_css')){
+                $legend.css(this.legend_css);
+            }
+            this.$div.append($legend);
         }else{
-            $legend.addClass('collapsible');
+            this.$div=$('<div/>');
         };
-        if(this.hasOwnProperty('legend_css')){
-            $legend.css(this.legend_css);
-        }
-        $div = $('<div/>');
-        $fieldset.append($legend);
-        $fieldset.append($div);
-        this.$div.append($fieldset);
-    }else{
-        $div = this.$div
-    };
 
-    if(this.hasOwnProperty('css')){
-        this.$div.css(this.css);
-    };
-    if(this.hasOwnProperty('div_class')){
-        this.$div.addClass(this.div_class);
-    };
-    // If properties for the parameter have been defined
-    if(this.hasOwnProperty('prop')){
-        this.$div.prop(this.prop);
-    };
-    // Functions, such as 'click' or 'over'
-    if(this.hasOwnProperty('func')){
-        var functions=this.func;
-        for(var f in functions){
-            this.$div[f](functions[f]);
+        if(this.hasOwnProperty('css')){
+            this.$div.css(this.css);
         };
+        if(this.hasOwnProperty('div_class')){
+            this.$div.addClass(this.div_class);
+        };
+        // If properties for the parameter have been defined
+        if(this.hasOwnProperty('prop')){
+            this.$div.prop(this.prop);
+        };
+        // Functions, such as 'click' or 'over'
+        if(this.hasOwnProperty('func')){
+            var functions=this.func;
+            for(var f in functions){
+                this.$div[f](functions[f]);
+            };
+        };
+        this.build_sub_params(options);
     };
-    this.build_sub_params();
 };
 Toyz.Gui.Div.prototype = new Toyz.Gui.Param();
 Toyz.Gui.Div.prototype.constructor = Toyz.Gui.Div;
-Toyz.Gui.Div.prototype.build_sub_params = function(){
+Toyz.Gui.Div.prototype.build_sub_params = function(options){
     for(var key in this.params){
-        this.params[key] = this.gui.build_gui(this.params[key], this.$div, key);
+        this.params[key] = this.gui.build_gui($.extend(false, {}, options, {
+            param: this.params[key],
+            $parent: this.$div,
+            key: key
+        }));
     };
     for(var key in this.optional){
         var legend = this.optional[key].lbl;
@@ -266,8 +276,12 @@ Toyz.Gui.Div.prototype.build_sub_params = function(){
                 checked: false
             }
         }
-        opt_param.param_sets[true].params[key] = this.optional[key]
-        this.params[key] = this.gui.build_gui(opt_param, this.$div, key);
+        opt_param.param_sets[true].params[key] = this.optional[key];
+        this.params[key] = this.gui.build_gui($.extend(true, {}, options, {
+            param: opt_param,
+            $parent: this.$div,
+            key: key
+        }));
     }
 };
 Toyz.Gui.Div.prototype.get = function(){
@@ -305,12 +319,12 @@ Toyz.Gui.Div.prototype.set_optional = function(options){
     };
 };
 
-Toyz.Gui.Conditional = function(param){
-    Toyz.Gui.Div.call(this, param);
+Toyz.Gui.Conditional = function(options){
+    Toyz.Gui.Div.call(this, options);
 };
 Toyz.Gui.Conditional.prototype = new Toyz.Gui.Div();
 Toyz.Gui.Conditional.prototype.constructor = Toyz.Gui.Conditional;
-Toyz.Gui.Conditional.prototype.build_sub_params = function(){
+Toyz.Gui.Conditional.prototype.build_sub_params = function(options){
     var key;
     var pVal;
     for(var p in this.selector){
@@ -322,7 +336,11 @@ Toyz.Gui.Conditional.prototype.build_sub_params = function(){
     if(!this.selector.hasOwnProperty('type')){
         this.selector.type = 'input';
     };
-    this.selector = this.gui.build_gui(this.selector, this.$div, key);
+    this.selector = this.gui.build_gui($.extend(true, {}, options, {
+        param: this.selector,
+        $parent: this.$div,
+        key: key
+    }));
     pVal = Toyz.Gui.val(this.selector.$input);
     this.selector.old_val = pVal;
     // Change the subset of parameters when the selector is changed
@@ -338,11 +356,16 @@ Toyz.Gui.Conditional.prototype.build_sub_params = function(){
 
     for(var pSet in this.param_sets){
         //console.log(key,paramSet);
-        var newSet = this.param_sets[pSet];
-        newSet.$div = $('<div/>');
-        newSet = this.gui.build_gui(newSet, this.$div, pSet);
-        newSet.old_display = newSet.$div.css('display');
-        newSet.$div.css('display','none');
+        var new_set = this.param_sets[pSet];
+        new_set.$div = $('<div/>');
+        new_set = this.gui.build_gui($.extend(true, {}, options, {
+            param: new_set,
+            $parent: this.$div,
+            key: pSet,
+            add2root: false
+        }));
+        new_set.old_display = new_set.$div.css('display');
+        new_set.$div.css('display','none');
     };
     
     var keyVal = Toyz.Gui.val(this.selector.$input);
@@ -386,7 +409,10 @@ Toyz.Gui.Conditional.prototype.set = function(options){
     this.set_optional(options);
 };
 
-Toyz.Gui.List = function(){
+Toyz.Gui.List = function(options){
+    //console.log('new list', this);
+    var param = options.param;
+    this.init(param);
     this.$div=$('<div/>');
     if(this.hasOwnProperty('ordered') && this.ordered==true){
         this.$list=$('<ol/>');
@@ -436,8 +462,14 @@ Toyz.Gui.List = function(){
             }
         }
     };
+    var btn_idx = 0;
     for(var button in this.buttons){
-        this.buttons[button] = this.gui.build_param_div(this.buttons[button],$button_div);
+        this.buttons[button] = this.gui.build_gui($.extend(true, {}, options, {
+            param: this.buttons[button],
+            $parent: $button_div,
+            key: param.name+'-btn-'+btn_idx++,
+            add2root: false
+        }));
     };
 };
 Toyz.Gui.List.prototype = new Toyz.Gui.Param();
@@ -485,12 +517,20 @@ Toyz.Gui.List.prototype.set = function(values, options){
             this.add_item();
             Toyz.Gui.set_param($.extend(true, options, {
                 param: this.items[p_index].params.key,
-                value: key
+                values: {key: key}
             }));
-            Toyz.Gui.set_param($.extend(true, options, {
-                param: this.items[p_index].params.value,
-                value: values[key]
-            }));
+            console.log('values', values[key]);
+            if(typeof values[key]==='object'){
+                Toyz.Gui.set_param($.extend(true, options, {
+                    param: this.items[p_index].params.value,
+                    values: values[key]
+                }));
+            }else{
+                Toyz.Gui.set_param($.extend(true, options, {
+                    param: this.items[p_index].params.value,
+                    values: {value: values[key]}
+                }));
+            };
             p_index++;
         };
     }else if(this.format == 'list'){
@@ -498,7 +538,7 @@ Toyz.Gui.List.prototype.set = function(values, options){
             this.add_item();
             Toyz.Gui.set_param($.extend(true, options, {
                 param: this.items[i],
-                value: values[i]
+                values: values[i]
             }));
         };
     };
@@ -518,7 +558,12 @@ Toyz.Gui.List.prototype.add_item = function(){
     $radio.prop('value', new_key);
     $li.prop('id', new_key);
     var new_item = $.extend(true, {}, this.newItem);
-    new_item = this.gui.build_gui(new_item, $li, new_key);
+    new_item = this.gui.build_gui({
+        param: new_item,
+        $parent: $li,
+        key: new_key,
+        add2root: false
+    });
     new_item.$div.prepend($radio);
     $li.append(new_item.$div);
     new_item.$radio = $radio;
@@ -568,37 +613,37 @@ Toyz.Gui.List.prototype.get_selected_param = function(){
     return this.items[item];
 };
 
-Toyz.Gui.Select = function(){
-    param_init().bind(this);
+Toyz.Gui.Select = function(param){
+    Toyz.Gui.Param.call(this, param);
     
     // If the user has specified an order, use it
     if(this.hasOwnProperty('order')){
         for(var i=0; i<this.order.length; i++){
             var opt = this.order[i];
-            $option=$('<option/>')
+            var $option=$('<option/>')
                 .html(this.options[opt])
                 .val(opt)
-            $input.append($option);
+            this.$input.append($option);
         }
     }else{
         if($.isArray(this.options)){
             for(var i=0;i<this.options.length; i++){
-                $option=$('<option/>')
+                var $option=$('<option/>')
                     .html(this.options[i])
                     .val(this.options[i])
-                $input.append($option);
+                this.$input.append($option);
             }
         }else{
             for(var opt in this.options){
-                $option=$('<option/>')
+                var $option=$('<option/>')
                     .html(this.options[opt])
                     .val(opt)
-                $input.append($option);
+                this.$input.append($option);
             };
         };
     };
     if(this.hasOwnProperty('defaultVal')){
-        $input.val(this.defaultVal);
+        this.$input.val(this.defaultVal);
     };
 };
 Toyz.Gui.Select.prototype = new Toyz.Gui.Param();
@@ -622,14 +667,15 @@ Toyz.Gui.Select.prototype.set = function(value, options){
             };
         };
         if(value.hasOwnProperty('value')){
-            Toyz.Gui.Param.set.call(this, value.value, options);
+            this.set_param(value.value, options);
         };
     }else{
-        Toyz.Gui.Param.set.call(this, value, options);
+        this.set_param(value, options);
     };
 };
 
 Toyz.Gui.Gui = function(options){
+    console.log('Toyz.Gui.Gui options', options);
     if(!options.hasOwnProperty('$parent')){
         throw Error("Toyz Gui requires a '$parent' div to hold the parameters");
     };
@@ -641,37 +687,53 @@ Toyz.Gui.Gui = function(options){
     };
     // A key to all of the parameters, so that an individual parameter can be
     // easily accessed
-    this.params = {};
-    this.events = {};
     for(var opt in options){
         this[opt] = options[opt];
     };
+    this.params = {};
+    this.events = {};
     // If a file dialog wasn't specified in options, create a file dialog for all of the
     // file parameters
     if(!this.hasOwnProperty('file_dialog')){
         this.file_dialog = new Toyz.Core.FileDialog();
     };
-    this.build_gui(params, this.$parent, 'root');
+    this.build_gui({
+        param: options.params,
+        $parent: this.$parent,
+        key: 'root'
+    });
+    this.root = this.params.root;
     if(options.hasOwnProperty('default')){
         this.set_params({values:options.default});
     };
+    //console.log('Toyz.Gui.Gui', this);
 };
 // Parse a parameter (param) to see if it is a div containing a subset of parameters
 // param: parameter JSON object
 // $parent: jquery object that is the parent for the new parameter
 // key: name of the parameter
-Toyz.Gui.Gui.prototype.build_gui = function(param, $parent, key){
+// add to root: whether or not to add element to the root list of parameters
+// (for example, the items in a list should not be included in the root as 
+// they can be retrieved by using list.items[item_key] for a Toyz.Gui.List type)
+Toyz.Gui.Gui.prototype.build_gui = function(options){
+    //console.log('Toyz.Gui.Gui in build', this);
+    //console.log('build_gui options:', options);
+    if(!options.hasOwnProperty('add2root')){
+        options.add2root = true;
+    };
+    var param = options.param;
     //console.log('param:', key, param);
     // Check to make sure that multiple parameters don't have the same key
-    if(this.params.hasOwnProperty(key)){
-        throw Error("Multiple entries found for "+key)
+    //console.log('key: ',options.key);
+    if(this.params.hasOwnProperty(options.key)){
+        throw Error("Multiple entries found for "+options.key)
     };
     // The default type of a parameter is an input
     if(!param.hasOwnProperty('type')){
         param.type = 'input';
     };
-    param.name = key;
-    
+    param.name = options.key;
+    param.gui = this;
     if(param.hasOwnProperty('events')){
         for(var event in param.events){
             if(!this.events.hasOwnProperty(event)){
@@ -682,22 +744,27 @@ Toyz.Gui.Gui.prototype.build_gui = function(param, $parent, key){
     };
     var gui_param = {};
     // Allow for custom parameters to be inserted
+    //console.log('about to create param', param.name, param);
     if(param.type == 'custom'){
         gui_param = param;
     }else if(param.type=='div'){
-        gui_param = new Toyz.Gui.Div(param, param.name, this);
+        gui_param = new Toyz.Gui.Div(options);
     }else if(param.type=='conditional'){
-        gui_param = new Toyz.Gui.Conditional(param, param.name, this);
+        gui_param = new Toyz.Gui.Conditional(options);
     }else if(param.type=='list'){
-        gui_param = new Toyz.Gui.List(param, param.name, this);
+        gui_param = new Toyz.Gui.List(options);
     }else if(param.type=='select'){
-        gui_param = new Toyz.Gui.Select(param, param.name, this);
+        gui_param = new Toyz.Gui.Select(param);
     }else{
-        gui_param = new Toyz.Gui.Param(param, param.name, this);
+        gui_param = new Toyz.Gui.Param(param);
     };
-    $parent.append(gui_param.$div);
-    this.params[gui_param.name] = gui_param;
-    
+    options.$parent.append(gui_param.$div);
+    if(options.add2root===true){
+        //console.log('addding', gui_param.name,'to root')
+        this.params[gui_param.name] = gui_param;
+    }else{
+        //console.log('not adding',gui_param.name, 'to root')
+    };
     return gui_param;
 };
 Toyz.Gui.Gui.prototype.get = function(){
@@ -720,7 +787,7 @@ Toyz.Gui.Gui.prototype.set_params = function(options){
         change: true,
         set_all: false
     }, options);
-    this.params.set(options);
+    this.root.set(options);
 };
 
 // Two dimensional slider

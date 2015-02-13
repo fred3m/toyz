@@ -109,23 +109,28 @@ Toyz.Core.Websocket = function(options){
     var url="ws://"+location.host+this.job_url;
     this.ws=new WebSocket(url);
     if(this.hasOwnProperty('onopen')){
-        this.ws.onopen=jobsocket.onopen;
+        this.ws.onopen = this.onopen;
         delete this.onopen;
     }else{
         this.ws.onopen=function(){
             if(this.logger){
                 this.logger.log("Connected to server",true);
             };
-        };
+        }.bind(this);
     };
     this.ws.onclose=function(){
         if(this.logger){
             this.logger.log("Connection to server lost",true);
         };
-    };
+    }.bind(this);
 	this.ws.onmessage=function(event){
+        //console.log('event', event);
 		var result = JSON.parse(event.data);
         var request = this.requests[result.request_id];
+        // For initialization, there won't be a request stored
+        if(request===undefined){
+            request = {};
+        };
         // Special cases of responses from the server
         var responses = {
             ERROR: 'rx_error',
@@ -139,7 +144,7 @@ Toyz.Core.Websocket = function(options){
                 if(request.hasOwnProperty(response)){
                     exit = request[response](result);
                 }else{
-                    exit = this[response](result);
+                    exit = this[responses[response]](result);
                 };
                 if(exit){
                     return;
@@ -156,7 +161,7 @@ Toyz.Core.Websocket = function(options){
         if(result.hasOwnProperty('finished') && result.finished===true){
             delete this.requests[result.request_id];
         };
-	};
+	}.bind(this);
 };
 Toyz.Core.Websocket.prototype.send_task = function(request){
     var task = request.task;
@@ -192,19 +197,20 @@ Toyz.Core.Websocket.prototype.send_task = function(request){
         //The connection hasn't opened yet, add the task to the queue
         console.log('readyState:',
                 this.ws.readyState, 'session_id', this.session_id)
-        console.log('stored task in queue:', options);
-        this.queue.push(options);
+        console.log('stored task in queue:', request);
+        this.queue.push(request);
     };
 };
-Toyz.Core.Websocket.prototype.init_ws = function(){
+Toyz.Core.Websocket.prototype.init_ws = function(result){
     this.user_id = result.user_id;
     this.session_id = result.session_id;
     //console.log('session:',result);
     // Run any tasks that were waiting for the websocket to load
     for(var i=0;i<this.queue.length;i++){
+        console.log("sending task from queue", this.queue[i].task);
         this.send_task(this.queue[i]);
     };
-    return false;
+    return true;
 };
 
 // For security reasons browsers do not have a control to load files from a server
@@ -217,23 +223,24 @@ Toyz.Core.Websocket.prototype.init_ws = function(){
 // function does nothing, so initiate or declare this later on to tell the
 // application what to do with the file.
 Toyz.Core.FileDialog = function(options){
+    options = $.extend(true, {}, options);
     // DOM objects in the file dialog
     this.$div = $('<div/>').prop('id','file-dialog').prop('title','Select file to open');
     var $new_folder = $('<div/>').prop('title','New Folder Name');
     var $path_outer_div = $('<div/>').addClass('file-dialog-path-div');
     var $path_lbl = $('<lbl/>').addClass("file-dialog-div-lbl").html('current path: ');
     this.$path_div = $('<div/>').css('display', 'inline-block');
-    this.shortcuts = Toyz.Core.FileSelect('shortcuts', this,
+    this.shortcuts = new Toyz.Core.FileSelect('shortcuts', this,
         function(){
             return '$'+this.shortcuts.$select.val()+'$'
-        }.bind(this);
+        }.bind(this)
     );
-    this.folders = Toyz.Core.FileSelect('folders', this,
+    this.folders = new Toyz.Core.FileSelect('folders', this,
         function(){
             return this.path+this.folders.$select.val()
-        }
+        }.bind(this)
     );
-    this.files = Toyz.Core.FileSelect('files', this);
+    this.files = new Toyz.Core.FileSelect('files', this);
     $('body').append(this.$div);
     $('body').append($new_folder);
     this.$div.append($path_outer_div);
@@ -253,7 +260,7 @@ Toyz.Core.FileDialog = function(options){
     };
     // Attach websocket to file dialog
     if(!options.hasOwnProperty('websocket')){
-        this.websocket = new Toyz.Core.Websocket({rx_action: function(){};});
+        this.websocket = new Toyz.Core.Websocket({rx_action: function(){}});
     }else{
         this.websocket = options.websocket;
         delete options.websocket;
@@ -312,7 +319,7 @@ Toyz.Core.FileDialog = function(options){
             Create: function(){
                 if(this.new_folder.$input.val()!=null && this.new_folder.$input.val()!=''){
                     this.new_folder.$div.dialog('close');
-                    this.websocket.send_task(
+                    this.websocket.send_task({
                         task: {
                             module: 'toyz.web.tasks',
                             task: 'create_paths',
@@ -330,7 +337,7 @@ Toyz.Core.FileDialog = function(options){
                             callback: this.click_open,
                             buttons: this.$div.dialog.buttons
                         }),
-                    );
+                    });
                 }else{
                     alert('You must enter a path to create a new folder');
                 }
@@ -468,12 +475,23 @@ Toyz.Core.Logger=function(element){
 
 // Dynamically load a list of scripts
 Toyz.Core.load_js = function(scripts, callback){
+    console.log('called load_js');
     var script = scripts[0];
     if(scripts.length>0){
         console.log('loading', script);
         scripts.shift();
         var load_js = Toyz.Core.load_js.bind(undefined, scripts, callback);
-        $.getScript(script, load_js);
+        //$.getScript(script, load_js);
+        $.getScript(script)
+            .done(function( script, textStatus ) {
+                load_js();
+            })
+            .fail(function( jqxhr, settings, exception ) {
+                console.log('jqxhr', jqxhr);
+                console.log('settings', settings);
+                console.log('exception', exception);
+                throw exception.stack;
+            });
     }else{
         callback();
     }
@@ -481,12 +499,44 @@ Toyz.Core.load_js = function(scripts, callback){
 
 // Dynamically load a list of style sheets
 Toyz.Core.load_css = function(styles, callback){
+    // There is no css equivalent to $.getScript. so we create one if it doesn't
+    // already exist
+    if(!jQuery.hasOwnProperty('getCss')){
+        jQuery.getCss = function (url, callback){
+            return $.ajax({
+                url: url,
+                dataType: "text",
+                success: function(url, callback){
+                    $('<link/>').prop({
+                        href: url,
+                        rel: "stylesheet",
+                        type: "text/css",
+                    }).appendTo("head");
+                    if(!callback===undefined){
+                        callback();
+                    };
+                }.bind(null, url, callback)
+            });
+        };
+    };
+    
     var style = styles[0];
     if(styles.length>0){
         console.log('loading', style);
         styles.shift();
         var load_css = Toyz.Core.load_css.bind(undefined, styles, callback);
-        $.getCSS(style, load_css);
+        //$.getCSS(style, load_css);
+        //console.log('getCss', $.getCss);
+        $.getCss(style)
+            .done(function( script, textStatus ) {
+                load_css();
+            })
+            .fail(function( jqxhr, settings, exception ) {
+                console.log('jqxhr', jqxhr);
+                console.log('settings', settings);
+                console.log('exception', exception);
+                throw exception.stack;
+            });
     }else{
         callback();
     }
@@ -500,7 +550,7 @@ Toyz.Core.load_dependencies=function(dependencies, callback){
     if(dependencies.hasOwnProperty('core') && dependencies.core){
         scripts = Toyz.Core.core_js;
         style_sheets = Toyz.Core.core_css;
-    }
+    };
     if(dependencies.hasOwnProperty('js')){
         scripts = scripts.concat(dependencies.js);
     };
@@ -511,7 +561,8 @@ Toyz.Core.load_dependencies=function(dependencies, callback){
     // Call the load_css function with the callback function and style sheets when
     // all scripts have loaded
     var css_callback = Toyz.Core.load_css.bind(undefined, style_sheets, callback);
-    
+    console.log('scripts', scripts);
+    console.log('styles', style_sheets);
     Toyz.Core.load_js(scripts, css_callback);
 };
 
@@ -590,120 +641,5 @@ Toyz.Core.buildInteractiveTable=function(dataArray,table){
         }
     }
 };
-
-// jquery-getCSS by Dave Furero
-// https://github.com/furf/jquery-getCSS
-(function (window, document, jQuery) {
-
-  var head = document.getElementsByTagName('head')[0],
-      loadedCompleteRegExp = /loaded|complete/,
-      callbacks = {},
-      callbacksNb = 0,
-      timer;
-
-  jQuery.getCSS = function (url, options, callback) {
-
-    if (jQuery.isFunction(options)) {
-      callback = options;
-      options  = {};
-    }
-
-    var link = document.createElement('link');
-
-    link.rel   = 'stylesheet';
-    link.type  = 'text/css';
-    link.media = options.media || 'screen';
-    link.href  = url;
-
-    if (options.charset) {
-      link.charset = options.charset;
-    }
-
-    if (options.title) {
-      callback = (function (callback) {
-        return function () {
-          link.title = options.title;
-          callback(link, "success");
-        };
-      })(callback);
-    }
-
-    // onreadystatechange
-    if (link.readyState) {
-
-      link.onreadystatechange = function () {
-        if (loadedCompleteRegExp.test(link.readyState)) {
-          link.onreadystatechange = null;
-          callback(link, "success");
-        }
-      };
-
-    // If onload is available, use it
-    } else if (link.onload === null /* exclude Webkit => */ && link.all) {
-      link.onload = function () {
-        link.onload = null;
-        callback(link, "success");
-      };
-
-    // In any other browser, we poll
-    } else {
-
-      callbacks[link.href] = function () {
-        callback(link, "success");
-      };
-
-      if (!callbacksNb++) {
-        // poll(cssPollFunction);
-
-        timer = window.setInterval(function () {
-
-          var callback,
-              stylesheet,
-              stylesheets = document.styleSheets,
-              href,
-              i = stylesheets.length;
-
-          while (i--) {
-            stylesheet = stylesheets[i];
-            if ((href = stylesheet.href) && (callback = callbacks[href])) {
-              try {
-                // We store so that minifiers don't remove the code
-                callback.r = stylesheet.cssRules;
-                // Webkit:
-                // Webkit browsers don't create the stylesheet object
-                // before the link has been loaded.
-                // When requesting rules for crossDomain links
-                // they simply return nothing (no exception thrown)
-                // Gecko:
-                // NS_ERROR_DOM_INVALID_ACCESS_ERR thrown if the stylesheet is not loaded
-                // If the stylesheet is loaded:
-                //  * no error thrown for same-domain
-                //  * NS_ERROR_DOM_SECURITY_ERR thrown for cross-domain
-                throw 'SECURITY';
-              } catch(e) {
-                // Gecko: catch NS_ERROR_DOM_SECURITY_ERR
-                // Webkit: catch SECURITY
-                if (/SECURITY/.test(e)) {
-
-                  // setTimeout(callback, 0);
-                  callback(link, "success");
-
-                  delete callbacks[href];
-
-                  if (!--callbacksNb) {
-                    timer = window.clearInterval(timer);
-                  }
-
-                }
-              }
-            }
-          }
-        }, 13);
-      }
-    }
-    head.appendChild(link);
-  };
-
-})(window, window.document, window.jQuery);
 
 console.log('toyz_core.js loaded');

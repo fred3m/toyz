@@ -5,7 +5,6 @@
         <title>Settings - Toyz for Data Reduction and Analysis</title>
         <script src="/third_party/jquery/jquery.min.js" type="text/javascript"></script>
         <script src="/toyz_core.js" type="text/javascript"></script>
-        <script src="/third_party/jquery_ui/jquery-ui.js" type="text/javascript"></script>
     </head>
     <body>
         <div id='tabs'>
@@ -35,7 +34,7 @@
         var new_user_gui;
         
         function rxMsg(result){
-            //console.log('rx message:', result);
+            console.log('rx message:', result);
             if(result.id == 'user_settings'){
                 var account_info = {
                     user_id: websocket.user_id,
@@ -60,14 +59,10 @@
                     });
                 };
                 
-                account_settings = Toyz.Gui.Gui({
+                account_settings = new Toyz.Gui.Gui({
                     params: my_params,
-                    $parent: $('#account-settings-div')
-                    default: {
-                        values:{
-                            group_id: params.group_settings['group_id']
-                        }
-                    }
+                    $parent: $('#account-settings-div'),
+                    default: result
                 });
                 //console.log('account_settings:',account_settings);
                 
@@ -129,7 +124,7 @@
             var $div = $('<div/>');
             $('body').append($div);
             
-            pwd_gui = Toyz.Gui.Gui({
+            pwd_gui = new Toyz.Gui.Gui({
                 params: {
                     type: 'div',
                     params: {
@@ -155,7 +150,7 @@
                 },
                 $parent: $div
             });
-            pwd_gui.params.$div.dialog({
+            pwd_gui.root.$div.dialog({
                 resizable:true,
                 draggable:true,
                 width:300,
@@ -181,10 +176,11 @@
             }).css("font-size", "12px");;
         };
         
-        function init_new_user_gui_gui(){
+        function init_new_user_gui(){
+            console.log('called init');
             var $div = $('<div/>');
             $('body').append($div);
-            new_user_gui = Toyz.Gui.Gui({
+            new_user_gui = new Toyz.Gui.Gui({
                 params: {
                     type: 'div',
                     params: {
@@ -195,7 +191,7 @@
                 },
                 $parent: $div
             });
-            new_user_gui.params.$div.dialog({
+            new_user_gui.root.$div.dialog({
                 resizable:true,
                 draggable:true,
                 width:300,
@@ -216,10 +212,12 @@
                         $(this).dialog('close');
                     }
                 },
-            }).css("font-size", "12px");;
+            }).css("font-size", "12px");
         };
         
         function dependencies_onload(){
+            console.log('called onload');
+            $("#tabs").tabs();
             init_pwd_gui();
             init_new_user_gui();
             $('#submit-account-settings').click(function(){
@@ -252,7 +250,6 @@
         };
         
         window.onload=function(){
-            $("#tabs").tabs();
             Toyz.Core.load_dependencies(
                 dependencies={
                     core: true,

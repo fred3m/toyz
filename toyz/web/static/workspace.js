@@ -449,7 +449,7 @@ Toyz.Workspace.Workspace.prototype.rx_msg = function(result){
     if(result.id == 'io_info'){
         var param_div = $.extend(true,{},result.io_info);
         
-        this.load_src_dialog.gui = Toyz.Gui.Gui({
+        this.load_src_dialog.gui = new Toyz.Gui.Gui({
             params: param_div,
             $parent: this.load_src_dialog.$div,
         });

@@ -306,7 +306,7 @@ Toyz.API.Highcharts.Gui = function(params){
             }
         }
     };
-    this.gui = Toyz.Gui.Gui({
+    this.gui = new Toyz.Gui.Gui({
         params: gui,
         $parent: this.$div
     });

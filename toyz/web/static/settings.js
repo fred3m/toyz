@@ -47,7 +47,6 @@ Toyz.Console.Settings.getToyzSettings = function(params){
             }
         }
     };
-    
     return toyz;
 };
 
@@ -79,8 +78,7 @@ Toyz.Console.Settings.getThirdParty = function(params){
                 }
             }
         }
-    }
-    
+    };
     return third_party;
 };
 Toyz.Console.Settings.UserSettings = function(params){
@@ -154,11 +152,11 @@ Toyz.Console.Settings.UserSettings = function(params){
                 }
             }
         },
-        modules: Toyz.Console.Settings.getModuleSettings({
+        modules: new Toyz.Console.Settings.getModuleSettings({
             legend:'Modules',
             param_name: 'modules'
         }),
-        toyz: Toyz.Console.Settings.getToyzSettings({
+        toyz: new Toyz.Console.Settings.getToyzSettings({
             legend: 'Toyz',
             param_name: 'toyz',
             file_dialog: true
@@ -200,7 +198,7 @@ Toyz.Console.Settings.UserSettings = function(params){
             },
             func: {
                 click: function(new_user_gui){
-                    new_user_gui.params.$div.dialog('open');
+                    new_user_gui.root.$div.dialog('open');
                 }.bind(this, params.new_user_gui)
             }
         },
@@ -225,7 +223,7 @@ Toyz.Console.Settings.UserSettings = function(params){
 }
 Toyz.Console.Settings.getUserSettings = function(params, $user_div){
     var user_settings = new Toyz.Console.Settings.UserSettings(params);
-    var gui = Toyz.Gui.Gui({
+    var gui = new Toyz.Gui.Gui({
         params: user_settings,
         $parent: $user_div,
         default: {
@@ -311,11 +309,11 @@ Toyz.Console.Settings.GroupSettings = function(params){
                     }
                 }
             },
-            modules: Toyz.Console.Settings.getModuleSettings({
+            modules: new Toyz.Console.Settings.getModuleSettings({
                 legend:'Modules',
                 param_name: 'modules'
             }),
-            toyz: Toyz.Console.Settings.getToyzSettings({
+            toyz: new Toyz.Console.Settings.getToyzSettings({
                 legend: 'Toyz',
                 param_name: 'toyz',
                 file_dialog: true
@@ -338,7 +336,7 @@ Toyz.Console.Settings.GroupSettings = function(params){
                 },
                 func: {
                     click: function(new_group){
-                        new_group.params.$div.dialog('open');
+                        new_group.root.$div.dialog('open');
                     }.bind(this, params.new_group)
                 }
             },
@@ -364,8 +362,8 @@ Toyz.Console.Settings.GroupSettings = function(params){
 };
 
 Toyz.Console.Settings.getGroupSettings = function(params, $group_div){
-    var group_settings = Toyz.Console.Settings.GroupSettings(params);
-    var gui = Toyz.Gui.Gui({
+    var group_settings = new Toyz.Console.Settings.GroupSettings(params);
+    var gui = new Toyz.Gui.Gui({
         params: group_settings,
         $parent: $group_div,
         default: {
@@ -465,22 +463,22 @@ Toyz.Console.Settings.getAdminSettings = function(params, $admin_div){
     };
     
     var admin_settings = {
-        config: Toyz.Gui.Gui({
-            $parent:$admin_div
+        config: new Toyz.Gui.Gui({
+            $parent:$admin_div,
             params:config_params,
             default: params.config
         }),
-        db: Toyz.Gui.Gui({
+        db: new Toyz.Gui.Gui({
             $parent: $admin_div,
             params: db_params,
             default: params.db
         }),
-        web: Toyz.Gui.Gui({
+        web: new Toyz.Gui.Gui({
             $parent: $admin_div,
             params: web_params,
             default: params.web
         }),
-        security: Toyz.Gui.Gui({
+        security: new Toyz.Gui.Gui({
             $parent: $admin_div,
             params: security_params,
             default: params.security
@@ -537,8 +535,9 @@ Toyz.Console.Settings.getAccountSettings = function(params){
                 },
                 func:{
                     click: function(){
-                        this.params.$div.dialog('open');
-                    }.bind(params.change_pwd)
+                        console.log('this', this);
+                        this.root.$div.dialog('open');
+                    }.bind(params.pwd_gui)
                 }
             },
             shortcuts_div: {
