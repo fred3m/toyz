@@ -136,13 +136,13 @@ Toyz.Gui.Param = function(param){
                 callback: function(){
                     var path = "";
                     if(!(this.gui.file_dialog.path===null)){
-                        path = file_dialog.path;
+                        path = this.gui.file_dialog.path;
                     };
                     if(!(this.gui.file_dialog.files.$select.val()===null)){
                         path = path + this.gui.file_dialog.files.$select.val();
                     }
                     this.$input.val(path);
-                }
+                }.bind(this)
             });
         }.bind(this));
         $param_div.append($btn);
@@ -510,7 +510,6 @@ Toyz.Gui.List.prototype.set = function(values, options){
     };
     this.items = [];
     this.current_idx = 0;
-    
     if(this.format == 'dict'){
         var p_index = 0;
         for(var key in values){
@@ -519,7 +518,6 @@ Toyz.Gui.List.prototype.set = function(values, options){
                 param: this.items[p_index].params.key,
                 values: {key: key}
             }));
-            console.log('values', values[key]);
             if(typeof values[key]==='object'){
                 Toyz.Gui.set_param($.extend(true, options, {
                     param: this.items[p_index].params.value,
@@ -536,10 +534,19 @@ Toyz.Gui.List.prototype.set = function(values, options){
     }else if(this.format == 'list'){
         for(var i=0; i<values.length; i++){
             this.add_item();
-            Toyz.Gui.set_param($.extend(true, options, {
-                param: this.items[i],
-                values: values[i]
-            }));
+            if(typeof values[i]==='object'){
+                Toyz.Gui.set_param($.extend(true, options, {
+                    param: this.items[i],
+                    values: values[i]
+                }));
+            }else{
+                var val = {};
+                val[this.items[i].name] = values[i];
+                Toyz.Gui.set_param($.extend(true, options, {
+                    param: this.items[i],
+                    values: val
+                }));
+            };
         };
     };
 };

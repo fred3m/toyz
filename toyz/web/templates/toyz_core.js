@@ -25,7 +25,6 @@ Toyz.namespace('Toyz.Core');
 // Define some basic namespace functions //////////
 // Check if a namespace exists
 Toyz.Core.exists = function(namespace) {
-    console.log('namespace:', namespace);
     var parts = namespace.split('.');
     var obj = window;
     for(var i=0; i<parts.length; i++){
@@ -195,8 +194,8 @@ Toyz.Core.Websocket.prototype.send_task = function(request){
         };
     }else{
         //The connection hasn't opened yet, add the task to the queue
-        console.log('readyState:',
-                this.ws.readyState, 'session_id', this.session_id)
+        //console.log('readyState:',
+        //        this.ws.readyState, 'session_id', this.session_id)
         console.log('stored task in queue:', request);
         this.queue.push(request);
     };
@@ -281,20 +280,20 @@ Toyz.Core.FileDialog = function(options){
     };
     // Navigation Buttons
     var $up_btn = $('<button/>').html("\u21B0").click(function(){
-        this.load_directory(this.parent_folder);
-    });
+        this.load_directory({path: this.parent_folder});
+    }.bind(this));
     var $back_btn = $('<button/>').html("\u25C0").click(function(){
         if(this.hist_index>0){
             this.hist_index--;
-            this.load_directory(this.hist[this.hist_index]);
+            this.load_directory({path: this.hist[this.hist_index]});
         }
-    });
+    }.bind(this));
     var $fwd_btn = $('<button/>').html("\u25B6").click(function(){
         if(this.hist_index<this.hist.length-1){
             this.hist_index++;
-            this.load_directory(this.hist[this.hist_index]);
+            this.load_directory({path: this.hist[this.hist_index]});
         }
-    });
+    }.bind(this));
     this.$div.append($up_btn);
     this.$div.append($back_btn);
     this.$div.append($fwd_btn);
@@ -329,8 +328,6 @@ Toyz.Core.FileDialog = function(options){
                             }
                         },
                         callback: function(params, result){
-                            console.log('made it to callback');
-                            console.log('params:', params);
                             this.load_directory(params);
                         }.bind({
                             path: this.path,
@@ -354,18 +351,16 @@ Toyz.Core.FileDialog.prototype.load_directory = function(options){
         options.path = '';
     };
     if(this.hist.length==0){
-        this.hist.push(path);
+        this.hist.push(options.path);
     };
     // Allow the user to customize the buttons displayed
-    if(options.hasOwnProperty(buttons)){
-        this.$div.dialog({
-            buttons: options.buttons
-        });
-    }else{
-        this.$div.dialog({
-            buttons:this.default_buttons
-        });
-    };
+    var buttons = this.default_buttons;
+    if(options.hasOwnProperty('buttons')){
+        buttons = options.buttons;
+    }else;
+    this.$div.dialog({
+        buttons:this.default_buttons
+    });
     this.websocket.send_task({
         task: {
             module:"toyz.web.tasks",
@@ -385,14 +380,12 @@ Toyz.Core.FileDialog.prototype.load_directory = function(options){
     };
 };
 Toyz.Core.FileDialog.prototype.update = function(params){
-    console.log('params in update:', params);
     this.path = params.path;
     this.$path_div.html(params.path);
     this.parent_folder = params.parent;
     this.shortcuts.update(params.shortcuts);
     this.folders.update(params.folders);
     this.files.update(params.files);
-    console.log('file dialog path', file_dialog.path);
 };
 
 // Window for a specified type of file displayed in a Toyz.Core.FileDialog
@@ -413,14 +406,14 @@ Toyz.Core.FileSelect = function(div_name, file_dialog, get_path){
     $select_div.append(this.$select);
     // If clicking on an item should load a new path from the server, 
     // set the onchange event
-    if(!get_path===undefined){
+    if(!(get_path===undefined)){
         this.get_path = get_path;
         this.$select.change(function(){
             var path = this.get_path();
             this.file_dialog.hist_index++;
             this.file_dialog.hist = this.file_dialog.hist.splice(0,this.file_dialog.hist_index);
             this.file_dialog.hist.push(path);
-            this.file_dialog.load_directory(path);
+            this.file_dialog.load_directory({path: path});
         }.bind(this));
     };
 };
@@ -475,7 +468,6 @@ Toyz.Core.Logger=function(element){
 
 // Dynamically load a list of scripts
 Toyz.Core.load_js = function(scripts, callback){
-    console.log('called load_js');
     var script = scripts[0];
     if(scripts.length>0){
         console.log('loading', script);
@@ -512,7 +504,7 @@ Toyz.Core.load_css = function(styles, callback){
                         rel: "stylesheet",
                         type: "text/css",
                     }).appendTo("head");
-                    if(!callback===undefined){
+                    if(!(callback===undefined)){
                         callback();
                     };
                 }.bind(null, url, callback)
@@ -561,8 +553,8 @@ Toyz.Core.load_dependencies=function(dependencies, callback){
     // Call the load_css function with the callback function and style sheets when
     // all scripts have loaded
     var css_callback = Toyz.Core.load_css.bind(undefined, style_sheets, callback);
-    console.log('scripts', scripts);
-    console.log('styles', style_sheets);
+    //console.log('scripts', scripts);
+    //console.log('styles', style_sheets);
     Toyz.Core.load_js(scripts, css_callback);
 };
 

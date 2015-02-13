@@ -100,7 +100,7 @@ Toyz.Console.Settings.UserSettings = function(params){
                             }
                         },
                         callback: function(result){
-                            this.set({
+                            this.gui.set_params({
                                 values: result,
                                 change: true,
                                 set_all: true
@@ -239,123 +239,119 @@ Toyz.Console.Settings.GroupSettings = function(params){
     this.type = 'div',
     this.legend = 'Groups',
     this.params = {
-        type: 'div',
-        legend: 'Groups',
-        params: {
-            group_id: {
-                type: 'select',
-                options: params.groups,
-                func: {
-                    change: function(websocket){
-                        websocket.send_task({
-                            task: {
-                                module: 'toyz.web.tasks',
-                                task: 'load_user_info',
-                                parameters: {
-                                    group_id: this.params.group_id.$input.val(),
-                                    user_attr: ['users', 'modules', 'toyz', 'paths'],
-                                }
+        group_id: {
+            type: 'select',
+            options: params.groups,
+            func: {
+                change: function(websocket){
+                    websocket.send_task({
+                        task: {
+                            module: 'toyz.web.tasks',
+                            task: 'load_user_info',
+                            parameters: {
+                                group_id: this.params.group_id.$input.val(),
+                                user_attr: ['users', 'modules', 'toyz', 'paths'],
+                            }
+                        },
+                        callback: function(result){
+                            this.gui.set_params({
+                                values: result,
+                                change: true,
+                                set_all: true
+                            });
+                        }.bind(this)
+                    });
+                }.bind(this, params.websocket)
+            }
+        },
+        users_div: {
+            type: 'div',
+            legend: 'Users',
+            css: {
+                'width': 300
+            },
+            params: {
+                users: {
+                    type: 'list',
+                    format: 'list',
+                    newItem: {
+                        type: 'select',
+                        options: params.users
+                    }
+                }
+            }
+        },
+        paths_div: {
+            type: 'div',
+            legend: 'Paths',
+            css: {
+                'width': 900
+            },
+            params: {
+                paths: {
+                    type: 'list',
+                    format: 'dict',
+                    newItem: {
+                        type:'div',
+                        params: {
+                            value: {
+                                lbl: 'path permissions'
                             },
-                            callback: function(result){
-                                this.set({
-                                    values: result,
-                                    change: true,
-                                    set_all: true
-                                });
-                            }.bind(this)
-                        });
-                    }.bind(this, params.websocket)
-                }
-            },
-            users_div: {
-                type: 'div',
-                legend: 'Users',
-                css: {
-                    'width': 300
-                },
-                params: {
-                    users: {
-                        type: 'list',
-                        format: 'list',
-                        newItem: {
-                            type: 'select',
-                            options: params.users
-                        }
-                    }
-                }
-            },
-            paths_div: {
-                type: 'div',
-                legend: 'Paths',
-                css: {
-                    'width': 900
-                },
-                params: {
-                    paths: {
-                        type: 'list',
-                        format: 'dict',
-                        newItem: {
-                            type:'div',
-                            params: {
-                                value: {
-                                    lbl: 'path permissions'
-                                },
-                                key: {
-                                    lbl: 'path',
-                                    file_dialog: true
-                                }
+                            key: {
+                                lbl: 'path',
+                                file_dialog: true
                             }
                         }
                     }
                 }
+            }
+        },
+        modules: new Toyz.Console.Settings.getModuleSettings({
+            legend:'Modules',
+            param_name: 'modules'
+        }),
+        toyz: new Toyz.Console.Settings.getToyzSettings({
+            legend: 'Toyz',
+            param_name: 'toyz',
+            file_dialog: true
+        }),
+        delete_group: {
+            type: 'button',
+            prop: {
+                innerHTML: 'delete group'
             },
-            modules: new Toyz.Console.Settings.getModuleSettings({
-                legend:'Modules',
-                param_name: 'modules'
-            }),
-            toyz: new Toyz.Console.Settings.getToyzSettings({
-                legend: 'Toyz',
-                param_name: 'toyz',
-                file_dialog: true
-            }),
-            delete_group: {
-                type: 'button',
-                prop: {
-                    innerHTML: 'delete group'
-                },
-                func: {
-                    click: function(){
-                        // TODO: add delete group functionality
-                    }
+            func: {
+                click: function(){
+                    // TODO: add delete group functionality
                 }
+            }
+        },
+        new_group: {
+            type: 'button',
+            prop: {
+                innerHTML: 'new group'
             },
-            new_group: {
-                type: 'button',
-                prop: {
-                    innerHTML: 'new group'
-                },
-                func: {
-                    click: function(new_group){
-                        new_group.root.$div.dialog('open');
-                    }.bind(this, params.new_group)
-                }
+            func: {
+                click: function(new_group){
+                    new_group.root.$div.dialog('open');
+                }.bind(this, params.new_group)
+            }
+        },
+        save_group: {
+            type: 'button',
+            prop: {
+                innerHTML: 'save'
             },
-            save_group: {
-                type: 'button',
-                prop: {
-                    innerHTML: 'save'
-                },
-                func: {
-                    click: function(){
-                        websocket.send_task({
-                            task: {
-                                module: 'toyz.web.tasks',
-                                task: 'save_user_info',
-                                parameters: this.get()
-                            }
-                        })
-                    }.bind(this, params.websocket)
-                }
+            func: {
+                click: function(){
+                    websocket.send_task({
+                        task: {
+                            module: 'toyz.web.tasks',
+                            task: 'save_user_info',
+                            parameters: this.get()
+                        }
+                    })
+                }.bind(this, params.websocket)
             }
         }
     };
@@ -373,7 +369,7 @@ Toyz.Console.Settings.getGroupSettings = function(params, $group_div){
         }
     });
     return gui;
-}
+};
 
 Toyz.Console.Settings.getAdminSettings = function(params, $admin_div){
     // unpack the congfiguration settings
@@ -535,7 +531,6 @@ Toyz.Console.Settings.getAccountSettings = function(params){
                 },
                 func:{
                     click: function(){
-                        console.log('this', this);
                         this.root.$div.dialog('open');
                     }.bind(params.pwd_gui)
                 }
