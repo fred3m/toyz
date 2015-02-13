@@ -285,13 +285,19 @@ Toyz.Core.FileDialog = function(options){
     var $back_btn = $('<button/>').html("\u25C0").click(function(){
         if(this.hist_index>0){
             this.hist_index--;
-            this.load_directory({path: this.hist[this.hist_index]});
+            this.load_directory({
+                path: this.hist[this.hist_index],
+                update_hist: false
+            });
         }
     }.bind(this));
     var $fwd_btn = $('<button/>').html("\u25B6").click(function(){
         if(this.hist_index<this.hist.length-1){
             this.hist_index++;
-            this.load_directory({path: this.hist[this.hist_index]});
+            this.load_directory({
+                path: this.hist[this.hist_index],
+                update_hist: false
+            });
         }
     }.bind(this));
     this.$div.append($up_btn);
@@ -350,8 +356,9 @@ Toyz.Core.FileDialog.prototype.load_directory = function(options){
     if(!options.hasOwnProperty('path')){
         options.path = '';
     };
-    if(this.hist.length==0){
+    if(!options.hasOwnProperty('update_hist') || options.update_hist===true){
         this.hist.push(options.path);
+        this.hist_index++;
     };
     // Allow the user to customize the buttons displayed
     var buttons = this.default_buttons;

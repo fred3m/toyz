@@ -173,7 +173,7 @@ Toyz.Console.Settings.UserSettings = function(params){
                             module: 'toyz.web.tasks',
                             task: 'reset_pwd',
                             parameters: {
-                                user_id: this.get().user_id
+                                user_id: this.gui.get().user_id
                             }
                         }
                     })
@@ -213,7 +213,7 @@ Toyz.Console.Settings.UserSettings = function(params){
                         task: {
                             module: 'toyz.web.tasks',
                             task: 'save_user_info',
-                            parameters: this.get()
+                            parameters: this.gui.get()
                         }
                     });
                 }.bind(this, params.websocket)
@@ -348,7 +348,7 @@ Toyz.Console.Settings.GroupSettings = function(params){
                         task: {
                             module: 'toyz.web.tasks',
                             task: 'save_user_info',
-                            parameters: this.get()
+                            parameters: this.gui.get()
                         }
                     })
                 }.bind(this, params.websocket)

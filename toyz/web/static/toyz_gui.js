@@ -6,10 +6,12 @@ Toyz.namespace('Toyz.Gui');
 // Add a parameters value(s) to a params list
 Toyz.Gui.get_param = function(param){
     var params = {};
-    if(param.type=='div' || param.type=='conditional'){
+    if(param.type=='div' || param.type=='conditional' || param.type=='list'){
         params = param.get();
-    }else{
+    }else if(param.type=='input' || param.type=='select'){
         params[param.name] = param.get();
+    }else{
+        //console.log('no get for',param.name, param);
     };
     return params;
 };
@@ -341,12 +343,12 @@ Toyz.Gui.Conditional.prototype.build_sub_params = function(options){
         $parent: this.$div,
         key: key
     }));
-    pVal = Toyz.Gui.val(this.selector.$input);
+    pVal = this.selector.get();
     this.selector.old_val = pVal;
     // Change the subset of parameters when the selector is changed
     this.selector.$input.change(function(){
         var old_set = this.param_sets[this.selector.old_val];
-        var pVal = Toyz.Gui.val(this.selector.$input);
+        pVal = this.selector.get();
         var new_set = this.param_sets[pVal];
         old_set.old_display = old_set.$div.css('display');
         old_set.$div.css('display','none');
@@ -368,7 +370,7 @@ Toyz.Gui.Conditional.prototype.build_sub_params = function(options){
         new_set.$div.css('display','none');
     };
     
-    var keyVal = Toyz.Gui.val(this.selector.$input);
+    var keyVal = this.selector.get();
     //console.log('conditional:',key,'selector:', selector, keyVal)
     var selected = this.param_sets[keyVal];
     selected.$div.css('display', selected.$div.css('display', selected.old_display));
@@ -484,12 +486,11 @@ Toyz.Gui.List.prototype.get = function(){
             if(item_values.hasOwnProperty('value')){
                 params[this.name][item_values.key] = item_values.value;
             }else{
-                console.log('item values', item_values)
-                throw Error("Depreciated list type in "+this.name);
-                //var key = item_values.key;
-                //delete item_values.key;
-                //delete item_values.conditions;
-                //params[this.name][key] = item_values;
+                console.log('list item values');
+                var key = item_values.key;
+                delete item_values.key;
+                delete item_values.conditions;
+                params[this.name][key] = item_values;
             }
         };
     }else if(this.format == 'list'){
@@ -502,6 +503,8 @@ Toyz.Gui.List.prototype.get = function(){
     }else{
         throw Error("Invalid parameter format for list "+this.name);
     };
+    console.log('params in list', this.name, params);
+    return params;
 };
 Toyz.Gui.List.prototype.set = function(values, options){
     // remove the old items from the list
@@ -777,8 +780,14 @@ Toyz.Gui.Gui.prototype.build_gui = function(options){
 Toyz.Gui.Gui.prototype.get = function(){
     var params = {conditions:{}};
     for(var param in this.params){
-        params = $.extend(true, params, Toyz.Gui.get_param(this.params[param]));
+        if(param!='root'){
+            //console.log(this.params[param].name, Toyz.Gui.get_param(this.params[param]),
+            //    this.params[param]);
+            params = $.extend(true, params, Toyz.Gui.get_param(this.params[param]));
+            console.log(this.params[param].name, params);
+        };
     };
+    console.log('parameters', params);
     return params;
 };
 // Toyz.Gui.set_params current options:
