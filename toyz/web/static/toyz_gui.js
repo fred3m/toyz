@@ -251,7 +251,7 @@ Toyz.Gui.Div.prototype = new Toyz.Gui.Param();
 Toyz.Gui.Div.prototype.constructor = Toyz.Gui.Div;
 Toyz.Gui.Div.prototype.build_sub_params = function(options){
     for(var key in this.params){
-        this.params[key] = this.gui.build_gui($.extend(false, {}, options, {
+        this.params[key] = this.gui.build_gui($.extend({}, options, {
             param: this.params[key],
             $parent: this.$div,
             key: key
@@ -338,7 +338,7 @@ Toyz.Gui.Conditional.prototype.build_sub_params = function(options){
     if(!this.selector.hasOwnProperty('type')){
         this.selector.type = 'input';
     };
-    this.selector = this.gui.build_gui($.extend(false, {}, options, {
+    this.selector = this.gui.build_gui($.extend({}, options, {
         param: this.selector,
         $parent: this.$div,
         key: key
@@ -359,7 +359,7 @@ Toyz.Gui.Conditional.prototype.build_sub_params = function(options){
     for(var pSet in this.param_sets){
         var new_set = this.param_sets[pSet];
         new_set.$div = $('<div/>');
-        new_set = this.gui.build_gui($.extend(false, {}, options, {
+        new_set = this.gui.build_gui($.extend({}, options, {
             param: new_set,
             $parent: this.$div,
             key: pSet,
