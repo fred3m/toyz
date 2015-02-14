@@ -15,6 +15,7 @@ from toyz.utils import core
 from toyz.utils import file_access
 from toyz.utils import db as db_utils
 from toyz.utils.errors import ToyzJobError
+import six
 
 def load_user_settings(toyz_settings, tid, params):
     """
@@ -177,6 +178,7 @@ def save_user_info(toyz_settings, tid, params):
     for field in update_fields:
         field_dict = {field: params[field]}
         field_dict.update(user)
+        print('field:', field)
         db_utils.update_all_params(toyz_settings.db, field, **field_dict)
     
     if 'user_id' in user:
@@ -247,7 +249,8 @@ def add_new_user(toyz_settings, tid, params):
         - msg: 'User/Group added correctly'
     """
     user = core.get_user_type(params)
-    pwd = core.encrypt_pwd(toyz_settings, params['user_id'])
+    user_id = six.next(six.itervalues(user))
+    pwd = core.encrypt_pwd(toyz_settings, user_id)
     db_utils.update_param(toyz_settings.db, 'pwd', pwd=pwd, **user)
     if 'user_id' in user:
         # set permissions and shortcuts for users home path
@@ -302,6 +305,27 @@ def change_pwd(toyz_settings, tid, params):
         'id': 'notification',
         'func': 'change_pwd',
         'msg': 'Password changed successfully',
+    }
+    return response
+
+def reset_pwd(toyz_settings, tid, params):
+    """
+    Reset a users password
+    """
+    user = core.get_user_type(params)
+    if 'user_id' in params:
+        user_id = params['user_id']
+    elif 'group_id' in params:
+        user_id = group_id
+    else:
+        raise ToyzJobError("Must specify a user_id or group_id to reset password")
+    pwd_hash = core.encrypt_pwd(toyz_settings, user_id)
+    db_utils.update_param(toyz_settings.db, 'pwd', pwd=pwd_hash, **user)
+    
+    response = {
+        'id': 'notification',
+        'func': 'reset_pwd',
+        'msg': 'Password reset successfully',
     }
     return response
 

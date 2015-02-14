@@ -209,11 +209,14 @@ Toyz.Console.Settings.UserSettings = function(params){
             },
             func: {
                 click: function(websocket){
+                    var params = this.gui.get();
+                    delete params.conditions;
+                    console.log('params before save', params);
                     websocket.send_task({
                         task: {
                             module: 'toyz.web.tasks',
                             task: 'save_user_info',
-                            parameters: this.gui.get()
+                            parameters: params
                         }
                     });
                 }.bind(this, params.websocket)

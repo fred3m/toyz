@@ -359,6 +359,7 @@ Toyz.Viewer.Controls = function(parent){
         },
         events: {
             update_viewer: function(ctrl, event){
+                console.log(ctrl);
                 if(event.updates.hasOwnProperty('viewer_frame')){
                     ctrl.input_viewer_frame.$input.val(event.updates.viewer_frame);
                 };

@@ -338,7 +338,7 @@ Toyz.Gui.Conditional.prototype.build_sub_params = function(options){
     if(!this.selector.hasOwnProperty('type')){
         this.selector.type = 'input';
     };
-    this.selector = this.gui.build_gui($.extend(true, {}, options, {
+    this.selector = this.gui.build_gui($.extend(false, {}, options, {
         param: this.selector,
         $parent: this.$div,
         key: key
@@ -355,12 +355,11 @@ Toyz.Gui.Conditional.prototype.build_sub_params = function(options){
         new_set.$div.css('display',new_set.old_display);
         this.selector.old_val = pVal;
     }.bind(this));
-
+    
     for(var pSet in this.param_sets){
-        //console.log(key,paramSet);
         var new_set = this.param_sets[pSet];
         new_set.$div = $('<div/>');
-        new_set = this.gui.build_gui($.extend(true, {}, options, {
+        new_set = this.gui.build_gui($.extend(false, {}, options, {
             param: new_set,
             $parent: this.$div,
             key: pSet,
@@ -486,7 +485,6 @@ Toyz.Gui.List.prototype.get = function(){
             if(item_values.hasOwnProperty('value')){
                 params[this.name][item_values.key] = item_values.value;
             }else{
-                console.log('list item values');
                 var key = item_values.key;
                 delete item_values.key;
                 delete item_values.conditions;
@@ -496,14 +494,14 @@ Toyz.Gui.List.prototype.get = function(){
     }else if(this.format == 'list'){
         params[this.name] = [];
         for(var i=0; i<this.items.length; i++){
-            params[this.name].push(Toyz.Gui.get_param(this.items[i]));
+            params[this.name].push(Toyz.Gui.get_param(this.items[i])[this.items[i].name]);
         };
     }else if(param.format == 'custom'){
         params[this.name] = this.get_val();
     }else{
         throw Error("Invalid parameter format for list "+this.name);
     };
-    console.log('params in list', this.name, params);
+    //console.log('params in list', this.name, params);
     return params;
 };
 Toyz.Gui.List.prototype.set = function(values, options){
@@ -685,7 +683,6 @@ Toyz.Gui.Select.prototype.set = function(value, options){
 };
 
 Toyz.Gui.Gui = function(options){
-    console.log('Toyz.Gui.Gui options', options);
     if(!options.hasOwnProperty('$parent')){
         throw Error("Toyz Gui requires a '$parent' div to hold the parameters");
     };
@@ -716,7 +713,7 @@ Toyz.Gui.Gui = function(options){
     if(options.hasOwnProperty('default')){
         this.set_params({values:options.default});
     };
-    //console.log('Toyz.Gui.Gui', this);
+    console.log('Toyz.Gui.Gui', this);
 };
 // Parse a parameter (param) to see if it is a div containing a subset of parameters
 // param: parameter JSON object
@@ -784,7 +781,6 @@ Toyz.Gui.Gui.prototype.get = function(){
             //console.log(this.params[param].name, Toyz.Gui.get_param(this.params[param]),
             //    this.params[param]);
             params = $.extend(true, params, Toyz.Gui.get_param(this.params[param]));
-            console.log(this.params[param].name, params);
         };
     };
     console.log('parameters', params);

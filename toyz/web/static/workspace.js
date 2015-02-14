@@ -361,7 +361,6 @@ Toyz.Workspace.Workspace = function(params){
     this.tile_index = 0;
     this.params = $.extend(true,{},params);
     this.websocket = new Toyz.Core.Websocket({
-        rx_action: this.rx_msg.bind(this),
         //logger:new Toyz.Core.Logger(document.getElementById("logger")),
     });
     
@@ -379,16 +378,32 @@ Toyz.Workspace.Workspace = function(params){
 };
 Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
     console.log('all_dependencies_loaded', this);
-    file_dialog = new Toyz.Core.FileDialog({
+    /*file_dialog = new Toyz.Core.FileDialog({
         websocket: this.websocket
-    });
+    });*/
     
     this.websocket.send_task({
         task: {
             module: 'toyz.web.tasks',
             task: 'get_io_info',
             parameters: {}
-        }
+        },
+        callback: function(result){
+            console.log('msg received:', result);
+            var param_div = $.extend(true,{},result.io_info);
+            console.log('param_div', param_div);
+            this.load_src_dialog.gui = new Toyz.Gui.Gui({
+                params: param_div,
+                $parent: this.load_src_dialog.$div,
+            });
+            console.log('this.load_src_dialog.gui)',this.load_src_dialog.gui);
+    
+            this.load_src_dialog.$div.dialog('widget').position({
+                my: "center",
+                at: "center",
+                of: window
+            });
+        }.bind(this)
     });
     
     if(!this.params.hasOwnProperty('sources')){
@@ -443,23 +458,6 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
         }.bind(this),
         items: Toyz.Workspace.tile_contextMenu_items(this)
     })
-};
-Toyz.Workspace.Workspace.prototype.rx_msg = function(result){
-    console.log('msg received:', result);
-    if(result.id == 'io_info'){
-        var param_div = $.extend(true,{},result.io_info);
-        
-        this.load_src_dialog.gui = new Toyz.Gui.Gui({
-            params: param_div,
-            $parent: this.load_src_dialog.$div,
-        });
-        
-        this.load_src_dialog.$div.dialog('widget').position({
-            my: "center",
-            at: "center",
-            of: window
-        });
-    };
 };
 Toyz.Workspace.Workspace.prototype.save_workspace = function(params){
     if(this.name===undefined){

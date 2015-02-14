@@ -1,0 +1,5 @@
+bugs:
+
+home.html
+- delete user/group button doesn't work
+- initial user/group in Users/Groups does not properly load parameters
