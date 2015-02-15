@@ -16,7 +16,6 @@ Toyz.API.Highcharts.load_dependencies = function(callback, params){
     // Check to see if highcharts loaded from the server, if not load from the web
     // Note: Highcharts has put a usage limit on its js files, so it is a good
     // idea to have the source code located on the server
-    //console.log('callback in api load_dependencies', callback);
     if(!Toyz.API.Highcharts.dependencies_loaded()){
         console.log('Loading Highcharts');
         $.ajax({
@@ -311,6 +310,8 @@ Toyz.API.Highcharts.Gui = function(params){
         $parent: this.$div
     });
 };
+// When the selected data source is changed, this updates the possible fields
+// in the x/y columns
 Toyz.API.Highcharts.Gui.prototype.update_columns = function(event){
     //var data_source = event.currentTarget.value;
     var idx = $("input:radio[ name='series' ]:checked").val();
@@ -408,20 +409,23 @@ Toyz.API.Highcharts.Contents.prototype.update = function(params, param_val){
         this[param] = params[param];
     }
 };
-Toyz.API.Highcharts.Contents.prototype.rx_info = function(from, info_type, info){
+Toyz.API.Highcharts.Contents.prototype.rx_info = function(options){
     var chart = this.$tile_div.highcharts();
-    if(info_type=='select datapoints' || info_type=='unselect datapoints'){
+    if(options.info_type=='select datapoints' || options.info_type=='unselect datapoints'){
         for(var s in this.settings.series){
-            if(this.settings.series[s].data_source==from){
-                var points = info.points;
+            if(options.hasOwnProperty('source') &&
+                this.settings.series[s].data_source==options.source &&
+                (this.tile.id != options.from.tile || s!= options.from.series)
+            ){
+                var points = options.info.points;
                 if(this.settings.series[s].sorted){
-                    points = info.points.map(function(v, idx){
+                    points = options.info.points.map(function(v, idx){
                         return this.settings.series[s].argsort.inv[v];
                     }.bind(this));
                 };
                 for(var p=0;p<points.length;p++){
                     this.current_point = points[p];
-                    if(info_type=='select datapoints'){
+                    if(options.info_type=='select datapoints'){
                         chart.series[s].data[points[p]].select(true, true);
                     }else{
                         chart.series[s].data[points[p]].select(false, true);
@@ -429,16 +433,18 @@ Toyz.API.Highcharts.Contents.prototype.rx_info = function(from, info_type, info)
                 };
             };
         };
-    }else if(info_type=='remove datapoints'){
+    }else if(options.info_type=='remove datapoints'){
         this.create_chart(this.settings);
-    }else if(info_type=='data update'){
+    }else if(options.info_type=='data update'){
         console.log('updating');
         var data_source = this.workspace.sources[from];
         var params = this.gui_div.gui.params.series.items[idx].params;
         // The source must have been updated, so update the chart
         if(params.data_source.options.hasOwnProperty(data_source)){
             for(var s in this.settings.series){
-                if(this.settings.series[s].data_source==from){
+                if(options.hasOwnProperty('source') && 
+                    this.settings.series[s].data_source==options.source
+                ){
                     this.create_chart(this.settings);
                 };
             };
@@ -741,13 +747,16 @@ Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
 Toyz.API.Highcharts.Contents.prototype.update_selected = 
         function(series_idx, points, info_type){
     var data_source = this.settings.series[series_idx].data_source;
-    this.workspace.sources[data_source].rx_info(
-        from=this.tile.id,
-        info_type=info_type,
-        info={
+    this.workspace.sources[data_source].rx_info({
+        from: {
+            tile: this.tile.id,
+            series: series_idx
+        },
+        info_type: info_type,
+        info: {
             points: points,
         }
-    );
+    });
 };
 Toyz.API.Highcharts.Contents.prototype.remove_points = function(){
     var pts = [];
@@ -764,13 +773,13 @@ Toyz.API.Highcharts.Contents.prototype.remove_points = function(){
         pts.sort(function(a,b){return a-b});
     };
     
-    this.workspace.sources[this.settings.series[0].data_source].rx_info(
-        from='',
-        info_type='remove datapoints',
-        info={
+    this.workspace.sources[this.settings.series[0].data_source].rx_info({
+        from: '',
+        info_type: 'remove datapoints',
+        info: {
             points: pts,
         }
-    );
+    });
 }
 
 console.log('Toyz Highcharts API loaded');

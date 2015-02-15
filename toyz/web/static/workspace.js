@@ -159,7 +159,10 @@ Toyz.Workspace.DataSource.prototype.update = function(info, info_val){
             };
             // Update tiles with the new data
             for(var tile_id in this.workspace.tiles){
-                this.workspace.tiles[tile_id].contents.rx_info(this.id, 'data update');
+                this.workspace.tiles[tile_id].contents.rx_info({
+                    source: this.id, 
+                    info_type:'data update'
+                });
             };
         }else if(prop=='name'){
             this.name = info.name;
@@ -191,20 +194,24 @@ Toyz.Workspace.DataSource.prototype.save = function(){
     };
     return save_params;
 };
-Toyz.Workspace.DataSource.prototype.rx_info = function(from, info_type, info){
+Toyz.Workspace.DataSource.prototype.rx_info = function(options){
     // If any points are removed, remove them from the data source
-    if(info_type=='remove datapoints'){
+    if(!options.hasOwnProperty('info_type') || !options.hasOwnProperty('from')){
+        throw Error("rx_info options requires a 'from' field and an 'info_type' field");
+    };
+    if(options.info_type=='remove datapoints'){
         for(var col in this.data){
-            for(var i=info.points.length-1; i>=0; i--){
-                this.data[col].splice(info.points[i], 1);
+            for(var i=options.info.points.length-1; i>=0; i--){
+                this.data[col].splice(options.info.points[i], 1);
             }
         }
     };
     // Update tiles with the new information
+    options = $.extend(true, options, {
+        source: this.id
+    })
     for(var tile_id in this.workspace.tiles){
-        if(tile_id!=from){
-            this.workspace.tiles[tile_id].contents.rx_info(this.id, info_type, info);
-        }
+        this.workspace.tiles[tile_id].contents.rx_info(options);
     };
 };
 

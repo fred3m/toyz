@@ -796,7 +796,7 @@ Toyz.Viewer.Contents.prototype.set_tile = function(settings){
     };
     this.change_viewer_frame(settings.viewer_frame);
 };
-Toyz.Viewer.Contents.prototype.rx_info = function(from, info_type, info){
+Toyz.Viewer.Contents.prototype.rx_info = function(options){
 };
 Toyz.Viewer.Contents.prototype.save = function(){
     var frames = [];
