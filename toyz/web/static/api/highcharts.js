@@ -84,7 +84,7 @@ Toyz.API.Highcharts.Gui = function(params){
                 params: {
                     series: {
                         type: 'list',
-                        format: 'none',
+                        format: 'list',
                         items: [],
                         newItem: {
                             type: 'div',
@@ -306,26 +306,22 @@ Toyz.API.Highcharts.Gui = function(params){
             }
         }
     };
-    this.gui = Toyz.Gui.initParamList(
-        gui,
-        options = {
-            $parent: this.$div
-        }
-    );
+    this.gui = new Toyz.Gui.Gui({
+        params: gui,
+        $parent: this.$div
+    });
 };
 Toyz.API.Highcharts.Gui.prototype.update_columns = function(event){
     //var data_source = event.currentTarget.value;
     var idx = $("input:radio[ name='series' ]:checked").val();
     idx = Number(idx.split('-')[1]);
     //console.log('idx', idx);
-    //console.log('items', this.gui.params.params.series_div.params.series.items);
-    var params = this.gui.params.params.series_div.params.series.items[idx].params;
+    var params = this.gui.params.series.items[idx].params;
     var data_source = params.data_source.$input.val();
     var $x_input = params.x_div.params.x.$input;
     var $y_input = params.y_div.params.y.$input;
     $x_input.empty();
     $y_input.empty();
-    console.log('workspace', this.workspace);
     for(var col in this.workspace.sources[data_source].data){
         var x_opt = $('<option/>').val(col).html(col);
         var y_opt = $('<option/>').val(col).html(col);
@@ -374,7 +370,8 @@ Toyz.API.Highcharts.Contents = function(params){
         },
         buttons: {
             Set: function(){
-                this.set_tile(this.gui_div.gui.getParams(this.gui_div.gui.params));
+                console.log('gui',this.gui_div.gui);
+                this.set_tile(this.gui_div.gui.get());
                 this.$div.dialog('close');
             }.bind(this),
             Cancel: function(){
@@ -437,7 +434,7 @@ Toyz.API.Highcharts.Contents.prototype.rx_info = function(from, info_type, info)
     }else if(info_type=='data update'){
         console.log('updating');
         var data_source = this.workspace.sources[from];
-        var params = this.gui_div.gui.params.params.series_div.params.series.items[idx].params;
+        var params = this.gui_div.gui.params.series.items[idx].params;
         // The source must have been updated, so update the chart
         if(params.data_source.options.hasOwnProperty(data_source)){
             for(var s in this.settings.series){
@@ -470,7 +467,7 @@ Toyz.API.Highcharts.Contents.prototype.save = function(){
 };
 Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
     this.settings = settings;
-    //console.log('chart settings', this.settings);
+    console.log('chart settings', this.settings);
     this.sorted_series = false;
     var chart_params = {
         title: {text: this.settings.title},
@@ -736,7 +733,10 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
 Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
     console.log('Highcharts settings', settings);
     this.create_chart(settings);
-    this.gui_div.gui.setParams(this.gui_div.gui.params, settings, false);
+    this.gui_div.gui.set_params({
+        values: settings,
+        set_all: false
+    });
 };
 Toyz.API.Highcharts.Contents.prototype.update_selected = 
         function(series_idx, points, info_type){

@@ -4,14 +4,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <title>Settings - Toyz for Data Reduction and Analysis</title>
         <script src="/third_party/jquery/jquery.min.js" type="text/javascript"></script>
-        <script src="/third_party/jquery_ui/jquery-ui.js" 
-            type="text/javascript"></script>
-        <link href="/third_party/jquery_ui_themes/{{user_theme}}/jquery-ui.min.css"
-            type="text/css" rel="stylesheet"/>
-        <script src="toyz_core.js" type="text/javascript"></script>
-        <script src="static/web/static/toyz_gui.js" type="text/javascript"></script>
-        <script src="static/web/static/settings.js" type="text/javascript"></script>
-        <link href="static/web/static/toyz.css" type="text/css" rel="stylesheet"/>
+        <script src="/toyz_core.js" type="text/javascript"></script>
     </head>
     <body>
         <div id='tabs'>
@@ -37,49 +30,41 @@
         var group_settings;
         var config_settings;
         var websocket;
-        var change_pwd;
-        var new_user;
-        var file_dialog;
+        var pwd_gui;
+        var new_user_gui;
+        var new_group_gui;
         
         function rxMsg(result){
-            //console.log('rx message:', result);
+            console.log('rx message:', result);
             if(result.id == 'user_settings'){
                 var account_info = {
                     user_id: websocket.user_id,
-                    change_pwd: change_pwd,
-                    file_dialog: file_dialog,
+                    pwd_gui: pwd_gui,
                 };
                 
                 var paths = new Array();
                 var toyz = new Array();
                 
-                result.file_dialog = file_dialog;
                 var my_params = Toyz.Console.Settings.getAccountSettings(account_info);
                 
                 if(result.hasOwnProperty('modules')){
-                    my_params.approved_modules = Toyz.Console.Settings.getModuleSettings({
+                    my_params.params.approved_modules = Toyz.Console.Settings.getModuleSettings({
                         legend: 'Modules',
                         param_name: 'modules'
                     });
                 };
                 if(result.hasOwnProperty('toyz')){
-                    my_params.approved_toyz = Toyz.Console.Settings.getToyzSettings({
+                    my_params.params.approved_toyz = Toyz.Console.Settings.getToyzSettings({
                         legend: 'Toyz',
                         param_name: 'toyz',
-                        file_dialog: file_dialog
                     });
                 };
-                
-                account_settings = Toyz.Gui.initParamList(
-                    {
-                        type:'div',
-                        params: my_params
-                    },
-                    options = {
-                        $parent: $('#account-settings-div'),
-                        default: result
-                    }
-                );
+                console.log('my params', my_params);
+                account_settings = new Toyz.Gui.Gui({
+                    params: my_params,
+                    $parent: $('#account-settings-div'),
+                    default: result
+                });
                 //console.log('account_settings:',account_settings);
                 
                 // If the user is in the admin group, also load the
@@ -93,8 +78,8 @@
                         .prop('id','admin-settings');
                     
                     //console.log('admin_default', admin_default);
-                    result.new_user = new_user;
-                    result.new_group = new_user;
+                    result.new_user_gui = new_user_gui;
+                    result.new_group = new_group_gui;
                     result.websocket = websocket;
                     
                     // Alphebetize user id's and group names in the select boxes
@@ -124,21 +109,24 @@
                     $("#tabs").append($admin_div);
                     $("#tabs").tabs("refresh");
                 };
-            }else if(result.id == 'change_pwd'){
+            }else if(result.id == 'pwd_gui'){
                 alert('Password saved correctly');
             }else if(result.id == 'update_user_settings'){
                 alert('Settings saved correctly');
             }else if(result.id == 'new_user'){
                 alert('New user created');
+            }else{
+                console.log('unknown result:', result);
+                throw Error('Unknown result id returned')
             };
         };
         
-        function initChangePassword(){
+        function init_pwd_gui(){
             var $div = $('<div/>');
             $('body').append($div);
             
-            change_pwd = Toyz.Gui.initParamList(
-                {
+            pwd_gui = new Toyz.Gui.Gui({
+                params: {
                     type: 'div',
                     params: {
                         current_pwd: {
@@ -161,11 +149,9 @@
                         }
                     }
                 },
-                options = {
-                    $parent: $div
-                }
-            );
-            change_pwd.params.$div.dialog({
+                $parent: $div
+            });
+            pwd_gui.root.$div.dialog({
                 resizable:true,
                 draggable:true,
                 width:300,
@@ -173,13 +159,13 @@
                 modal:true,
                 buttons:{
                     'Change':function(){
+                        var params = pwd_gui.get();
+                        delete params.conditional;
                         websocket.send_task({
-                            module: 'toyz.web.tasks',
-                            task: 'change_pwd',
-                            parameters: {
-                                current_pwd: change_pwd.params.params.current_pwd.$input.val(),
-                                new_pwd: change_pwd.params.params.new_pwd.$input.val(),
-                                confirm_pwd: change_pwd.params.params.confirm_pwd.$input.val(),
+                            task: {
+                                module: 'toyz.web.tasks',
+                                task: 'change_pwd',
+                                parameters: params
                             }
                         });
                         $(this).dialog('close');
@@ -191,25 +177,22 @@
             }).css("font-size", "12px");;
         };
         
-        function initNewUser(){
+        function init_new_user_gui(){
+            console.log('called init');
             var $div = $('<div/>');
             $('body').append($div);
-            
-            new_user = Toyz.Gui.initParamList(
-                {
+            new_user_gui = new Toyz.Gui.Gui({
+                params: {
                     type: 'div',
                     params: {
-                        userId: {
+                        user_id: {
                             lbl: 'new user name',
                         }
                     }
                 },
-                options = {
-                    $parent: $div
-                }
-            );
-            
-            new_user.params.$div.dialog({
+                $parent: $div
+            });
+            new_user_gui.root.$div.dialog({
                 resizable:true,
                 draggable:true,
                 width:300,
@@ -218,10 +201,10 @@
                 buttons:{
                     'Add':function(){
                         websocket.send_task({
-                            module: 'toyz.web.tasks',
-                            task: 'add_new_user',
-                            parameters: {
-                                user_id: new_user.params.params.userId.$input.val(),
+                            task: {
+                                module: 'toyz.web.tasks',
+                                task: 'add_new_user',
+                                parameters: new_user_gui.get()
                             }
                         });
                         $(this).dialog('close');
@@ -230,40 +213,91 @@
                         $(this).dialog('close');
                     }
                 },
-            }).css("font-size", "12px");;
+            }).css("font-size", "12px");
         };
         
-        window.onload=function(){
+        function init_new_group_gui(){
+            console.log('called init');
+            var $div = $('<div/>');
+            $('body').append($div);
+            new_group_gui = new Toyz.Gui.Gui({
+                params: {
+                    type: 'div',
+                    params: {
+                        group_id: {
+                            lbl: 'new group name',
+                        }
+                    }
+                },
+                $parent: $div
+            });
+            new_group_gui.root.$div.dialog({
+                resizable:true,
+                draggable:true,
+                width:300,
+                autoOpen:false,
+                modal:true,
+                buttons:{
+                    'Add':function(){
+                        websocket.send_task({
+                            task: {
+                                module: 'toyz.web.tasks',
+                                task: 'add_new_user',
+                                parameters: new_group_gui.get()
+                            }
+                        });
+                        $(this).dialog('close');
+                    },
+                    'Cancel':function(){
+                        $(this).dialog('close');
+                    }
+                },
+            }).css("font-size", "12px");
+        };
+        
+        function dependencies_onload(){
+            console.log('called onload');
             $("#tabs").tabs();
-            initChangePassword();
-            initNewUser();
+            init_pwd_gui();
+            init_new_user_gui();
+            init_new_group_gui();
             $('#submit-account-settings').click(function(){
-                var params = account_settings.getParams(account_settings.params);
+                var params = account_settings.get();
                 params['user_id'] = websocket.user_id;
                 delete params['account'];
                 delete params['logout'];
                 websocket.send_task({
-                    module: 'toyz.web.tasks',
-                    task: 'save_user_info',
-                    parameters: params
+                    task: {
+                        module: 'toyz.web.tasks',
+                        task: 'save_user_info',
+                        parameters: params
+                    }
                 });
-                //console.log('Parameters:',params);
+                console.log('Parameters:',params);
             });
             
-            websocket=Toyz.Core.jobsocketInit({
-                receiveAction: rxMsg,
+            websocket = new Toyz.Core.Websocket({
+                rx_action: rxMsg,
                 onopen: function(){
                     websocket.send_task({
-                        module: 'toyz.web.tasks',
-                        task: 'load_user_settings',
-                        parameters: {}
+                        task: {
+                            module: 'toyz.web.tasks',
+                            task: 'load_user_settings',
+                            parameters: {}
+                        }
                     });
                 }
             });
-            
-            file_dialog = Toyz.Core.initFileDialog({
-                websocket: websocket
-            });
+        };
+        
+        window.onload=function(){
+            Toyz.Core.load_dependencies(
+                dependencies={
+                    core: true,
+                    js: ['/static/web/static/settings.js']
+                }, 
+                callback=dependencies_onload
+            );
         };
         </script>
     </body>

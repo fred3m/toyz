@@ -57,7 +57,6 @@ The third party codes currently used in toyz are:
     - `Google visual <https://developers.google.com/chart/interactive/docs/reference>`_
       (not bundled with code but linked from software)
     - `jQuery contextMenu <http://medialize.github.io/jQuery-contextMenu/index.html>`_
-    - `jQuery getCss <https://github.com/furf/jquery-getCSS>`_
     - `Highcharts <http://www.highcharts.com>`_
       (not bundled with software but external web site)
 

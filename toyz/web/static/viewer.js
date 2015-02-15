@@ -51,14 +51,14 @@ Toyz.Viewer.Types = function(tile_contents){
     };
 };
 
-Toyz.Viewer.Controls = function(parent){
+Toyz.Viewer.Controls = function(options){
     // Image controls
     this.load_img = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-img-load',
+        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-img-load',
         func: {
             click: function(){
                 this.file_dialog.$div.dialog('open');
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -67,7 +67,7 @@ Toyz.Viewer.Controls = function(parent){
         },
     };
     this.first_frame = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-first',
+        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-first',
         func: {
             click: function(){
                 var file_info = this.frames[this.viewer_frame].file_info;
@@ -75,7 +75,7 @@ Toyz.Viewer.Controls = function(parent){
                 if(file_info.frame != all_frames[0]){
                     this.change_file_frame(all_frames[0]);
                 };
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -84,7 +84,7 @@ Toyz.Viewer.Controls = function(parent){
         },
     };
     this.previous_frame = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-previous',
+        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-previous',
         func: {
             click: function(){
                 var file_info = this.frames[this.viewer_frame].file_info;
@@ -94,7 +94,7 @@ Toyz.Viewer.Controls = function(parent){
                     frame = all_frames[all_frames.indexOf(frame)-1];
                     this.change_file_frame(frame);
                 };
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -105,16 +105,17 @@ Toyz.Viewer.Controls = function(parent){
     this.input_frame = {
         type: 'select',
         options: [],
-        inputClass: 'viewer-ctrl-img-btn viewer-ctrl-select',
+        input_class: 'viewer-ctrl-img-btn viewer-ctrl-select',
         func: {
             change: function(event){
                 if(event.currentTarget.value != this.frames[this.viewer_frame].file_info.frame){
                     this.change_file_frame(event.currentTarget.value);
                 }
-            }.bind(parent)
+            }.bind(options.parent)
         },
         events: {
-            rx_img: function(ctrl, event){
+            rx_img: function(event){
+                var ctrl = this.ctrl_panel.gui.params;
                 var file_info = this.frames[this.viewer_frame].file_info;
                 if(this.viewer_frame==event.viewer_frame && file_info.frame==event.file_frame){
                     ctrl.input_frame.$input.empty();
@@ -128,8 +129,9 @@ Toyz.Viewer.Controls = function(parent){
                     };
                     ctrl.input_frame.$input.val(event.file_frame);
                 };
-            }.bind(parent, this),
-            update_viewer: function(ctrl, event){
+            }.bind(options.parent),
+            update_viewer: function(event){
+                var ctrl = this.ctrl_panel.gui.params;
                 if(event.updates.hasOwnProperty('file_frame')  &&
                     !(event.file_info===undefined)
                 ){
@@ -140,11 +142,11 @@ Toyz.Viewer.Controls = function(parent){
                     event.file_frame = event.file_info.frame;
                     ctrl.input_frame.events.rx_img(event);
                 };
-            }.bind(parent, this),
+            }.bind(options.parent),
         }
     };
     this.next_frame = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-next',
+        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-next',
         func: {
             click: function(){
                 var file_info = this.frames[this.viewer_frame].file_info;
@@ -154,7 +156,7 @@ Toyz.Viewer.Controls = function(parent){
                     frame = all_frames[all_frames.indexOf(frame)+1];
                     this.change_file_frame(frame);
                 };
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -163,7 +165,7 @@ Toyz.Viewer.Controls = function(parent){
         },
     };
     this.last_frame = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-last',
+        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-last',
         func: {
             click: function(){
                 var file_info = this.frames[this.viewer_frame].file_info;
@@ -171,7 +173,7 @@ Toyz.Viewer.Controls = function(parent){
                 if(file_info.frame != all_frames[all_frames.length-1]){
                     this.change_file_frame(all_frames[all_frames.length-1]);
                 };
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -181,7 +183,7 @@ Toyz.Viewer.Controls = function(parent){
     };
     // Zoom controls
     this.zoom_input = {
-        inputClass: 'viewer-ctrl-zoom-btn viewer-ctrl-input',
+        input_class: 'viewer-ctrl-zoom-btn viewer-ctrl-input',
         prop: {
             type: 'Number'
         },
@@ -191,10 +193,11 @@ Toyz.Viewer.Controls = function(parent){
                 if(event.currentTarget.value!=file_info.images[file_info.frame].viewer.scale){
                     this.set_scale(this.viewer_frame, event.currentTarget.value);
                 };
-            }.bind(parent)
+            }.bind(options.parent)
         },
         events: {
-            update_viewer: function(ctrl, event){
+            update_viewer: function(event){
+                var ctrl = this.ctrl_panel.gui.params;
                 if((event.updates.hasOwnProperty('scale') ||
                     event.updates.hasOwnProperty('file_frame') ||
                     event.updates.hasOwnProperty('viewer_frame')) &&
@@ -204,22 +207,24 @@ Toyz.Viewer.Controls = function(parent){
                     var val = event.file_info.images[event.file_info.frame].viewer.scale;
                     ctrl.zoom_input.$input.val(Math.round(val*10000)/10000);
                 };
-            }.bind(parent, this),
-            rx_img: function(ctrl, event){
+            }.bind(options.parent),
+            rx_img: function(event){
+                var ctrl = this.ctrl_panel.gui.params;
                 var file_info = this.frames[this.viewer_frame].file_info;
                 if(this.viewer_frame==event.viewer_frame && file_info.frame==event.file_frame){
                     var val = file_info.images[file_info.frame].viewer.scale;
                     ctrl.zoom_input.$input.val(Math.round(val*10000)/10000);
                 };
-            }.bind(parent, this)
+            }.bind(options.parent)
         }
     };
     this.zoom_out = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-out',
+        input_class: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-out',
         func: {
-            click: function(zoom_input, event){
+            click: function(event){
+                var zoom_input = this.ctrl_panel.gui.params.zoom_input;
                 this.press_zoom(this.viewer_frame, 'out', zoom_input.$input);
-            }.bind(parent, this.zoom_input)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -228,11 +233,12 @@ Toyz.Viewer.Controls = function(parent){
         },
     };
     this.zoom_in = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-in',
+        input_class: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-in',
         func: {
-            click: function(zoom_input, event){
+            click: function(event){
+                var zoom_input = this.ctrl_panel.gui.params.zoom_input;
                 this.press_zoom(this.viewer_frame, 'in', zoom_input.$input);
-            }.bind(parent, this.zoom_input)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -241,7 +247,7 @@ Toyz.Viewer.Controls = function(parent){
         }
     };
     this.zoom_bestfit = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-bestfit',
+        input_class: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-bestfit',
         func: {
             click: function(){
                 var file_info = this.frames[this.viewer_frame].file_info;
@@ -249,7 +255,7 @@ Toyz.Viewer.Controls = function(parent){
                 x_scale = img_info.viewer.width/img_info.width*.97;
                 y_scale = img_info.viewer.height/img_info.height*.97
                 this.set_scale(this.viewer_frame, Math.min(y_scale, x_scale));
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -258,11 +264,11 @@ Toyz.Viewer.Controls = function(parent){
         },
     };
     this.zoom_fullsize = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-fullsize',
+        input_class: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-fullsize',
         func: {
             click: function(){
                 this.set_scale(this.viewer_frame, 1);
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -272,9 +278,10 @@ Toyz.Viewer.Controls = function(parent){
     };
     // Viewer controls
     this.add_viewer_frame = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-viewer-add',
+        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-viewer-add',
         func: {
-            click: function(ctrl){
+            click: function(){
+                var ctrl = this.ctrl_panel.gui.params;
                 this.frames.push({});
                 this.viewer_frame=this.frames.length-1;
                 $opt = $('<option/>')
@@ -282,7 +289,7 @@ Toyz.Viewer.Controls = function(parent){
                     .val(this.viewer_frame);
                 ctrl.input_viewer_frame.$input.append($opt);
                 this.change_viewer_frame(this.viewer_frame);
-            }.bind(parent, this)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -291,7 +298,7 @@ Toyz.Viewer.Controls = function(parent){
         },
     };
     this.remove_viewer_frame = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-viewer-remove',
+        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-viewer-remove',
         func: {
             click: function(){
                 if(this.frames.length>1){
@@ -306,7 +313,7 @@ Toyz.Viewer.Controls = function(parent){
                 }else{
                     alert('View must always have one frame');
                 }
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -315,13 +322,13 @@ Toyz.Viewer.Controls = function(parent){
         },
     };
     this.first_viewer_frame = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-first',
+        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-first',
         func: {
             click: function(){
                 if(this.viewer_frame!=0){
                     this.change_viewer_frame(0);
                 };
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -330,7 +337,7 @@ Toyz.Viewer.Controls = function(parent){
         },
     };
     this.previous_viewer_frame = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-previous',
+        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-previous',
         func: {
             click: function(){
                 if(this.viewer_frame>0){
@@ -338,7 +345,7 @@ Toyz.Viewer.Controls = function(parent){
                 }else{
                     this.change_viewer_frame(this.frames.length-1);
                 }
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -349,24 +356,25 @@ Toyz.Viewer.Controls = function(parent){
     this.input_viewer_frame = {
         type: 'select',
         options: [0],
-        inputClass: 'viewer-ctrl-viewer-btn viewer-ctrl-select',
+        input_class: 'viewer-ctrl-viewer-btn viewer-ctrl-select',
         func: {
             change: function(event){
                 if(event.currentTarget.value != this.viewer_frame){
                     this.change_viewer_frame(event.currentTarget.value);
                 };
-            }.bind(parent)
+            }.bind(options.parent)
         },
         events: {
-            update_viewer: function(ctrl, event){
+            update_viewer: function(event){
+                var ctrl = this.ctrl_panel.gui.params;
                 if(event.updates.hasOwnProperty('viewer_frame')){
                     ctrl.input_viewer_frame.$input.val(event.updates.viewer_frame);
                 };
-            }.bind(parent, this)
+            }.bind(options.parent)
         }
     };
     this.next_viewer_frame = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-next',
+        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-next',
         func: {
             click: function(){
                 if(this.viewer_frame<this.frames.length-1){
@@ -374,7 +382,7 @@ Toyz.Viewer.Controls = function(parent){
                 }else{
                     this.change_viewer_frame(0);
                 };
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -383,13 +391,13 @@ Toyz.Viewer.Controls = function(parent){
         },
     };
     this.last_viewer_frame = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-last',
+        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-last',
         func: {
             click: function(){
                 if(this.viewer_frame != this.frames.length-1){
                     this.change_viewer_frame(this.frames.length-1);
                 };
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -399,11 +407,11 @@ Toyz.Viewer.Controls = function(parent){
     };
     // Tool controls
     this.rect = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-resize',
+        input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-resize',
         func: {
             click: function(event){
                 this.change_active_tool('rect', event.currentTarget);
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -425,7 +433,7 @@ Toyz.Viewer.Controls = function(parent){
                         1, 1
                     );
                 }; 
-            }.bind(parent),
+            }.bind(options.parent),
             mousemove: function(event){
                 if(this.mousedown && this.tools.rect.hasOwnProperty('down_position')){
                     var old_pos = this.tools.rect.down_position;
@@ -436,7 +444,7 @@ Toyz.Viewer.Controls = function(parent){
                     this.tools.rect.$rect.width(new_pos.x-old_pos.x);
                     this.tools.rect.$rect.height(new_pos.y-old_pos.y);
                 }
-            }.bind(parent),
+            }.bind(options.parent),
             mouseup: function(event){
                 if(this.tools.rect.hasOwnProperty('down_position')){
                     var old_pos = this.tools.rect.down_position;
@@ -454,15 +462,15 @@ Toyz.Viewer.Controls = function(parent){
                     this.set_scale(this.viewer_frame, scale);
                     delete this.tools.rect.down_position;
                 };
-            }.bind(parent)
+            }.bind(options.parent)
         }
     };
     this.center = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-center',
+        input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-center',
         func: {
             click: function(event){
                 this.change_active_tool('center', event.currentTarget);
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -479,15 +487,15 @@ Toyz.Viewer.Controls = function(parent){
                     this.$tile_div.scrollLeft(x-Math.round(img_info.viewer.width/2));
                     this.$tile_div.scrollTop(y-Math.round(img_info.viewer.height/2));
                 };
-            }.bind(parent)
+            }.bind(options.parent)
         }
     };
     this.hist = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-hist',
+        input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-hist',
         func: {
             click: function(){
                 this.change_active_tool('hist', event.currentTarget);
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -496,11 +504,11 @@ Toyz.Viewer.Controls = function(parent){
         },
     };
     this.surface = {
-        inputClass: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-surface',
+        input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-surface',
         func: {
             click: function(){
                 this.change_active_tool('surface', event.currentTarget);
-            }.bind(parent)
+            }.bind(options.parent)
         },
         prop: {
             type: 'image',
@@ -512,9 +520,10 @@ Toyz.Viewer.Controls = function(parent){
     this.img_coords = {
         type: 'lbl',
         lbl: 'Coordinates: ',
-        inputClass: 'viewer-ctrl-info-btn viewer-ctrl-info-coord-div',
+        input_class: 'viewer-ctrl-info-btn viewer-ctrl-info-coord-div',
         events: {
-            mousemove: function(ctrls, event){
+            mousemove: function(event){
+                var ctrls = this.ctrl_panel.gui.params;
                 var $input = ctrls.img_coords.$input;
                 var file_info = this.frames[this.viewer_frame].file_info;
                 if(!(file_info===undefined) && file_info.hasOwnProperty('frame') &&
@@ -538,28 +547,32 @@ Toyz.Viewer.Controls = function(parent){
                         +(Math.round(y/img_info.scale*1000)/1000).toString();
                     $input.text(coords);
                 };
-            }.bind(parent, this)
+            }.bind(options.parent)
         }
     };
     this.physical_coords = {
         type: 'lbl',
         lbl: 'Physical Coords: ',
-        inputClass: 'viewer-ctrl-info-btn viewer-ctrl-info-coord-div',
+        input_class: 'viewer-ctrl-info-btn viewer-ctrl-info-coord-div',
         events: {
-            mousemove: function(ctrls, event){
-                
-            }.bind(parent, this)
+            mousemove: function(event){
+                var ctrl = this.ctrl_panel.gui.params;
+            }.bind(options.parent)
         }
     };
     this.pixel_val = {
         type: 'lbl',
         lbl: 'Pixel Value: ',
-        inputClass: 'viewer-ctrl-info-btn',
+        input_class: 'viewer-ctrl-info-btn',
         events: {
-            rx_datapoint: function(ctrls, event){
+            rx_datapoint: function(event){
+                var ctrl = this.ctrl_panel.gui.params;
                 this.pixel_val.$input.val(event.px_val);
-            }.bind(parent, this)
+            }.bind(options.parent)
         }
+    };
+    for(var ctrl in options.custom){
+        this[ctrl] = options.custom[ctrl];
     };
 };
 
@@ -590,12 +603,10 @@ Toyz.Viewer.FileDialog = function(tile_contents){
             }
         }
     };
-    this.gui = Toyz.Gui.initParamList(
-        gui,
-        options = {
-            $parent: this.$div
-        }
-    );
+    this.gui = new Toyz.Gui.Gui({
+        params: gui,
+        $parent: this.$div
+    });
     
     this.$div.dialog({
         resizable: true,
@@ -612,7 +623,7 @@ Toyz.Viewer.FileDialog = function(tile_contents){
         },
         buttons: {
             Open: function(tile_contents){
-                var file_info = this.gui.getParams(this.gui.params);
+                var file_info = this.gui.get();
                 delete file_info.conditional;
                 tile_contents.load_img({file_info:file_info}, tile_contents.viewer_frame);
                 this.$div.dialog('close');
@@ -715,7 +726,9 @@ Toyz.Viewer.Contents = function(params){
     };
     
     // Create control panel and bind any events to the viewer
-    var ctrl = this.init_controls({}, params.controls);
+    var ctrl = this.init_controls({
+        groups: params.controls
+    });
     this.ctrl_panel = ctrl[0];
     this.controls = ctrl[1];
     this.events = new Toyz.Viewer.Events();
@@ -770,8 +783,8 @@ Toyz.Viewer.Contents.prototype.update = function(viewer_frame, updates, updates_
 Toyz.Viewer.Contents.prototype.set_tile = function(settings){
     console.log('settings', settings);
     this.frames = [];
-    var add_viewer_frame = this.ctrl_panel.gui.getParam('add_viewer_frame');
-    var input_viewer_frame = this.ctrl_panel.gui.getParam('input_viewer_frame');
+    var add_viewer_frame = this.ctrl_panel.gui.params['add_viewer_frame'];
+    var input_viewer_frame = this.ctrl_panel.gui.params['input_viewer_frame'];
     input_viewer_frame.$input.empty();
     for(var i=0;i<settings.frames.length; i++){
         add_viewer_frame.$input.click();
@@ -872,8 +885,8 @@ Toyz.Viewer.Contents.prototype.load_img = function(settings, viewer_frame){
                 }
             }
         };
-        this.workspace.websocket.send_task(
-            {
+        this.workspace.websocket.send_task({
+            task: {
                 module: 'toyz.web.tasks',
                 task: 'get_file_info',
                 parameters: {
@@ -881,7 +894,7 @@ Toyz.Viewer.Contents.prototype.load_img = function(settings, viewer_frame){
                     img_info: settings.img_info
                 }
             },
-            function(viewer_frame, result){
+            callback: function(viewer_frame, result){
                 //console.log('file info', result.file_info);
                 this.frames[viewer_frame].file_info = result.file_info;
                 var img_info = result.file_info.images[result.file_info.frame];
@@ -895,7 +908,7 @@ Toyz.Viewer.Contents.prototype.load_img = function(settings, viewer_frame){
                 this.rx_img_info(viewer_frame, result.file_info.frame, img_info);
                 this.get_img_tiles(viewer_frame, result.file_info.frame, result.new_tiles);
             }.bind(this, viewer_frame)
-        )
+        })
     }else{
         alert('Image type is not supported yet');
     }
@@ -918,8 +931,8 @@ Toyz.Viewer.Contents.prototype.get_img_info = function(viewer_frame, file_frame)
         img_info.viewer = viewer;
     };
     //console.log('img_info', img_info);
-    this.workspace.websocket.send_task(
-        {
+    this.workspace.websocket.send_task({
+        task: {
             module: 'toyz.web.tasks',
             task: 'get_img_info',
             parameters: {
@@ -927,7 +940,7 @@ Toyz.Viewer.Contents.prototype.get_img_info = function(viewer_frame, file_frame)
                 img_info: img_info
             }
         },
-        function(viewer_frame, result){
+        callback: function(viewer_frame, result){
             var file_info = this.frames[viewer_frame].file_info;
             file_info.frame = result.img_info.frame;
             file_info.images[file_info.frame] = result.img_info;
@@ -943,7 +956,7 @@ Toyz.Viewer.Contents.prototype.get_img_info = function(viewer_frame, file_frame)
             this.rx_img_info(viewer_frame, file_info.frame, result.img_info);
             this.get_img_tiles(viewer_frame, file_info.frame, result.new_tiles);
         }.bind(this, viewer_frame)
-    );
+    });
 };
 Toyz.Viewer.Contents.prototype.rx_img_info = function(viewer_frame, file_frame, img_info){
     for(var i=0; i<this.events['rx_img'].length; i++){
@@ -958,8 +971,8 @@ Toyz.Viewer.Contents.prototype.get_tile_map = function(viewer_frame, file_frame)
     var file_info = $.extend(true, {}, this.frames[viewer_frame].file_info);
     //console.log('viewer frame in get_tile_map', viewer_frame,file_info);
     delete file_info['images'];
-    this.workspace.websocket.send_task(
-        {
+    this.workspace.websocket.send_task({
+        task: {
             module: 'toyz.web.tasks',
             task: 'get_tile_info',
             parameters: {
@@ -967,7 +980,7 @@ Toyz.Viewer.Contents.prototype.get_tile_map = function(viewer_frame, file_frame)
                 img_info: this.frames[viewer_frame].file_info.images[file_frame]
             }
         },
-        function(viewer_frame, file_frame, result){
+        callback: function(viewer_frame, file_frame, result){
             this.frames[viewer_frame].file_info.images[file_frame].tiles = $.extend(
                 true, 
                 this.frames[viewer_frame].file_info.images[file_frame].tiles,
@@ -975,7 +988,7 @@ Toyz.Viewer.Contents.prototype.get_tile_map = function(viewer_frame, file_frame)
             );
             this.get_img_tiles(viewer_frame, file_frame, result.new_tiles)
         }.bind(this, viewer_frame, file_frame)
-    )
+    });
 };
 Toyz.Viewer.Contents.prototype.get_img_tiles = function(viewer_frame, file_frame, tiles){
     var file_info = $.extend(true, {}, this.frames[viewer_frame].file_info);
@@ -994,8 +1007,8 @@ Toyz.Viewer.Contents.prototype.get_img_tiles = function(viewer_frame, file_frame
     for(var tile_idx in tiles){
         if(tiles.hasOwnProperty(tile_idx)){
             //console.log('tile', tiles[tile_idx]);
-            this.workspace.websocket.send_task(
-                {
+            this.workspace.websocket.send_task({
+                task: {
                     module: 'toyz.web.tasks',
                     task: 'get_img_tile',
                     parameters: {
@@ -1004,8 +1017,8 @@ Toyz.Viewer.Contents.prototype.get_img_tiles = function(viewer_frame, file_frame
                         tile_info: tiles[tile_idx]
                     }
                 },
-                this.rx_tile_info.bind(this, viewer_frame, file_frame, tile_idx)
-            )
+                callback: this.rx_tile_info.bind(this, viewer_frame, file_frame, tile_idx)
+            });
         }
     };
 };
@@ -1041,30 +1054,34 @@ Toyz.Viewer.Contents.prototype.rx_tile_info = function(
         console.log('tile did not need to be created');
     };
 };
-Toyz.Viewer.Contents.prototype.init_controls = function(controls, divs){
-    var controls = $.extend(true, new Toyz.Viewer.Controls(this), controls);
+Toyz.Viewer.Contents.prototype.init_controls = function(options){
+    options = $.extend(true, {
+        controls: {}
+    }, options);
+    var controls = new Toyz.Viewer.Controls({
+        parent: this, 
+        custom: options.controls
+    });
     var gui = {
         type: 'div',
         params: {}
     };
-    for(var div in divs){
+    for(var div in options.groups){
         var this_div = {
             type: 'div',
             legend: div,
             params: {}
         };
-        for(var i=0; i<divs[div].length; i++){
-            this_div.params[divs[div][i]] = controls[divs[div][i]];
+        for(var i=0; i<options.groups[div].length; i++){
+            this_div.params[options.groups[div][i]] = controls[options.groups[div][i]];
         };
         gui.params[div] = this_div;
     };
     var $div = $('<div/>');
-    gui = Toyz.Gui.initParamList(
-        gui,
-        options = {
-            $parent: $div
-        }
-    );
+    gui = new Toyz.Gui.Gui({
+        params: gui,
+        $parent: $div
+    });
     //this.$tile_div.append($div);
     $('body').append($div);
     var ctrl_panel = {

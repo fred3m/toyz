@@ -1,0 +1,9 @@
+bugs:
+
+home.html
+- delete user/group button doesn't work
+- initial user/group in Users/Groups does not properly load parameters
+
+viewer.js
+- Some time tiles aren't loaded properly. This is a big problem in Chrome where the images
+  are cached and the tiles never load proprly.
