@@ -563,6 +563,7 @@ Toyz.Workspace.Workspace.prototype.load_src = function(callback, data_src){
     var file_type = src_params['conditions'].file_type;
     delete src_params['conditions']
     console.log('source params', src_params);
+    console.log('file_type', file_type);
     this.websocket.send_task({
         task: {
             module: 'toyz.web.tasks',

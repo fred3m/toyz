@@ -291,9 +291,9 @@ Toyz.Gui.Div.prototype.get = function(){
     for(var p in this.params){
         params = $.extend(true, params, Toyz.Gui.get_param(this.params[p]));
     };
-    for(var p in this.optional){
-        params = $.extend(true, params, Toyz.Gui.get_param(this.optional[p]));
-    };
+    //for(var p in this.optional){
+    //    params = $.extend(true, params, Toyz.Gui.get_param(this.optional[p]));
+    //};
     return params;
 };
 Toyz.Gui.Div.prototype.set = function(options){
@@ -341,7 +341,8 @@ Toyz.Gui.Conditional.prototype.build_sub_params = function(options){
     this.selector = this.gui.build_gui($.extend({}, options, {
         param: this.selector,
         $parent: this.$div,
-        key: key
+        key: key,
+        add2root: false
     }));
     pVal = this.selector.get();
     this.selector.old_val = pVal;
@@ -350,39 +351,33 @@ Toyz.Gui.Conditional.prototype.build_sub_params = function(options){
         var old_set = this.param_sets[this.selector.old_val];
         pVal = this.selector.get();
         var new_set = this.param_sets[pVal];
-        old_set.old_display = old_set.$div.css('display');
         old_set.$div.css('display','none');
-        new_set.$div.css('display',new_set.old_display);
+        new_set.$div.css('display',new_set.display);
         this.selector.old_val = pVal;
     }.bind(this));
     
     for(var pSet in this.param_sets){
-        var new_set = this.param_sets[pSet];
-        new_set.$div = $('<div/>');
-        new_set = this.gui.build_gui($.extend({}, options, {
-            param: new_set,
+        this.param_sets[pSet].$div = $('<div/>');
+        this.param_sets[pSet] = this.gui.build_gui($.extend({}, options, {
+            param: this.param_sets[pSet],
             $parent: this.$div,
             key: pSet,
             add2root: false
         }));
-        new_set.old_display = new_set.$div.css('display');
-        new_set.$div.css('display','none');
+        this.param_sets[pSet].display = this.param_sets[pSet].$div.css('display');
+        this.param_sets[pSet].$div.css('display','none');
     };
     
     var keyVal = this.selector.get();
     //console.log('conditional:',key,'selector:', selector, keyVal)
     var selected = this.param_sets[keyVal];
-    selected.$div.css('display', selected.$div.css('display', selected.old_display));
+    selected.$div.css('display', selected.$div.css('display', selected.display));
 };
 Toyz.Gui.Conditional.prototype.get = function(){
     var params = {conditions:{}};
-    params.conditions[this.selector.name] = this.selector.get();
-    for(var p in this.param_sets){
-        params = $.extend(true, params, Toyz.Gui.get_param(this.param_sets[p]));
-    };
-    for(var p in this.optional){
-        params = $.extend(true, params, Toyz.Gui.get_param(this.optional[p]));
-    };
+    var p_set = this.selector.get();
+    params.conditions[this.selector.name] = p_set;
+    params = $.extend(true, params, Toyz.Gui.get_param(this.param_sets[p_set]));
     return params;
 };
 Toyz.Gui.Conditional.prototype.set = function(options){
@@ -477,6 +472,7 @@ Toyz.Gui.List.prototype = new Toyz.Gui.Param();
 Toyz.Gui.List.prototype.constructor = Toyz.Gui.List;
 Toyz.Gui.List.prototype.get = function(){
     var params = {conditions:{}};
+    console.log('list', this);
     if(this.format == 'dict'){
         params[this.name] = {};
         for(var i=0; i<this.items.length; i++){
@@ -494,9 +490,14 @@ Toyz.Gui.List.prototype.get = function(){
     }else if(this.format == 'list'){
         params[this.name] = [];
         for(var i=0; i<this.items.length; i++){
-            params[this.name].push(Toyz.Gui.get_param(this.items[i])[this.items[i].name]);
+            var result = Toyz.Gui.get_param(this.items[i]);
+            if(result.hasOwnProperty(this.items[i].name)){
+                params[this.name].push(result[this.items[i].name]);
+            }else{
+                params[this.name].push(result);
+            };
         };
-    }else if(param.format == 'custom'){
+    }else if(this.format == 'custom'){
         params[this.name] = this.get_val();
     }else{
         throw Error("Invalid parameter format for list "+this.name);
