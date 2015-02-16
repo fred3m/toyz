@@ -222,6 +222,9 @@ ul {
 .viewer-ctrl-tools-surface {
     background-image:url(/static/web/static/button_icons/surface.png);
 }
+.viewer-ctrl-tools-colormap{
+    background-image:url(/static/web/static/button_icons/colormap.png);
+}
 
 /***** other viewer controls *****/
 .viewer-ctrl-info-coord-div {

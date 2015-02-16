@@ -390,7 +390,7 @@ class ToyzWebApp(tornado.web.Application):
             toyz_static_handler = ToyzStaticFileHandler
             toyz_template_handler = ToyzTemplateHandler
             workspace_handler = ToyzWorkspaceHandler
-            core_hanfler = ToyzCoreHandler
+            core_handler = ToyzCoreJsHandler
             third_party_handler = Toyz3rdPartyHandler
         
         self.user_sessions = {}

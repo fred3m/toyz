@@ -516,6 +516,19 @@ Toyz.Viewer.Controls = function(options){
             value: ''
         },
     };
+    this.colormap = {
+        prop:{
+            input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-colormap',
+            type: 'image',
+            title: 'open colormap editor',
+            value: ''
+        },
+        func:{
+            click: function() {
+                
+            }
+        }
+    },
     // Image Info
     this.img_coords = {
         type: 'lbl',
@@ -1251,4 +1264,35 @@ Toyz.Viewer.DrawingTools = {
         $div.append($rect);
         return $rect;
     }
+};
+// Map a pixel on a 1D canvas context imageData array
+Toyz.Viewer.set_pixel = function(image_data, x, y, r, g, b, a){
+    index=(x+y*image_data.width)*4;
+    imageData.data[index+0]=r;
+    imageData.data[index+1]=g;
+    imageData.data[index+2]=b;
+    imageData.data[index+3]=a;
+};
+// Map a 2D image to a canvas context imageData object
+Toyz.Viewer.map_image=function(image, ctx, colormap){
+    var image_data=ctx.createImageData(image[0].length,image.length);
+    var rgbArray=fitsPyp.extractColormap(colormap);
+    if(colormap.scale=='linear'){
+        for(var i=0;i<image.length;i++){
+            for(var j=0;j<image[i].length;j++){
+                var rgb=fitsPyp.linearmapPixel(image[i][j],colormap,rgbArray);
+                fitsPyp.setPixel(imageData,j,image.length-i,rgb[0],rgb[1],rgb[2],255);
+            }
+        };
+    }else if(colormap.scale=='log'){
+        for(var i=0;i<image.length;i++){
+            for(var j=0;j<image[i].length;j++){
+                var rgb=fitsPyp.logmapPixel(image[i][j],colormap,rgbArray);
+                fitsPyp.setPixel(imageData,j,image.length-i,rgb[0],rgb[1],rgb[2],255);
+            }
+        };
+    }else{
+        alert('colormap scale not supported yet or not recognized');
+    }
+    return imageData;
 };

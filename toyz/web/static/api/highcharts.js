@@ -410,6 +410,7 @@ Toyz.API.Highcharts.Contents.prototype.update = function(params, param_val){
     }
 };
 Toyz.API.Highcharts.Contents.prototype.rx_info = function(options){
+    console.log('rx_info', options);
     var chart = this.$tile_div.highcharts();
     if(options.info_type=='select datapoints' || options.info_type=='unselect datapoints'){
         for(var s in this.settings.series){

@@ -102,6 +102,7 @@ Toyz.Workspace.DataSource = function(workspace, data, $parent, radio_group, info
         this.$input = $('<input value="'+this.id+'"></input>')
             .change(function(){
                 this.name = event.currentTarget.value;
+                console.log('changed data source to', this);
             }.bind(this));
         if(radio_group===undefined){
             radio_group = 'data_src';
@@ -160,6 +161,10 @@ Toyz.Workspace.DataSource.prototype.update = function(info, info_val){
             // Update tiles with the new data
             for(var tile_id in this.workspace.tiles){
                 this.workspace.tiles[tile_id].contents.rx_info({
+                    from: {
+                        tile:'',
+                        series: 0
+                    },
                     source: this.id, 
                     info_type:'data update'
                 });
@@ -311,15 +316,6 @@ Toyz.Workspace.LoadSrcDialog = function(workspace, options){
         .addClass('open-dialog');
     this.gui = {};
     this.data_src = {};
-    this.open = function(data_src){
-        if(data_src===undefined){
-            this.data_src = {};
-        } else{
-            this.data_src = data_src;
-        };
-        this.$div.dialog('open');
-    }.bind(this);
-    
     this.$div.dialog({
         resizable: true,
         draggable: true,
@@ -329,11 +325,9 @@ Toyz.Workspace.LoadSrcDialog = function(workspace, options){
         height: '300',
         buttons: {
             Open: function(){
-                var params = this.gui.get();
-                var data_src = $.extend(true, {}, this.data_src);
-                data_src.params = params;
-                console.log('data_src in dialog', data_src);
-                this.workspace.load_src(undefined, data_src);
+                this.workspace.load_src(undefined, $.extend(this.data_src, {
+                    params: this.gui.get()
+                }))
             }.bind(this),
             Cancel: function(){
                 this.$div.dialog('close');
