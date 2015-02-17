@@ -29,7 +29,16 @@ def init(**params):
 def check_user_type(param_type, params):
     """
     Set the user_type to either user_id or group_id depending on which
-    parameter is contained in ``params``
+    parameter is contained in ``params``. This allows a client to specify a group using
+    either ``group_id='group_name'`` or ``user_id='group_name'``, ``user_type='group_id'``.
+    
+    Parameters
+        param_type ( *string* ):
+            - Parameter from toyz.utils.db.param_formats used to identify how the parameter
+              is stored
+        params ( *dict* ): 
+            - dictionary containing either a ``user_id`` or ``group_id`` key (other kwargs)
+              may be included as well but have no affect on this function
     """
     required = db_utils.param_formats[param_type]['required']
     if 'user_type' in required and 'user_type' not in params:

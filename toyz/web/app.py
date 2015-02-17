@@ -29,7 +29,7 @@ from toyz.utils.errors import ToyzError, ToyzWebError
 
 class ToyzHandler:
     """
-    Handler for Toyz extensions
+    Handler for Toyz extensions.
     """
     def get_toyz_path(self, path, path_type):
         """

@@ -53,16 +53,17 @@ default_settings = {
 
 def normalize_path(path):
     """
-    Format a path with bash symbols like '**~**' , '**.**' , '**..**' into a full absolute path. This
-    simply returns ``os.path.abspath(os.path.expanduser(path))`` .
+    Format a path with bash symbols like '**~**' , '**.**' , '**..**' into a full absolute path.
+    This simply returns ``os.path.abspath(os.path.expanduser(path))`` .
     """
     return os.path.abspath(os.path.expanduser(path))
 
 def str_2_bool(bool_str):
     """
     Case independent function to convert a string representation of a 
-    boolean (*true*/*false*, *yes*/*no*) into a **bool**. This is case insensitive, and will
-    also accept part of a boolean string (*t*/*f*, *y*/*n*).
+    boolean (``'true'``/``'false'``, ``'yes'``/``'no'``) into a ``bool``. This is case 
+    insensitive, and will also accept part of a boolean string 
+    (``'t'``/``'f'``, ``'y'``/``'n'``).
     
     Raises a :py:class:`toyz.utils.errors.ToyzError` if an invalid expression is entered.
     """
@@ -168,6 +169,9 @@ def check4keys(myDict,keys):
         raise ToyzError("Missing parameters: "+error)
 
 def is_number(str_in):
+    """
+    Check whether or not a string is a number
+    """
     try:
         float(str_in)
         return True
@@ -175,6 +179,9 @@ def is_number(str_in):
         return False
 
 def is_int(str_in):
+    """
+    Check whether or not a string is an integer.
+    """
     try:
         int(str_in)
         return True
@@ -185,8 +192,8 @@ def create_paths(paths):
     """                                                                         
     Search for paths on the server. If a path does not exist, create the necessary directories.
     For example, if ``paths=['~/Documents/images/2014-6-5_data/']`` and only the path 
-    *'~/Documents'* exists, both *'~/Documents/images/'* and *'~/Documents/images/2014-6-5_data/'*
-    are created.
+    *'~/Documents'* exists, both *'~/Documents/images/'* and 
+    *'~/Documents/images/2014-6-5_data/'* are created.
     
     Parameters
         paths (*string* or *list* of strings): If paths is a string, this is the path to 
@@ -235,7 +242,7 @@ def check_user_shortcuts(toyz_settings, user_id, shortcuts=None):
           are always of the form ``shortcut_name:path`` .
     
     Returns
-        - 
+        - shortcuts: dictionary of shortcuts for the user
     """
     modified = False
     if shortcuts==None:
@@ -253,7 +260,8 @@ def check_user_shortcuts(toyz_settings, user_id, shortcuts=None):
         create_paths([shortcuts['temp']])
         modified = True
     if modified:
-        db_utils.update_param(toyz_settings.db, 'shortcuts', user_id=user_id, shortcuts=shortcuts)
+        db_utils.update_param(toyz_settings.db, 'shortcuts', user_id=user_id, 
+            shortcuts=shortcuts)
         paths = db_utils.get_param(toyz_settings.db, 'paths', user_id=user_id)
         # Ensure that the user has full access to his/her home directory
         if shortcuts['user'] not in paths or paths[shortcuts['user']] !='frwx':
@@ -263,7 +271,18 @@ def check_user_shortcuts(toyz_settings, user_id, shortcuts=None):
 
 def get_all_user_modules(toyz_settings, user_id):
     """
-    Get all modules available for the user
+    Get all modules available for the user.
+    
+    Parameters
+        toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings` ):
+            - Settings for the application runnning the job (may be needed to load user info 
+              or check permissions)
+        user_id ( *string* ): id of the current user
+    
+    Returns
+        user_modules ( *list* of *strings* ): 
+            - list of all toyz modules that the user has access
+              to, including permissions granted by member groups
     """
     groups = db_utils.get_param(toyz_settings.db, 'groups', user_id=user_id)
     user_modules = db_utils.get_param(toyz_settings.db, 'modules', user_id=user_id)
@@ -275,6 +294,18 @@ def get_all_user_modules(toyz_settings, user_id):
 def check_user_modules(toyz_settings, user_id, module):
     """
     Check to see if a module is available for the user
+    
+    Parameters
+        toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings` ):
+            - Settings for the application runnning the job (may be needed to load user info 
+              or check permissions)
+        user_id ( *string* ): id of the current user
+        module ( *string* ): name of the module to search for
+    
+    Returns
+        module_present ( *bool* ): 
+            - ``true`` if the user has access to the module, ``false``
+              otherwise
     """
     user_modules = get_all_user_modules(toyz_settings, user_id)
     if (module in user_modules or 
@@ -286,6 +317,17 @@ def check_user_modules(toyz_settings, user_id, module):
 def get_all_user_toyz(toyz_settings, user_id):
     """
     Get all available Toyz paths for the current user
+    
+    Parameters
+        toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings` ):
+            - Settings for the application runnning the job (may be needed to load user info 
+              or check permissions)
+        user_id ( *string* ): id of the current user
+    
+    Returns
+        user_toyz ( *dict* ):
+            - All of the local python directories that the user can use to run
+              jobs.
     """
     groups = db_utils.get_param(toyz_settings.db, 'groups', user_id=user_id)
     user_toyz = {}
@@ -297,6 +339,16 @@ def get_all_user_toyz(toyz_settings, user_id):
 def get_user_toyz(toyz_settings, user_id, toy):
     """
     If a toy is contained in a users toyz paths, get the module and return it
+    
+    Parameters
+        toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings` ):
+            - Settings for the application runnning the job (may be needed to load user info 
+              or check permissions)
+        user_id ( *string* ): id of the current user
+        toy ( *string* ): name of the toy to search for
+    
+    Returns
+        toy ( *module* ): python module if it exists, otherwise ``None``.
     """
     user_toyz = get_all_user_toyz(toyz_settings, user_id)
     if toy in user_toyz:
@@ -310,8 +362,22 @@ def get_user_toyz(toyz_settings, user_id, toy):
 def get_toyz_module(toyz_settings, user_id, module):
     """
     Get a toyz module from either installed modules or one in a users toyz paths.
-    An installed toy will take precedence if it is in the toy paths as opposed to installed
+    An uninstalled toy will take precedence if it is in the toy paths as opposed to installed
     modules.
+    
+    Parameters
+        toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings` ):
+            - Settings for the application runnning the job (may be needed to load user info 
+              or check permissions)
+        user_id ( *string* ): id of the current user
+        module ( *string* ): name of the module to search for
+    
+    Returns
+        toyz_module ( *module* ): python module if it exists, otherwise ``None``.
+    
+    Raises
+        Raises a :py:class:`toyz.utils.errors.ToyzJobError` if the module is not found
+        in the users approved modules
     """
     toyz_module = get_user_toyz(toyz_settings, user_id, module)
     if toyz_module is not None:

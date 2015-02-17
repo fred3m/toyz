@@ -7,3 +7,6 @@ home.html
 viewer.js
 - Some time tiles aren't loaded properly. This is a big problem in Chrome where the images
   are cached and the tiles never load proprly.
+  
+highcharts.js
+- multiple series on the same plot do not mutually select point

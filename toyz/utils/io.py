@@ -258,6 +258,9 @@ io_modules = {
 }
 
 def load_dict(dict_str, str_ok=False):
+    """
+    load a dict from a string
+    """
     if str_ok:
         try:
             mydict = json.loads(dict_str)
@@ -268,6 +271,9 @@ def load_dict(dict_str, str_ok=False):
     return dict_str
 
 def load_list(csv, str_ok=False):
+    """
+    load a list from a string
+    """
     if csv[0] == '[' and csv[-1] == ']':
         csv = csv[1:-1]
     my_list = csv.split(',')
@@ -283,6 +289,9 @@ def load_list(csv, str_ok=False):
     return my_list
 
 def load_unknown(str_in, single_ok=False):
+    """
+    load a json string with an unknown type
+    """
     try:
         # This will work for a dictionary or a list='[1,2,"a",...]' but not a string or a number
         # or a csv list='1,2,3,"a",...'
@@ -303,6 +312,32 @@ def load_unknown(str_in, single_ok=False):
 
 def load_data_file(io_module, file_type, file_options, io_modules=None, 
         io_func=None, format='dict'):
+    """
+    Loads a data file using a specified python module and a set of options. Currently
+    only *numpy* and *pandas* are fully supported
+    
+    Parameters
+        io_module ( *string* ):
+            - name of python module to use for i/o
+        file_type ( *string* ): 
+            - type of file to open (for example 'hdf', 'csv', 'npy', etc.)
+            - *Note*: the ``file_type`` must be supported by the given ``io_module``
+        file_options ( *dict* ): 
+            - dictionary of options as specified in the ``io_module``s documentation
+        io_modules ( *dict* ): 
+            - Dictionary of custom io_modules not included in the toyz framework
+            - This is currently unsupported, but will eventually allow users to specify
+              their own i/o modules
+        io_func ( *string* ):
+            - name of custom i/o function
+            - This is currently unsupported, but will eventually allow users to specify
+              their own i/o functions
+        format ( *string* ):
+            - Currently data is returned a dictionary with its keys as the columns names
+              and values as a 1D list.
+            - It may be possible in the future to request other data formats, in which
+              case that format would be specified here
+    """
     meta = ''
     if io_module == 'python':
         sep = file_options['sep']
