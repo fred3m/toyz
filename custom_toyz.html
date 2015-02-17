@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>toyz &mdash; Toyz 0.0.0 documentation</title>
+  <title>Creating Custom Toyz &mdash; Toyz 0.0.0 documentation</title>
   
 
   
@@ -28,7 +28,9 @@
   
 
   
-    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html"/> 
+    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Toyz API" href="toyz_api.html"/>
+        <link rel="prev" title="Highcharts" href="highcharts.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -96,10 +98,10 @@
 </ul>
 </li>
 </ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="custom_toyz.html">Creating Custom Toyz</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#creating-and-installing-your-first-toy">Creating and Installing Your First Toy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#making-it-your-own">Making it Your Own</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Creating Custom Toyz</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-and-installing-your-first-toy">Creating and Installing Your First Toy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#making-it-your-own">Making it Your Own</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="toyz_api.html">Toyz API</a><ul>
@@ -141,10 +143,10 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>toyz</li>
+    <li>Creating Custom Toyz</li>
       <li class="wy-breadcrumbs-aside">
         
-          <a href="_sources/modules.txt" rel="nofollow"> View page source</a>
+          <a href="_sources/custom_toyz.txt" rel="nofollow"> View page source</a>
         
       </li>
   </ul>
@@ -152,45 +154,71 @@
 </div>
           <div role="main">
             
-  <div class="section" id="toyz">
-<h1>toyz<a class="headerlink" href="#toyz" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="toyz.html">toyz package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="toyz.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="toyz.utils.html">toyz.utils package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#subpackages">Subpackages</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.core">toyz.utils.core module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.db">toyz.utils.db module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.errors">toyz.utils.errors module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.file_access">toyz.utils.file_access module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.security">toyz.utils.security module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#toyz-utils-third-party-settings-module">toyz.utils.third_party_settings module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#module-toyz.utils">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="toyz.web.html">toyz.web package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="toyz.web.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.web.html#module-toyz.web.app">toyz.web.app module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.web.html#module-toyz.web.tasks">toyz.web.tasks module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.web.html#module-toyz.web">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.html#module-toyz.version">toyz.version module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.html#module-toyz">Module contents</a></li>
-</ul>
-</li>
-</ul>
+  <div class="section" id="creating-custom-toyz">
+<span id="custom-toyz"></span><h1>Creating Custom Toyz<a class="headerlink" href="#creating-custom-toyz" title="Permalink to this headline">¶</a></h1>
+<p>While the default tools included with Toyz will meet the needs of some researchers, most
+will need to build their own tools into the framework to suit their specific research needs.
+For this reason Toyz was designed to be a framework that can be built on as opposed to a
+stand-alone web application. It would take a very long document indeed to describe all of the
+current parts of Toyz that can be customized, but this document will cover some of the more
+common and useful customizations that can be made.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">You must be an administrator to add new Toyz to your application. The rest of this
+document assumes that you are logged on with an administrative account</p>
+</div>
+<div class="section" id="creating-and-installing-your-first-toy">
+<h2>Creating and Installing Your First Toy<a class="headerlink" href="#creating-and-installing-your-first-toy" title="Permalink to this headline">¶</a></h2>
+<p>To get started it is recommended that you fork the
+<a class="reference external" href="https://github.com/fred3m/toyz-template">Toyz Template</a> into your own github repository,
+or download the source code onto your local machine. You can use this template to create all
+of your own custom Toyz, but for now we&#8217;ll just import this module into our Toyz instance to see
+how this is done. This can be done in two different ways, which are outlined below.</p>
+<div class="section" id="installing-a-built-toyz-module">
+<h3>Installing a Built Toyz Module<a class="headerlink" href="#installing-a-built-toyz-module" title="Permalink to this headline">¶</a></h3>
+<p>If you navigate to the <tt class="docutils literal"><span class="pre">toyz-template</span></tt> directory in your terminal, type:</p>
+<div class="highlight-python"><div class="highlight"><pre>python setup.py install
+</pre></div>
+</div>
+<p>This will create a module <tt class="docutils literal"><span class="pre">toyz_template</span></tt> in your python path. Now open up your Toyz instance
+to the main homepage (<tt class="docutils literal"><span class="pre">host:port</span></tt>)(for more on this see <a class="reference internal" href="getting_started.html#running-toyz"><em>Running a Toyz Application</em></a>). You should see
+a control group labeled <tt class="docutils literal"><span class="pre">Toyz</span> <span class="pre">Modules</span></tt>. Click the <tt class="docutils literal"><span class="pre">+</span></tt> button and in the text box enter
+<tt class="docutils literal"><span class="pre">toyz_template</span></tt>, then click the <tt class="docutils literal"><span class="pre">Submit</span></tt> button. You should get a message that the settings
+have been saved successfully. If you use this method, remember that if you make any changes to
+your Toy you need to run the setup command again before Toyz will be able to use the changes.</p>
+</div>
+<div class="section" id="installing-a-local-uninstalled-module">
+<h3>Installing a Local (uninstalled) Module<a class="headerlink" href="#installing-a-local-uninstalled-module" title="Permalink to this headline">¶</a></h3>
+<p>You may not want to install Toyz into your python path but instead link to a directory on your
+server (or local machine, if that is where you are running Toyz). In this case open your Toyz
+instance to the main homepage (<tt class="docutils literal"><span class="pre">host:port</span></tt>)(for more on this see <a class="reference internal" href="getting_started.html#running-toyz"><em>Running a Toyz Application</em></a>). This
+time click the <tt class="docutils literal"><span class="pre">+</span></tt> sign in the <tt class="docutils literal"><span class="pre">Toyz</span> <span class="pre">Paths</span></tt> control group. In the <tt class="docutils literal"><span class="pre">toyz_name</span></tt> field type
+<tt class="docutils literal"><span class="pre">toyz_template</span></tt> and in the <tt class="docutils literal"><span class="pre">path</span></tt> field enter <tt class="docutils literal"><span class="pre">.../toyz-template/toyz_template</span></tt> on a unix
+machine or <tt class="docutils literal"><span class="pre">...\toyz-template\toyz_template</span></tt> on a windows machine, where <tt class="docutils literal"><span class="pre">...</span></tt> represents the
+path to the <tt class="docutils literal"><span class="pre">toyz-template</span></tt> directory. That&#8217;s it!</p>
+</div>
+</div>
+<div class="section" id="making-it-your-own">
+<h2>Making it Your Own<a class="headerlink" href="#making-it-your-own" title="Permalink to this headline">¶</a></h2>
+<p>The template is commented to assist you in customizing this template into your own Toy.
+Eventually I hope to make a tutorial that walks you through this process but for now the
+next few sections will describe some of the different components that you can customize and
+how to modify and manipulate them.</p>
 </div>
 </div>
 
 
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="toyz_api.html" class="btn btn-neutral float-right" title="Toyz API"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="highcharts.html" class="btn btn-neutral" title="Highcharts"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

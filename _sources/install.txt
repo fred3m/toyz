@@ -15,6 +15,9 @@ Optional Requirements
 =====================
 - `numpy <http://www.numpy.org/>`_ 1.5.1 or later
     + Required to load saved .npy files
+- `pil <http://www.pythonware.com/products/pil/>`_ or 
+  `pillow <https://pillow.readthedocs.org/>`_ 2.7.0 or later
+    + Required to view images in workspaces
 - `Highcharts <http://www.highcharts.com/download>`_ 4.0 or higher
     + Required for interactive plots and charts
     + Software contains link to online resource but can also be downloaded from
@@ -32,7 +35,7 @@ on a blue-gene super computer at the University of Rochester at this time).
 Using pip
 ---------
 Toyz is registered in the `Python Package Index (pypi) <https://pypi.python.org/pypi>`_ and 
-will shortly have version 0.0 added. Check back for updates on when this is compelete.
+within the next few weeks version 0.0 will be added.
 
 Installing from source
 ----------------------

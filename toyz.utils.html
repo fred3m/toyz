@@ -74,6 +74,51 @@
 </ul>
 </li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="workspaces.html">Workspaces</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#data-sources">Data Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#tiles">Tiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="viewer.html">Image Viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#creating-a-new-viewer">Creating a new Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#image-viewer-controls">Image Viewer Controls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#saving-a-viewer-tile">Saving a Viewer Tile</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="highcharts.html">Highcharts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#creating-a-new-chart">Creating a New Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#adding-series-to-a-chart">Adding Series to a Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#modifying-a-charts-properties">Modifying a Charts Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#selecting-points-and-zooming-in">Selecting Points and Zooming in</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#removing-points">Removing Points</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="custom_toyz.html">Creating Custom Toyz</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#creating-and-installing-your-first-toy">Creating and Installing Your First Toy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#making-it-your-own">Making it Your Own</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="toyz_api.html">Toyz API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="toyz_api.html#toyz-core-js">toyz_core.js</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz_api.html#job-api">Job API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web_gui.html">Toyz Web GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#properties-for-all-parameters">Properties for all Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#container-parameters">Container Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#input-parameters">Input Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#input">input</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to Toyz</a></li>
+</ul>
 
         
       </div>
@@ -268,6 +313,36 @@ application</li>
 </dd></dl>
 
 <dl class="function">
+<dt id="toyz.utils.core.check_user_modules">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">check_user_modules</tt><big>(</big><em>toyz_settings</em>, <em>user_id</em>, <em>module</em><big>)</big><a class="headerlink" href="#toyz.utils.core.check_user_modules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check to see if a module is available for the user</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first docutils">
+<dt>toyz_settings ( <a class="reference internal" href="#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a> ):</dt>
+<dd><ul class="first last simple">
+<li>Settings for the application runnning the job (may be needed to load user info 
+or check permissions)</li>
+</ul>
+</dd>
+</dl>
+<p class="last">user_id ( <em>string</em> ): id of the current user
+module ( <em>string</em> ): name of the module to search for</p>
+</dd>
+<dt>Returns</dt>
+<dd><dl class="first last docutils">
+<dt>module_present ( <em>bool</em> ): </dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">true</span></tt> if the user has access to the module, <tt class="docutils literal"><span class="pre">false</span></tt>
+otherwise</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="toyz.utils.core.check_user_shortcuts">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">check_user_shortcuts</tt><big>(</big><em>toyz_settings</em>, <em>user_id</em>, <em>shortcuts=None</em><big>)</big><a class="headerlink" href="#toyz.utils.core.check_user_shortcuts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that a user has all of the default shortcuts.</p>
@@ -282,7 +357,7 @@ are always of the form <tt class="docutils literal"><span class="pre">shortcut_n
 </dd>
 <dt>Returns</dt>
 <dd><ul class="first last simple">
-<li></li>
+<li>shortcuts: dictionary of shortcuts for the user</li>
 </ul>
 </dd>
 </dl>
@@ -293,8 +368,8 @@ are always of the form <tt class="docutils literal"><span class="pre">shortcut_n
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">create_paths</tt><big>(</big><em>paths</em><big>)</big><a class="headerlink" href="#toyz.utils.core.create_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search for paths on the server. If a path does not exist, create the necessary directories.
 For example, if <tt class="docutils literal"><span class="pre">paths=['~/Documents/images/2014-6-5_data/']</span></tt> and only the path 
-<em>&#8216;~/Documents&#8217;</em> exists, both <em>&#8216;~/Documents/images/&#8217;</em> and <em>&#8216;~/Documents/images/2014-6-5_data/&#8217;</em>
-are created.</p>
+<em>&#8216;~/Documents&#8217;</em> exists, both <em>&#8216;~/Documents/images/&#8217;</em> and 
+<em>&#8216;~/Documents/images/2014-6-5_data/&#8217;</em> are created.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd>paths (<em>string</em> or <em>list</em> of strings): If paths is a string, this is the path to 
@@ -324,10 +399,117 @@ are not encrypted, this will just return the <tt class="docutils literal"><span 
 </dd></dl>
 
 <dl class="function">
+<dt id="toyz.utils.core.get_all_user_modules">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">get_all_user_modules</tt><big>(</big><em>toyz_settings</em>, <em>user_id</em><big>)</big><a class="headerlink" href="#toyz.utils.core.get_all_user_modules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all modules available for the user.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first docutils">
+<dt>toyz_settings ( <a class="reference internal" href="#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a> ):</dt>
+<dd><ul class="first last simple">
+<li>Settings for the application runnning the job (may be needed to load user info 
+or check permissions)</li>
+</ul>
+</dd>
+</dl>
+<p class="last">user_id ( <em>string</em> ): id of the current user</p>
+</dd>
+<dt>Returns</dt>
+<dd><dl class="first last docutils">
+<dt>user_modules ( <em>list</em> of <em>strings</em> ): </dt>
+<dd><ul class="first last simple">
+<li>list of all toyz modules that the user has access
+to, including permissions granted by member groups</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.get_all_user_toyz">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">get_all_user_toyz</tt><big>(</big><em>toyz_settings</em>, <em>user_id</em><big>)</big><a class="headerlink" href="#toyz.utils.core.get_all_user_toyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all available Toyz paths for the current user</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first docutils">
+<dt>toyz_settings ( <a class="reference internal" href="#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a> ):</dt>
+<dd><ul class="first last simple">
+<li>Settings for the application runnning the job (may be needed to load user info 
+or check permissions)</li>
+</ul>
+</dd>
+</dl>
+<p class="last">user_id ( <em>string</em> ): id of the current user</p>
+</dd>
+<dt>Returns</dt>
+<dd><dl class="first last docutils">
+<dt>user_toyz ( <em>dict</em> ):</dt>
+<dd><ul class="first last simple">
+<li>All of the local python directories that the user can use to run
+jobs.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="toyz.utils.core.get_bool">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">get_bool</tt><big>(</big><em>prompt</em><big>)</big><a class="headerlink" href="#toyz.utils.core.get_bool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prompt a user for a boolean expression and repeat until a valid boolean
 has been entered. <tt class="docutils literal"><span class="pre">prompt</span></tt> is the text to prompt the user with.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.get_toyz_module">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">get_toyz_module</tt><big>(</big><em>toyz_settings</em>, <em>user_id</em>, <em>module</em><big>)</big><a class="headerlink" href="#toyz.utils.core.get_toyz_module" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a toyz module from either installed modules or one in a users toyz paths.
+An uninstalled toy will take precedence if it is in the toy paths as opposed to installed
+modules.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first docutils">
+<dt>toyz_settings ( <a class="reference internal" href="#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a> ):</dt>
+<dd><ul class="first last simple">
+<li>Settings for the application runnning the job (may be needed to load user info 
+or check permissions)</li>
+</ul>
+</dd>
+</dl>
+<p class="last">user_id ( <em>string</em> ): id of the current user
+module ( <em>string</em> ): name of the module to search for</p>
+</dd>
+<dt>Returns</dt>
+<dd>toyz_module ( <em>module</em> ): python module if it exists, otherwise <tt class="docutils literal"><span class="pre">None</span></tt>.</dd>
+<dt>Raises</dt>
+<dd>Raises a <a class="reference internal" href="#toyz.utils.errors.ToyzJobError" title="toyz.utils.errors.ToyzJobError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzJobError</span></tt></a> if the module is not found
+in the users approved modules</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.utils.core.get_user_toyz">
+<tt class="descclassname">toyz.utils.core.</tt><tt class="descname">get_user_toyz</tt><big>(</big><em>toyz_settings</em>, <em>user_id</em>, <em>toy</em><big>)</big><a class="headerlink" href="#toyz.utils.core.get_user_toyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>If a toy is contained in a users toyz paths, get the module and return it</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first docutils">
+<dt>toyz_settings ( <a class="reference internal" href="#toyz.utils.core.ToyzSettings" title="toyz.utils.core.ToyzSettings"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.core.ToyzSettings</span></tt></a> ):</dt>
+<dd><ul class="first last simple">
+<li>Settings for the application runnning the job (may be needed to load user info 
+or check permissions)</li>
+</ul>
+</dd>
+</dl>
+<p class="last">user_id ( <em>string</em> ): id of the current user
+toy ( <em>string</em> ): name of the toy to search for</p>
+</dd>
+<dt>Returns</dt>
+<dd>toy ( <em>module</em> ): python module if it exists, otherwise <tt class="docutils literal"><span class="pre">None</span></tt>.</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
@@ -354,18 +536,20 @@ they are operating on groups or users.</p>
 <dl class="function">
 <dt id="toyz.utils.core.is_int">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">is_int</tt><big>(</big><em>str_in</em><big>)</big><a class="headerlink" href="#toyz.utils.core.is_int" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Check whether or not a string is an integer.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.core.is_number">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">is_number</tt><big>(</big><em>str_in</em><big>)</big><a class="headerlink" href="#toyz.utils.core.is_number" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Check whether or not a string is a number</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="toyz.utils.core.normalize_path">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">normalize_path</tt><big>(</big><em>path</em><big>)</big><a class="headerlink" href="#toyz.utils.core.normalize_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format a path with bash symbols like &#8216;<strong>~</strong>&#8216; , &#8216;<strong>.</strong>&#8216; , &#8216;<strong>..</strong>&#8216; into a full absolute path. This
-simply returns <tt class="docutils literal"><span class="pre">os.path.abspath(os.path.expanduser(path))</span></tt> .</p>
+<dd><p>Format a path with bash symbols like &#8216;<strong>~</strong>&#8216; , &#8216;<strong>.</strong>&#8216; , &#8216;<strong>..</strong>&#8216; into a full absolute path.
+This simply returns <tt class="docutils literal"><span class="pre">os.path.abspath(os.path.expanduser(path))</span></tt> .</p>
 </dd></dl>
 
 <dl class="function">
@@ -469,8 +653,9 @@ If there are any errors in loading the directory, a response of the form</p>
 <dt id="toyz.utils.core.str_2_bool">
 <tt class="descclassname">toyz.utils.core.</tt><tt class="descname">str_2_bool</tt><big>(</big><em>bool_str</em><big>)</big><a class="headerlink" href="#toyz.utils.core.str_2_bool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Case independent function to convert a string representation of a 
-boolean (<em>true</em>/<em>false</em>, <em>yes</em>/<em>no</em>) into a <strong>bool</strong>. This is case insensitive, and will
-also accept part of a boolean string (<em>t</em>/<em>f</em>, <em>y</em>/<em>n</em>).</p>
+boolean (<tt class="docutils literal"><span class="pre">'true'</span></tt>/<tt class="docutils literal"><span class="pre">'false'</span></tt>, <tt class="docutils literal"><span class="pre">'yes'</span></tt>/<tt class="docutils literal"><span class="pre">'no'</span></tt>) into a <tt class="docutils literal"><span class="pre">bool</span></tt>. This is case 
+insensitive, and will also accept part of a boolean string 
+(<tt class="docutils literal"><span class="pre">'t'</span></tt>/<tt class="docutils literal"><span class="pre">'f'</span></tt>, <tt class="docutils literal"><span class="pre">'y'</span></tt>/<tt class="docutils literal"><span class="pre">'n'</span></tt>).</p>
 <p>Raises a <a class="reference internal" href="#toyz.utils.errors.ToyzError" title="toyz.utils.errors.ToyzError"><tt class="xref py py-class docutils literal"><span class="pre">toyz.utils.errors.ToyzError</span></tt></a> if an invalid expression is entered.</p>
 </dd></dl>
 

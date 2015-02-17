@@ -1,0 +1,341 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Image Viewer &mdash; Toyz 0.0.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Highcharts" href="highcharts.html"/>
+        <link rel="prev" title="Workspaces" href="workspaces.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> Toyz</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#what-is-toyz">What is Toyz?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#possible-use-cases">Possible Use Cases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#first-time-setup">First Time Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#running-a-toyz-application">Running a Toyz Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#configuring-a-new-toyz-web-application">Configuring a New Toyz Web Application</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="workspaces.html">Workspaces</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#data-sources">Data Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#tiles">Tiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Image Viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-new-viewer">Creating a new Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#image-viewer-controls">Image Viewer Controls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#saving-a-viewer-tile">Saving a Viewer Tile</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="highcharts.html">Highcharts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#creating-a-new-chart">Creating a New Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#adding-series-to-a-chart">Adding Series to a Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#modifying-a-charts-properties">Modifying a Charts Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#selecting-points-and-zooming-in">Selecting Points and Zooming in</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#removing-points">Removing Points</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="custom_toyz.html">Creating Custom Toyz</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#creating-and-installing-your-first-toy">Creating and Installing Your First Toy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#making-it-your-own">Making it Your Own</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="toyz_api.html">Toyz API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="toyz_api.html#toyz-core-js">toyz_core.js</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz_api.html#job-api">Job API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web_gui.html">Toyz Web GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#properties-for-all-parameters">Properties for all Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#container-parameters">Container Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#input-parameters">Input Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#input">input</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to Toyz</a></li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Toyz</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Image Viewer</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/viewer.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="image-viewer">
+<span id="viewer"></span><h1>Image Viewer<a class="headerlink" href="#image-viewer" title="Permalink to this headline">¶</a></h1>
+<p>Toyz also comes with an image viewer that allows the user to view images stored on the server.
+Because it&#8217;s often cumbersome and time consuming to load and view very large images, the image
+viewer also allows users to view images using mosaic tiles that only load parts of the image that
+are currently viewed.</p>
+<div class="section" id="creating-a-new-viewer">
+<h2>Creating a new Viewer<a class="headerlink" href="#creating-a-new-viewer" title="Permalink to this headline">¶</a></h2>
+<p>To create a new Image Viewer tile first create a new <strong>Viewer</strong> tile (see <a class="reference internal" href="workspaces.html#add-tile"><em>Adding and Positioning a Tile</em></a>
+for more), which open up a control panel next to the viewer.</p>
+</div>
+<div class="section" id="image-viewer-controls">
+<h2>Image Viewer Controls<a class="headerlink" href="#image-viewer-controls" title="Permalink to this headline">¶</a></h2>
+<p>By default the image viewer has 5 sets of controls but it is possible for a user to create and
+modify these groups by creating a <em class="xref std std-ref">custom_toy</em>.</p>
+<div class="section" id="image-controls">
+<h3>Image Controls<a class="headerlink" href="#image-controls" title="Permalink to this headline">¶</a></h3>
+<p>These green colored controls are used to open and navigate through a single image.</p>
+<div class="section" id="load-image">
+<h4>Load Image<a class="headerlink" href="#load-image" title="Permalink to this headline">¶</a></h4>
+<p>Loads an image from the server. Clicking the <strong>load image</strong> button open up a dialog that allows
+the user to choose an image type. Currently only <strong>image</strong>, which simply opens an image from a
+specified path, and <strong>large image</strong> which open sections of a large image as a set of mosaic tiles
+to save time and memory, are supported. In the future combined image will be able to load and
+display mosaics made from multiple images, such as multiple frame fits files in the same
+image viewer.</p>
+<p>You can also click on the <tt class="docutils literal"><span class="pre">...</span></tt> button to open a file dialog to select an available file
+from the server.</p>
+</div>
+<div class="section" id="frame-controls">
+<h4>Frame Controls<a class="headerlink" href="#frame-controls" title="Permalink to this headline">¶</a></h4>
+<p>The controls to the right of the <strong>load image</strong> button are all used to navigate between file
+frames. Currently this just means the different frames of a multi-extension fits file, all other
+image types just have a single frame.</p>
+</div>
+</div>
+<div class="section" id="viewer-controls">
+<h3>Viewer Controls<a class="headerlink" href="#viewer-controls" title="Permalink to this headline">¶</a></h3>
+<p>The purple controls are used to navigate between different viewer frames. Viewer frames are used
+to allow multiple images to be viewed as a slideshow in the viewer, which is often useful when
+comparing images, looking for moving objects, etc.</p>
+<div class="section" id="add-viewer-frame">
+<h4>Add Viewer Frame<a class="headerlink" href="#add-viewer-frame" title="Permalink to this headline">¶</a></h4>
+<p>This adds a new frame to the image viewer.</p>
+</div>
+<div class="section" id="remove-viewer-frame">
+<h4>Remove Viewer Frame<a class="headerlink" href="#remove-viewer-frame" title="Permalink to this headline">¶</a></h4>
+<p>Removes the current frame from the viewer</p>
+</div>
+<div class="section" id="viewer-frame-controls">
+<h4>Viewer Frame Controls<a class="headerlink" href="#viewer-frame-controls" title="Permalink to this headline">¶</a></h4>
+<p>Allows the user to cycle through differnt viewer frames.</p>
+</div>
+</div>
+<div class="section" id="zoom-controls">
+<span id="id1"></span><h3>Zoom Controls<a class="headerlink" href="#zoom-controls" title="Permalink to this headline">¶</a></h3>
+<p>The blue buttons control the scaling of the image, which is done differently for regular
+<strong>images</strong> and <strong>large images</strong>.  For regular images, the <tt class="docutils literal"><span class="pre">resize</span></tt> function in the
+<a class="reference external" href="https://pillow.readthedocs.org/">Pillow</a> or
+(<a class="reference external" href="http://www.pythonware.com/products/pil/">PIL</a>) library, which uses smoothing functions to
+make smaller images appear crisper and enlarged images less pixelated.</p>
+<p>Since the reason for using a separate image viewer for large images is save time and memory,
+it doesn&#8217;t make sense to scale them in the same way since a large bottleneck is the mapping of
+an array to rgba image data.</p>
+<p>Instead, scaling is done differntly depending on whether or not
+<a class="reference external" href="http://www.scipy.org/">scipy</a> is loaded. If it is, the <tt class="docutils literal"><span class="pre">scipy.ndimage.zoom</span></tt> function is
+used for both upscaling and downscaling, used a nearest neighbor algorithm. If <strong>scipy</strong> is
+not installed, the data array is sliced for downscaling and uses <tt class="docutils literal"><span class="pre">numpy.kron</span></tt> for
+upscaling (which only works for powers of 2). For this reason it is recommended to install
+<strong>scipy</strong>.</p>
+<p>The upside to using this scaling proceedure for large images is that it allows the program
+to scale tiles of an image that can smoothly be tiled together in very little time, and without
+losing the raw pixel values for upscaled images. The downside is that downscaled images appear
+choppy compared to properly scaled images (which would require loading the entire image,
+defeating the purpose of tiling the image in the first place!).</p>
+</div>
+<div class="section" id="tools">
+<h3>Tools<a class="headerlink" href="#tools" title="Permalink to this headline">¶</a></h3>
+<p>The gray buttons are tools that control the actions of the cursor when interacting with the
+image. Below is a description of the tools (from left to right).</p>
+<div class="section" id="rectangular-zoom">
+<h4>Rectangular zoom<a class="headerlink" href="#rectangular-zoom" title="Permalink to this headline">¶</a></h4>
+<p>If the rectangular zoom tool is selected, clicking and draging on the image will zoom in so that
+all of the selected area will be visible in the viewer.</p>
+</div>
+<div class="section" id="center">
+<h4>Center<a class="headerlink" href="#center" title="Permalink to this headline">¶</a></h4>
+<p>Centers the image on the point where the user clicked.</p>
+</div>
+<div class="section" id="histogram">
+<h4>Histogram<a class="headerlink" href="#histogram" title="Permalink to this headline">¶</a></h4>
+<p>Displays a histogram of raw pixel values (not rgb colors) around the point where the user
+clicked.</p>
+</div>
+<div class="section" id="surface-plot">
+<h4>Surface Plot<a class="headerlink" href="#surface-plot" title="Permalink to this headline">¶</a></h4>
+<p>Displays a surface plot of the pixel values centered on the point the user clicked.</p>
+</div>
+<div class="section" id="colormap">
+<h4>Colormap<a class="headerlink" href="#colormap" title="Permalink to this headline">¶</a></h4>
+<p>Allows the user to change the colormap for a raw image (for example a FITS image).</p>
+</div>
+</div>
+<div class="section" id="image-info">
+<h3>Image Info<a class="headerlink" href="#image-info" title="Permalink to this headline">¶</a></h3>
+<p>These fields display information about the image, such as the x/y location of the cursor,
+the physical coordinates on the image (not yet implemented but used for multiextension fits
+files), and the value of the pixel under the cursor.</p>
+</div>
+</div>
+<div class="section" id="saving-a-viewer-tile">
+<h2>Saving a Viewer Tile<a class="headerlink" href="#saving-a-viewer-tile" title="Permalink to this headline">¶</a></h2>
+<p>When a viewer tile is saved, the information to load each viewer frame, its images, and
+properties like the scale and location of the viewer window are all saved, but the images itself
+are not (meaning if they are changed, loading the workspace will display the <strong>new</strong> images,
+not the ones originally loaded).</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="highcharts.html" class="btn btn-neutral float-right" title="Highcharts"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="workspaces.html" class="btn btn-neutral" title="Workspaces"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Fred Moolekamp.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

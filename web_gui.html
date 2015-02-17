@@ -1,0 +1,760 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Toyz Web GUI &mdash; Toyz 0.0.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Contributing to Toyz" href="contributing.html"/>
+        <link rel="prev" title="Toyz API" href="toyz_api.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> Toyz</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#what-is-toyz">What is Toyz?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#possible-use-cases">Possible Use Cases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#first-time-setup">First Time Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#running-a-toyz-application">Running a Toyz Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#configuring-a-new-toyz-web-application">Configuring a New Toyz Web Application</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="workspaces.html">Workspaces</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#data-sources">Data Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#tiles">Tiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="viewer.html">Image Viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#creating-a-new-viewer">Creating a new Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#image-viewer-controls">Image Viewer Controls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#saving-a-viewer-tile">Saving a Viewer Tile</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="highcharts.html">Highcharts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#creating-a-new-chart">Creating a New Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#adding-series-to-a-chart">Adding Series to a Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#modifying-a-charts-properties">Modifying a Charts Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#selecting-points-and-zooming-in">Selecting Points and Zooming in</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#removing-points">Removing Points</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="custom_toyz.html">Creating Custom Toyz</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#creating-and-installing-your-first-toy">Creating and Installing Your First Toy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#making-it-your-own">Making it Your Own</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="toyz_api.html">Toyz API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="toyz_api.html#toyz-core-js">toyz_core.js</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz_api.html#job-api">Job API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Toyz Web GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#properties-for-all-parameters">Properties for all Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#container-parameters">Container Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input-parameters">Input Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input">input</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to Toyz</a></li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Toyz</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Toyz Web GUI</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/web_gui.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="toyz-web-gui">
+<span id="toyz-gui"></span><h1>Toyz Web GUI<a class="headerlink" href="#toyz-web-gui" title="Permalink to this headline">¶</a></h1>
+<p>When I first started to make interactive controls using javascript I quickly learned why most
+people don&#8217;t... it&#8217;s very time consuming! Typically a form must be created using html&#8217;s
+bulky syntax, or using jQuery&#8217;s slighly less bulky syntax, and then to submit the form each
+component must be loaded individually.</p>
+<p>To ease the process Toyz has a JSON parser that takes a JSON object (or python dictionary) and
+uses that to build an interface for the user. The advantage (besides being slightly faster to)
+create the controls, is that the parser builds them in such a way that a single <tt class="docutils literal"><span class="pre">get</span></tt> function
+can get all of the parameters in the correct format to pass to a python function without having
+to manually re-configure any of them! In addition, when a dictionary is sent from the web
+application (like a set of saved settings), all of the inputs are populated instantly! This
+includes standard text/numerical inputs, select boxes, lists, and dictionaries (lists with
+a specific format), and even the option for users to define their own controls (which has not
+been thoroughly tested yet).</p>
+<p>Below is a brief guide to the different inputs and controls currently implemented.</p>
+<div class="section" id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
+<p>Parameters are all given as JSON objects. The key of a parameter is it&#8217;s name, and the
+values are its properties.</p>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>var params = {
+    type: &#39;div&#39;,
+    legend: &#39;User Info&#39;,
+    params: {
+        name: {
+            lbl: &#39;name&#39;,
+        },
+        age: {
+            lbl: &#39;age&#39;,
+            prop: {
+                type: &#39;Number&#39;
+            }
+        }
+        group: {
+            type: &#39;select&#39;,
+            options: {
+                red: &#39;Red&#39;,
+                blue: &#39;Blue&#39;,
+                green: &#39;Green&#39;
+            }
+        }
+    }
+};
+</pre></div>
+</div>
+<p>creates a div with two input boxes: <tt class="docutils literal"><span class="pre">name</span></tt> and <tt class="docutils literal"><span class="pre">age</span></tt>, and a select box <tt class="docutils literal"><span class="pre">groups</span></tt> that has
+three options <tt class="docutils literal"><span class="pre">red</span></tt>, <tt class="docutils literal"><span class="pre">blue</span></tt>, <tt class="docutils literal"><span class="pre">green</span></tt>.</p>
+</div>
+<div class="section" id="properties-for-all-parameters">
+<h2>Properties for all Parameters<a class="headerlink" href="#properties-for-all-parameters" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="type-optional">
+<h3><tt class="docutils literal"><span class="pre">type</span></tt>: optional<a class="headerlink" href="#type-optional" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>Type of parameter.</li>
+<li>If no <tt class="docutils literal"><span class="pre">type</span></tt> is given the parameter defaults to <tt class="docutils literal"><span class="pre">input</span></tt></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="prop-optional">
+<h3><tt class="docutils literal"><span class="pre">prop</span></tt>: optional<a class="headerlink" href="#prop-optional" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>Lists any properties of the html element</li>
+<li>Uses the jquery <cite>.prop</cite> function to add the property to the parameters html element</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="css-optional">
+<h3><tt class="docutils literal"><span class="pre">css</span></tt>: optional<a class="headerlink" href="#css-optional" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>Lists any styles for the html elements. This uses the jquery <cite>.css</cite> function</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="func-optional">
+<h3><tt class="docutils literal"><span class="pre">func</span></tt>: optional<a class="headerlink" href="#func-optional" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li>Functions attached to the parameter.</li>
+<li>Works for any jquery event for the given element type</li>
+</ul>
+</div></blockquote>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre>var my_button = {
+    type: &#39;button&#39;,
+    prop: {
+        innerHTML: &#39;click me&#39;
+    },
+    func: {
+        click: function(){
+            alert(&#39;You clicked me&#39;)
+        }
+    }
+}
+</pre></div>
+</div>
+<p>will alert the user when the button is clicked.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">events</span></tt>: optional</dt>
+<dd><ul class="first last simple">
+<li>Dictionary whose keys are Toyz events (not to be confused with javascript window events)</li>
+<li>For each event, a function is given that is called when a Toyz application triggers
+the given event</li>
+</ul>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="container-parameters">
+<h2>Container Parameters<a class="headerlink" href="#container-parameters" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="div">
+<h3>div<a class="headerlink" href="#div" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">div</span></tt> defines an HTML div (division) element on the webpage.</p>
+<div class="section" id="properties-for-all-div-containers">
+<h4>Properties for all div containers<a class="headerlink" href="#properties-for-all-div-containers" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">legend</span></tt>: optional</dt>
+<dd><ul class="first last simple">
+<li>If <cite>legend</cite> is given, the div is wrapped in a <cite>fieldset</cite> with <cite>legend</cite> as the title</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">legend_class</span></tt>: optional</dt>
+<dd><ul class="first last simple">
+<li>Included if any classes are to be set for the legend</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">legend_css</span></tt>: optional</dt>
+<dd><ul class="first last simple">
+<li>Included if any styles are to be set for the legend (uses jquery <cite>.css</cite> function)</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">div_class</span></tt>: optional</dt>
+<dd><ul class="first last simple">
+<li>If it is desired to set any classes for the div container, it can be done using the
+<tt class="docutils literal"><span class="pre">classDiv</span></tt> field</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="div-properties">
+<h4><tt class="docutils literal"><span class="pre">div</span></tt> Properties<a class="headerlink" href="#div-properties" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">params</span></tt>: required</dt>
+<dd><ul class="first last simple">
+<li>Each key in <tt class="docutils literal"><span class="pre">params</span></tt> is a parameter in the div</li>
+<li>This can be any type of parameter, including another <tt class="docutils literal"><span class="pre">div</span></tt></li>
+</ul>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="conditional">
+<h3>conditional<a class="headerlink" href="#conditional" title="Permalink to this headline">¶</a></h3>
+<p>Similar to a <tt class="docutils literal"><span class="pre">div</span></tt>, but a conditional contains a <tt class="docutils literal"><span class="pre">selector</span></tt> that allows the user to
+choose from a list of options, then display a <tt class="docutils literal"><span class="pre">div</span></tt> that contains a subset of parameters
+based on the selection choice.</p>
+<div class="section" id="conditional-properties">
+<h4><tt class="docutils literal"><span class="pre">conditional</span></tt> Properties<a class="headerlink" href="#conditional-properties" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">selector</span></tt>: required</dt>
+<dd><ul class="first last simple">
+<li>Parameter that for certain values will cause a subset of parameters to appear on the form.
+This will usually have input type <tt class="docutils literal"><span class="pre">select</span></tt> or input type <tt class="docutils literal"><span class="pre">checkbox</span></tt></li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">param_sets</span></tt>: required</dt>
+<dd><ul class="first last simple">
+<li>Subsets of parameters for each value of the selector. If a particular value doesn&#8217;t have
+a subset, do not give it a key in <tt class="docutils literal"><span class="pre">param_sets</span></tt></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre>var my_param = {
+    type: &#39;conditional&#39;,
+    params: {
+        model: {
+            type: &#39;select&#39;,
+            options: {
+                polynomial: &#39;polynomial&#39;,
+                gaussian: &#39;gaussian&#39;,
+                exponential: &#39;exponential&#39;,
+            }
+        }
+    },
+    param_sets: {
+        polynomial: {
+            type: &#39;div&#39;,
+            params: {
+                order: {
+                    prop: {
+                        type: &#39;number&#39;,
+                        value: 2
+                    }
+                },
+                coefficients: {
+                    lbl: &#39;initial guess (coefficients)&#39;,
+                    prop: {
+                        value: &#39;0,1,1&#39;
+                    }
+                }
+            }
+        },
+        gaussian: {
+            type: &#39;div&#39;,
+            params: {
+                mean: {
+                    prop: {
+                        type: &#39;number&#39;,
+                        value: 0
+                    }
+                },
+                std_dev: {
+                    lbl: &#39;standard deviation&#39;,
+                    prop: {
+                        type: &#39;number&#39;,
+                        value: 1
+                    }
+                },
+                amplitude: {
+                    prop: {
+                        type: &#39;number&#39;,
+                        value: 1
+                    }
+                },
+                floor: {
+                    prop: {
+                        type: &#39;number&#39;,
+                        value: 0
+                    }
+                }
+            }
+        }
+}
+</pre></div>
+</div>
+<p>creates a drop down box that allows the user to select a function type
+(polynomial, gaussian, exponential), and if either <cite>polynomial</cite> or <cite>gaussian</cite> is chosen,
+a subset of parameters is given.</p>
+</div>
+</div>
+</div>
+<div class="section" id="input-parameters">
+<h2>Input Parameters<a class="headerlink" href="#input-parameters" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="properties-for-all-input-parameters">
+<h3>Properties for all input parameters<a class="headerlink" href="#properties-for-all-input-parameters" title="Permalink to this headline">¶</a></h3>
+<p>In addition to the properties available for all parameters, there are some properties
+available to all input parameters</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">lbl</span></tt>: optional</dt>
+<dd><ul class="first last simple">
+<li>If given, this is a label shown to the left of an input parameter</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">div_class</span></tt> and <tt class="docutils literal"><span class="pre">div_css</span></tt>: optional</dt>
+<dd><ul class="first last">
+<li><p class="first">Each input parameter is contained in a <cite>div</cite> that is roughly of the form:</p>
+<div class="highlight-python"><div class="highlight"><pre>&lt;div&gt;&lt;label&gt;Input label:&lt;/label&gt;&lt;input&gt;&lt;/input&gt;&lt;/div&gt;
+</pre></div>
+</div>
+</li>
+<li><p class="first">If it is desired to set any classes for the parent div, it can be done using the
+<tt class="docutils literal"><span class="pre">classDiv</span></tt> field</p>
+</li>
+<li><p class="first">If it is desired to change the style of the parent div, it can be done by using the
+<tt class="docutils literal"><span class="pre">divCss</span></tt> field (this uses the jquery <tt class="docutils literal"><span class="pre">.css</span></tt> function)</p>
+</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">lbl_class</span></tt> and <tt class="docutils literal"><span class="pre">lbl_css</span></tt>: optional</dt>
+<dd><ul class="first simple">
+<li>If the user wants to customize the label for a parameter, classes can be added by using the</li>
+</ul>
+<p class="last"><tt class="docutils literal"><span class="pre">lbl_class</span></tt> property, and styles can be added by using the <cite>lbl_css</cite> property</p>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">title</span></tt>: optional</dt>
+<dd><ul class="first last simple">
+<li>Sets the tooltip title of the input div (this includes both the label and the input)</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">units</span></tt>: optional</dt>
+<dd><ul class="first last simple">
+<li>Some parameters may have optional units that can be set</li>
+<li>The value of the units field is a list of available units (if multiple units are available)
+or a single string (if units is just a label for the users benefit)</li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre>var velocity = {
+    prop: {
+        type: &#39;Number&#39;
+    },
+    units: [&#39;m/s&#39;,&#39;km/s&#39;, &#39;mph&#39;]
+};
+</pre></div>
+</div>
+<p>creates a number input with a dropdown units box containing <tt class="docutils literal"><span class="pre">m/s</span></tt>, <tt class="docutils literal"><span class="pre">km/s</span></tt>, <tt class="docutils literal"><span class="pre">mph</span></tt>
+as possible units.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">file_dialog</span></tt>: optional</dt>
+<dd><ul class="first last simple">
+<li>Many times the input will be a path or filename from the server</li>
+<li>This option creates a button that opens a file manager to view directories and files
+available for the user</li>
+<li>The value of <cite>file_dialog</cite> does not matter, but is typically set to <tt class="docutils literal"><span class="pre">true</span></tt></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre>var file_dialog = new Toyz.Core.FileDialog({});
+
+var my_path = {
+    lbl: &#39;path&#39;,
+    file_dialog: true
+}
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="input">
+<h2>input<a class="headerlink" href="#input" title="Permalink to this headline">¶</a></h2>
+<p>This is the default if no <tt class="docutils literal"><span class="pre">type</span></tt> is given for a parameter. If no additional properties are
+given, a text box with no label will appear on the form. This object has no special properties
+other than the ones listed above for all parameters.</p>
+<div class="section" id="input-types">
+<h3>Input types<a class="headerlink" href="#input-types" title="Permalink to this headline">¶</a></h3>
+<p>To set the type of an input (for example a checkbox, or number (as opposed to a string)) use
+<tt class="docutils literal"><span class="pre">{prop:</span> <span class="pre">type:</span> <span class="pre">input_type}</span></tt>. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>var my_input = {
+    prop: {
+        type: &#39;checkbox&#39;,
+        &#39;checked&#39;: true
+    }
+}
+</pre></div>
+</div>
+<p>creates a checkbox with <tt class="docutils literal"><span class="pre">true</span></tt> as its default value.</p>
+</div>
+<div class="section" id="select">
+<h3>select<a class="headerlink" href="#select" title="Permalink to this headline">¶</a></h3>
+<p>Select (drop-down) box, consisting of a list of options that can later be changed or updated.</p>
+<div class="section" id="select-properties">
+<h4><tt class="docutils literal"><span class="pre">select</span></tt> Properties<a class="headerlink" href="#select-properties" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">options</span></tt>: required</dt>
+<dd><ul class="first last simple">
+<li>Objects whose keys are the values of select HTML object and values are the text
+displayed to the user</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">order</span></tt>: optional</dt>
+<dd><ul class="first last simple">
+<li>An array that lists the order in which options should be added to the select box</li>
+<li>Only options in the order array will be added to the select box</li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre>var stoplight = {
+    type: &#39;select&#39;,
+    options: {
+        green: &#39;Green light&#39;,
+        yellow: &#39;Yellow light&#39;,
+        red: &#39;Red light&#39;,
+    },
+    defaultVal: &#39;red&#39;
+}
+</pre></div>
+</div>
+<p>creates a drop-down box with a default value of <tt class="docutils literal"><span class="pre">red</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="list">
+<h3>list<a class="headerlink" href="#list" title="Permalink to this headline">¶</a></h3>
+<p>An editable list of objects. If the input required is something as simple as a simple list of
+numbers (input = [1,2,3,4,5]) it may be best to simply have a text input and parse the results
+by separating on the <cite>,</cite>.</p>
+<p>The <tt class="docutils literal"><span class="pre">list</span></tt> type is geared toward more complicated inputs, such as dictionaries, lists of
+lists (where each entry in the list is also a list) or more complicated custom input types.
+Each element in the list has a radio button to choose the current entry that can be removed
+(if desired), as well as built in controls to add/remove entries.</p>
+<div class="section" id="list-properties">
+<h4><cite>list</cite> Properties<a class="headerlink" href="#list-properties" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">format</span></tt>: required</dt>
+<dd><ul class="first last simple">
+<li>Format of the input from: <tt class="docutils literal"><span class="pre">list</span></tt>, <tt class="docutils literal"><span class="pre">dict</span></tt>, <tt class="docutils literal"><span class="pre">OrderedDict</span></tt>, <tt class="docutils literal"><span class="pre">custom</span></tt>.
+Defaults to <tt class="docutils literal"><span class="pre">list</span></tt>.
+(OrderedDict and none not supported yet)</li>
+<li>For format = <tt class="docutils literal"><span class="pre">dict</span></tt>, <tt class="docutils literal"><span class="pre">new_item</span></tt> is required to be a <tt class="docutils literal"><span class="pre">div</span></tt></li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">ordered</span></tt>: optional</dt>
+<dd><ul class="first last simple">
+<li>Boolean that describes whether or not the list is numbered or not. Defaults to <tt class="docutils literal"><span class="pre">false</span></tt>
+(unordered list <cite>&lt;ul&gt;</cite>)</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">buttons</span></tt>: optional</dt>
+<dd><ul class="first last simple">
+<li>Defines a div containing buttons for the list. If <tt class="docutils literal"><span class="pre">buttons</span></tt> is not defined, the default
+is to have an <tt class="docutils literal"><span class="pre">add</span></tt> button and <tt class="docutils literal"><span class="pre">remove</span></tt> button and add/remove items from the list</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">new_item</span></tt>: required</dt>
+<dd><ul class="first last simple">
+<li>When the <tt class="docutils literal"><span class="pre">add</span></tt> button is clicked, a new item is added to the list. <tt class="docutils literal"><span class="pre">newItem</span></tt> can
+either be a <tt class="docutils literal"><span class="pre">div</span></tt> with sub parameters or a single parameter</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="newitem-properties">
+<h4><tt class="docutils literal"><span class="pre">newItem</span></tt> Properties<a class="headerlink" href="#newitem-properties" title="Permalink to this headline">¶</a></h4>
+<p>New items are a bit different than ordinary divs because <tt class="docutils literal"><span class="pre">list</span></tt> objects might actually be
+dictionaries or lists of lists. As a result, <tt class="docutils literal"><span class="pre">new_item</span></tt> objects have additional properties</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">key</span></tt>, <tt class="docutils literal"><span class="pre">value</span></tt>: required for format=``dict``</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">key</span></tt> and <tt class="docutils literal"><span class="pre">value</span></tt> of the dictionary when getting/setting values</li>
+<li>In this case, <tt class="docutils literal"><span class="pre">new_item</span></tt> is required to be a <tt class="docutils literal"><span class="pre">div</span></tt></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre>var my_div = {
+    type: &#39;div&#39;,
+    legend: &#39;shortcut&#39;,
+    paramas: {
+        key: {
+            lbl: &#39;path name&#39;
+        },
+        value: {
+            lbl: &#39;path&#39;,
+        }
+    }
+}
+</pre></div>
+</div>
+<p>will create a div that contains a field to return a dictionary key:value pair.</p>
+<dl class="docutils">
+<dt><tt class="docutils literal"><span class="pre">get</span></tt>: required for format=``custom``</dt>
+<dd><ul class="first last simple">
+<li>Function to get the value of the custom list parameter</li>
+</ul>
+</dd>
+<dt><tt class="docutils literal"><span class="pre">set</span></tt>: required for format=`custom`</dt>
+<dd><ul class="first last simple">
+<li>Function to set the value of the custom list parameter</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="list-examples">
+<h4><tt class="docutils literal"><span class="pre">list</span></tt> Examples<a class="headerlink" href="#list-examples" title="Permalink to this headline">¶</a></h4>
+<p>Dictionary input Example:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>var my_list = {</dt>
+<dd><p class="first">type: &#8216;list&#8217;,
+new_item: {</p>
+<blockquote>
+<div><p>type: &#8216;div&#8217;,
+format: &#8216;dict&#8217;,
+params: {</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>key: {</dt>
+<dd>lbl: &#8216;knickname&#8217;,</dd>
+</dl>
+<p>},
+value: {</p>
+<blockquote>
+<div>lbl: &#8216;full name&#8217;</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p class="last">}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>List input Example:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>var my_list = {</dt>
+<dd><p class="first">type: &#8216;list&#8217;,
+new_item: {</p>
+<blockquote>
+<div><p>type: &#8216;div&#8217;,
+format: &#8216;list&#8217;,
+items: 3,
+params: {</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>li1: {</dt>
+<dd>lbl: &#8216;name&#8217;,</dd>
+</dl>
+<p>},
+li2: {</p>
+<blockquote>
+<div>lbl: &#8216;age&#8217;
+type: &#8216;Number&#8217;</div></blockquote>
+<p>},
+li3:{</p>
+<blockquote>
+<div>lbl: &#8216;height&#8217;,
+units: [&#8216;feet&#8217;, &#8216;inches&#8217;, &#8216;m&#8217;, &#8216;cm&#8217;]</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p class="last">}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="button">
+<h3>button<a class="headerlink" href="#button" title="Permalink to this headline">¶</a></h3>
+<p>Buttons are not actually inputs but still might exist on the form. They have no special
+properties other than those given above for all objects, but typically will have a <tt class="docutils literal"><span class="pre">click</span></tt>
+function given by the <tt class="docutils literal"><span class="pre">func</span></tt> object.</p>
+</div>
+<div class="section" id="custom">
+<h3>custom<a class="headerlink" href="#custom" title="Permalink to this headline">¶</a></h3>
+<p>It is also possible for users to specify a custom input type, for example some type of control.
+In this case the method of setting and retrieving the value of the input must be given.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="contributing.html" class="btn btn-neutral float-right" title="Contributing to Toyz"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="toyz_api.html" class="btn btn-neutral" title="Toyz API"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Fred Moolekamp.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

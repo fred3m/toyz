@@ -36,6 +36,8 @@ where **XXXX** is the port that toyz is using.
 
 To exit the toyz application at any time just type ``CTRL + c`` .
 
+.. _running_toyz:
+
 Running a Toyz Application
 ==========================
 There are a number of different ways to initialize a Toyz web application, and even more ways

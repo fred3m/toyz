@@ -1,0 +1,288 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Highcharts &mdash; Toyz 0.0.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Creating Custom Toyz" href="custom_toyz.html"/>
+        <link rel="prev" title="Image Viewer" href="viewer.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> Toyz</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#what-is-toyz">What is Toyz?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#possible-use-cases">Possible Use Cases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#first-time-setup">First Time Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#running-a-toyz-application">Running a Toyz Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#configuring-a-new-toyz-web-application">Configuring a New Toyz Web Application</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="workspaces.html">Workspaces</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#data-sources">Data Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#tiles">Tiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="viewer.html">Image Viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#creating-a-new-viewer">Creating a new Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#image-viewer-controls">Image Viewer Controls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#saving-a-viewer-tile">Saving a Viewer Tile</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Highcharts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-new-chart">Creating a New Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-series-to-a-chart">Adding Series to a Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#modifying-a-charts-properties">Modifying a Charts Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#selecting-points-and-zooming-in">Selecting Points and Zooming in</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#removing-points">Removing Points</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="custom_toyz.html">Creating Custom Toyz</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#creating-and-installing-your-first-toy">Creating and Installing Your First Toy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#making-it-your-own">Making it Your Own</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="toyz_api.html">Toyz API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="toyz_api.html#toyz-core-js">toyz_core.js</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz_api.html#job-api">Job API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web_gui.html">Toyz Web GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#properties-for-all-parameters">Properties for all Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#container-parameters">Container Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#input-parameters">Input Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#input">input</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to Toyz</a></li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Toyz</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Highcharts</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/highcharts.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="highcharts">
+<span id="id1"></span><h1>Highcharts<a class="headerlink" href="#highcharts" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="http://www.highcharts.com/">Highcharts</a> is an open source javascript library created by
+Highsoft AS that makes it easy to generate a variety of different interactive charts and plots.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">While the software is free for personal and academic use, a reasonably priced license is
+required for corporate use. Please see <a href="#id3"><span class="problematic" id="id4">`http://shop.highsoft.com/highcharts.html`_</span></a> for more
+information about Highcharts licensing.</p>
+</div>
+<p>Currently only a small portion of the Highcharts API is accessible through the GUI although in
+the future that is likely to change.</p>
+<div class="section" id="creating-a-new-chart">
+<h2>Creating a New Chart<a class="headerlink" href="#creating-a-new-chart" title="Permalink to this headline">¶</a></h2>
+<p>To create a new Highchart first add a data source (see <a class="reference internal" href="workspaces.html#add-data-source"><em>Adding a Data Source</em></a> for more).
+Next create a new Highcharts tile (see <a class="reference internal" href="workspaces.html#add-tile"><em>Adding and Positioning a Tile</em></a> for more). Once you have chosen the
+<strong>Highcharts</strong> tile type, right-click again on the inside of the tile. Notice that new options
+have now been added to the context menu. Choose <strong>Edit Chart</strong> to open a dialog that will allow
+you to add plots to the current tile.</p>
+<p>You can change the title and subtitle of the plot, whether or not any axes are inverted, whether
+or not to show grid lines for the x and y axes, and if and where a plot legend is displayed.</p>
+</div>
+<div class="section" id="adding-series-to-a-chart">
+<h2>Adding Series to a Chart<a class="headerlink" href="#adding-series-to-a-chart" title="Permalink to this headline">¶</a></h2>
+<p>To add a new series click on the <tt class="docutils literal"><span class="pre">+</span></tt> button under the heading <strong>Series</strong>. You can choose the
+plot type (not all Highcharts plot types are currently supported), an optional series name, and
+choose a selection of other available settings from the Highcharts API.</p>
+<p>Notice that you data source(es) populate a select box labled <strong>data source</strong>. Changing the data
+source also changes the available <strong>x column</strong> and <strong>y column</strong> boxes that allow you to choose
+your axes. You can also specify the markers for which points will be displayed clicking the
+<strong>set marker_div</strong> checkbox.</p>
+<p>You can add additional series by clicking the <tt class="docutils literal"><span class="pre">+</span></tt> button again, and remove the selected
+series by clicking the <tt class="docutils literal"><span class="pre">-</span></tt> button.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">On the same chart you can have series linked to different data sources</p>
+</div>
+<p>Once you are happy with your setting click the <tt class="docutils literal"><span class="pre">Set</span></tt> button.</p>
+</div>
+<div class="section" id="modifying-a-charts-properties">
+<h2>Modifying a Charts Properties<a class="headerlink" href="#modifying-a-charts-properties" title="Permalink to this headline">¶</a></h2>
+<p>It&#8217;s just as easy to modify a chart as it is to create one. Just right-click on the chart tile
+and choose <strong>Edit Chart</strong>. This will bring up a dialog with all of the current chart options and
+allow you to make any modifications you desire. Click <tt class="docutils literal"><span class="pre">cancel</span></tt> to cancel your changes or
+<tt class="docutils literal"><span class="pre">Set</span></tt> to save your changes and re-build the chart.</p>
+</div>
+<div class="section" id="selecting-points-and-zooming-in">
+<h2>Selecting Points and Zooming in<a class="headerlink" href="#selecting-points-and-zooming-in" title="Permalink to this headline">¶</a></h2>
+<p>By default, clicking on a point will select that point on a chart. If you have multiple charts
+open (on multiple tiles) that are connected to the same data source, selecting a point
+(or points) on one chart will select the same point(s) on all of the other charts connected
+to the same data source.</p>
+<p>The default behavior allows the user to select multiple points. To select multiple points click
+and drag over an area on the chart. All points in the highlighted region will be selected.</p>
+<p>It may also be desirable to zoom into a region on a plot. In this case open the <strong>Edit Chart</strong>
+dialog and change the selection type to <tt class="docutils literal"><span class="pre">xy</span> <span class="pre">zoom</span></tt>. Now when you click and drag over a set of
+points, Highcharts will zoom into the selected region.</p>
+</div>
+<div class="section" id="removing-points">
+<h2>Removing Points<a class="headerlink" href="#removing-points" title="Permalink to this headline">¶</a></h2>
+<p>It can often be useful to remove points from a data set. To do this select a group of points and
+right-click the chart. Click <tt class="docutils literal"><span class="pre">remove</span> <span class="pre">points</span></tt> to remove the points from the data sources, which
+removes them from all series connected to the same data source.</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="custom_toyz.html" class="btn btn-neutral float-right" title="Creating Custom Toyz"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="viewer.html" class="btn btn-neutral" title="Image Viewer"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Fred Moolekamp.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

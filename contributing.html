@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>toyz &mdash; Toyz 0.0.0 documentation</title>
+  <title>Contributing to Toyz &mdash; Toyz 0.0.0 documentation</title>
   
 
   
@@ -28,7 +28,8 @@
   
 
   
-    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html"/> 
+    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html"/>
+        <link rel="prev" title="Toyz Web GUI" href="web_gui.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -116,8 +117,8 @@
 </ul>
 </li>
 </ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to Toyz</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Contributing to Toyz</a></li>
 </ul>
 
         
@@ -141,10 +142,10 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>toyz</li>
+    <li>Contributing to Toyz</li>
       <li class="wy-breadcrumbs-aside">
         
-          <a href="_sources/modules.txt" rel="nofollow"> View page source</a>
+          <a href="_sources/contributing.txt" rel="nofollow"> View page source</a>
         
       </li>
   </ul>
@@ -152,45 +153,41 @@
 </div>
           <div role="main">
             
-  <div class="section" id="toyz">
-<h1>toyz<a class="headerlink" href="#toyz" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="toyz.html">toyz package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="toyz.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="toyz.utils.html">toyz.utils package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#subpackages">Subpackages</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.core">toyz.utils.core module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.db">toyz.utils.db module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.errors">toyz.utils.errors module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.file_access">toyz.utils.file_access module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.security">toyz.utils.security module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#toyz-utils-third-party-settings-module">toyz.utils.third_party_settings module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.html#module-toyz.utils">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="toyz.web.html">toyz.web package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="toyz.web.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.web.html#module-toyz.web.app">toyz.web.app module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.web.html#module-toyz.web.tasks">toyz.web.tasks module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.web.html#module-toyz.web">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.html#module-toyz.version">toyz.version module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.html#module-toyz">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</div>
+  <div class="section" id="contributing-to-toyz">
+<span id="contributing"></span><h1>Contributing to Toyz<a class="headerlink" href="#contributing-to-toyz" title="Permalink to this headline">¶</a></h1>
+<p>Toyz still has a long way to go and undoubtably numberous bugs that I have yet to discover.
+I&#8217;m open to having as many people work on Toyz as possible but ask that you follow a few
+guidelines.</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>If you&#8217;re making a big change (like adding or significantly expanding a feature),
+please visit the <a class="reference external" href="https://groups.google.com/forum/#!forum/toyz-dev">Google group</a>
+to make sure that no one else is working on it or that it conflicts with another
+planned feature in some way</li>
+<li>Try to comment the code as least as well as it&#8217;s currently commented, especially the
+python code. I&#8217;ve been a bit more liberal with my js code and that will change
+in the future, but since most users will be python users I want to try to keep that
+portion of the framework neat and tidy.</li>
+<li>Follow the <a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP 8</a> style guide, with
+the noted exception that Toyz uses 99 character widths (as opposed to the more
+canonical 79, since the code contains a lot of JSON objects and dictionaries)</li>
+<li>Don&#8217;t use C/C++ code unless it&#8217;s absolutely necessary for speed. Usually some
+combination of numpy, scipy, and pandas can accomplish the same task in nearly the
+same running time but greatly simplify the installation process</li>
+</ol>
+</div></blockquote>
 </div>
 
 
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="web_gui.html" class="btn btn-neutral" title="Toyz Web GUI"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

@@ -1,0 +1,377 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Toyz API &mdash; Toyz 0.0.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Toyz Web GUI" href="web_gui.html"/>
+        <link rel="prev" title="Creating Custom Toyz" href="custom_toyz.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> Toyz</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#what-is-toyz">What is Toyz?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#possible-use-cases">Possible Use Cases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#first-time-setup">First Time Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#running-a-toyz-application">Running a Toyz Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#configuring-a-new-toyz-web-application">Configuring a New Toyz Web Application</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="workspaces.html">Workspaces</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#data-sources">Data Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#tiles">Tiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="viewer.html">Image Viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#creating-a-new-viewer">Creating a new Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#image-viewer-controls">Image Viewer Controls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#saving-a-viewer-tile">Saving a Viewer Tile</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="highcharts.html">Highcharts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#creating-a-new-chart">Creating a New Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#adding-series-to-a-chart">Adding Series to a Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#modifying-a-charts-properties">Modifying a Charts Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#selecting-points-and-zooming-in">Selecting Points and Zooming in</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#removing-points">Removing Points</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="custom_toyz.html">Creating Custom Toyz</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#creating-and-installing-your-first-toy">Creating and Installing Your First Toy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#making-it-your-own">Making it Your Own</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Toyz API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#toyz-core-js">toyz_core.js</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#job-api">Job API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web_gui.html">Toyz Web GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#properties-for-all-parameters">Properties for all Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#container-parameters">Container Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#input-parameters">Input Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#input">input</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to Toyz</a></li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Toyz</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Toyz API</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/toyz_api.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="toyz-api">
+<span id="id1"></span><h1>Toyz API<a class="headerlink" href="#toyz-api" title="Permalink to this headline">¶</a></h1>
+<p>As mentioned previously, Toyz is a web application run on the python
+<a class="reference external" href="http://www.tornadoweb.org/en/stable/">Tornado</a> web framework. This document won&#8217;t go into the
+details of how Tornado handles requests, as most of this work is done behind the scenes and
+Toyz contains an API that should allow even power users to ignore the Tornado web framework.
+The main goal of the web API is to allow scientists, who tend to be more proficient in python
+than web languages like html, js, and css, to have to learn and use as little of those
+languages as possible. Another goal is to make it quick and easy to build GUI&#8217;s, as a big
+part of the reason that scientific software is mostly done from the command line is that
+it&#8217;s sooooo much easier to do it that way... unless you&#8217;re using <em>someone else&#8217;s</em> code.</p>
+<div class="section" id="toyz-core-js">
+<h2>toyz_core.js<a class="headerlink" href="#toyz-core-js" title="Permalink to this headline">¶</a></h2>
+<p>This module contains the core functions and objects used for communication with the web
+application.</p>
+<div class="section" id="toyz-core-websocket">
+<h3>Toyz.Core.Websocket<a class="headerlink" href="#toyz-core-websocket" title="Permalink to this headline">¶</a></h3>
+<p>Other than <tt class="docutils literal"><span class="pre">get</span></tt> and <tt class="docutils literal"><span class="pre">post</span></tt> requests for files, the <tt class="docutils literal"><span class="pre">Toyz.Core.Websocket</span></tt> object handles
+all of the communications with the web application. In practice each web page should only have
+a single websocket connection, although multiple tiles and controls on the page can use it
+(there are some exceptions, for example the <a href="#id3"><span class="problematic" id="id4">`file_dialog`_</span></a> has its own websocket).</p>
+<p>To create a new websocket, on an html pages <tt class="docutils literal"><span class="pre">&lt;script&gt;</span></tt> section type:</p>
+<div class="highlight-python"><div class="highlight"><pre>websocket = new Toyz.Core.Websocket(options);
+</pre></div>
+</div>
+<p>where options is a JSON object (essentially a python dictionary) that contains optional
+parameters for the websocket. There are no mandatory parameters, so it&#8217;s possible to simply
+use <tt class="docutils literal"><span class="pre">websocket</span> <span class="pre">=</span> <span class="pre">new</span> <span class="pre">Toyz.Core.Websocket({});</span></tt></p>
+<div class="section" id="optional-parameters">
+<h4>Optional Parameters<a class="headerlink" href="#optional-parameters" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><ul class="simple">
+<li><tt class="docutils literal"><span class="pre">rx_action</span></tt>: function to run when a message is received from the server. Instead of
+specifying an <tt class="docutils literal"><span class="pre">rx_action</span></tt> it is also possible to specify a callback for each
+message sent to the server</li>
+<li><tt class="docutils literal"><span class="pre">rx_error</span></tt>: function to be run if an error occurs on the server. The default function
+alerts the user</li>
+<li><tt class="docutils literal"><span class="pre">notify</span></tt>: function to be run if a notification is received from the server
+(such as the successful completion of a task)</li>
+<li><tt class="docutils literal"><span class="pre">warn</span></tt>: function to be run if a warning is received from the server</li>
+<li><tt class="docutils literal"><span class="pre">onopen</span></tt>: action to be completed once the websocket has established connection with the
+server. This can be useful when designing a web page that waits for a server connection
+before initially populating a set of controls or interactive tools</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="sending-jobs-to-the-server">
+<h4>Sending Jobs to the Server<a class="headerlink" href="#sending-jobs-to-the-server" title="Permalink to this headline">¶</a></h4>
+<p>Jobs are sent to the server via the <tt class="docutils literal"><span class="pre">Toyz.Core.Websocket</span></tt> using a <tt class="docutils literal"><span class="pre">send_task</span></tt> function.
+<tt class="docutils literal"><span class="pre">send_task</span></tt> requires a JSON object with (at a minimum) a <tt class="docutils literal"><span class="pre">task</span></tt> key, which tells the server
+which function to run. <tt class="docutils literal"><span class="pre">Task</span></tt> is itself a JSON object that contains <tt class="docutils literal"><span class="pre">module</span></tt>, <tt class="docutils literal"><span class="pre">task</span></tt>,
+and <tt class="docutils literal"><span class="pre">parameters</span></tt> keys.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">websocket</span><span class="o">.</span><span class="n">send_task</span><span class="p">({</span>
+    <span class="n">task</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">module</span><span class="p">:</span> <span class="s">&#39;toyz.web.tasks&#39;</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">:</span> <span class="s">&#39;create_paths&#39;</span><span class="p">,</span>
+        <span class="n">parameters</span><span class="p">:</span> <span class="p">{</span>
+            <span class="n">path</span><span class="p">:</span> <span class="s">&#39;~/toyz/&#39;</span><span class="p">,</span>
+            <span class="n">new_folder</span><span class="p">:</span> <span class="s">&#39;temp_folder&#39;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>creates a new folder <cite>temp_folder</cite> in the <cite>~/toyz</cite> directory. The <cite>module</cite> key tells the
+application which python module (or toy) to use, <tt class="docutils literal"><span class="pre">task</span></tt> is the function, and <tt class="docutils literal"><span class="pre">parameters</span></tt> is
+a JSON object with parameters to pass to the function.</p>
+<p>See <a class="reference internal" href="#job-api"><em>Job API</em></a> for more about sending and running jobs on the server.</p>
+</div>
+<div class="section" id="receiving-responses">
+<h4>Receiving Responses<a class="headerlink" href="#receiving-responses" title="Permalink to this headline">¶</a></h4>
+<p>When a job has completed a response is always sent from the server. Depending on whether or not
+the response is an error, a warning, a notification, a custom function may be run to handle
+the response (which has the option of continuing to the callback or rx_action if any of those
+functions return <tt class="docutils literal"><span class="pre">false</span></tt>). Otherwise the <tt class="docutils literal"><span class="pre">callback</span></tt> function passed to the websocket is run,
+or if no callback function was sent, the <tt class="docutils literal"><span class="pre">rx_action</span></tt> function is run.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If a websocket has an <tt class="docutils literal"><span class="pre">rx_action</span></tt> specified and receives a callback, the callback is
+always run.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Currently, if a connection to the host is lost, the Toyz webpage must be reloaded so that
+the websocket can establish a new connection, which completely erases all the data on the
+page. In the future the websocket will try to re-establish connection, but for now:
+<strong>Save your workspace often in case you lose your connection</strong></p>
+</div>
+</div>
+</div>
+<div class="section" id="toyz-core-filedialog">
+<h3>Toyz.Core.FileDialog<a class="headerlink" href="#toyz-core-filedialog" title="Permalink to this headline">¶</a></h3>
+<p>For obvious reasons most web applications don&#8217;t want users to be able to browse the contents
+of their server, so web browsers do not come with a built in file browser (the way operating
+systems do). The Toyz FileDialog is a browser that allows the user to see his/her own custom
+shortcuts (to favorite directories), and access all of the files he/she has been granted
+access to from the management console.</p>
+<p>To add/delete shortcuts, go to the homepage url (<tt class="docutils literal"><span class="pre">host:port</span></tt>) and add/delete options from
+the <tt class="docutils literal"><span class="pre">shortcuts</span></tt> control group. Don&#8217;t forget to <tt class="docutils literal"><span class="pre">submit</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="job-api">
+<span id="id2"></span><h2>Job API<a class="headerlink" href="#job-api" title="Permalink to this headline">¶</a></h2>
+<p>The job API handles all tasks sent from clients and runs each one in a new subprocess. In the
+future admins will have the option of allowing users to have a subprocess for each session,
+allowing them to store some information in memory while they are interacting with the data
+in their web client, but for now each subprocess is destroyed when a job has completed.</p>
+<div class="section" id="format-of-a-task">
+<h3>Format of a task<a class="headerlink" href="#format-of-a-task" title="Permalink to this headline">¶</a></h3>
+<p>Each task the server receives is a dictionary with the keys <tt class="docutils literal"><span class="pre">module</span></tt>, <tt class="docutils literal"><span class="pre">task</span></tt>,
+<tt class="docutils literal"><span class="pre">parameters</span></tt>. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">websocket</span><span class="o">.</span><span class="n">send_task</span><span class="p">({</span>
+    <span class="n">task</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">module</span><span class="p">:</span> <span class="s">&#39;toyz.web.tasks&#39;</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">:</span> <span class="s">&#39;create_paths&#39;</span><span class="p">,</span>
+        <span class="n">parameters</span><span class="p">:</span> <span class="p">{</span>
+            <span class="n">path</span><span class="p">:</span> <span class="s">&#39;~/toyz/&#39;</span><span class="p">,</span>
+            <span class="n">new_folder</span><span class="p">:</span> <span class="s">&#39;temp_folder&#39;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>creates a new folder <cite>temp_folder</cite> in the <cite>~/toyz</cite> directory. The <cite>module</cite> key tells the
+application which python module (or toy) to use, <tt class="docutils literal"><span class="pre">task</span></tt> is the function, and <tt class="docutils literal"><span class="pre">parameters</span></tt> is
+a JSON object with parameters to pass to the function.</p>
+<p>Since this is basically a glorified <strong>eval</strong> function (queue record scratch) we need
+to make sure that this isn&#8217;t exploited. This is done in a few ways.</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>As mentioned in <a class="reference internal" href="custom_toyz.html#custom-toyz"><em>Creating Custom Toyz</em></a>, a user can only use modules he/she is specifically
+granted permission to execute from the management console</li>
+<li>All <tt class="docutils literal"><span class="pre">modules</span></tt> must end in <tt class="docutils literal"><span class="pre">tasks.py</span></tt>. This makes sure that unwanted
+functions cannot be run by anyone (even an admin), and also helps keep toyz uniform
+as they all communicate with the web client via a <tt class="docutils literal"><span class="pre">...tasks.py</span></tt> file</li>
+<li>The job manager in the web application parses the task it receives and every task
+function on the server receives the same 3 parameters: <tt class="docutils literal"><span class="pre">toyz_settings</span></tt>, <tt class="docutils literal"><span class="pre">tid</span></tt>,
+<tt class="docutils literal"><span class="pre">params</span></tt>.</li>
+</ol>
+</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">toyz_settings</span></tt> contains the settings for the toyz application.</p>
+<p><tt class="docutils literal"><span class="pre">tid</span></tt> is the task id,
+a dictionary containing <tt class="docutils literal"><span class="pre">user_id</span></tt>, <tt class="docutils literal"><span class="pre">session_id</span></tt>, and <tt class="docutils literal"><span class="pre">request_id</span></tt> fields. The <tt class="docutils literal"><span class="pre">user_id</span></tt>
+is the name of the user sending the task (obtained from a secure cookie), the <tt class="docutils literal"><span class="pre">session_id</span></tt> is
+a unique id generated for each websocket to keep track of temporary files, and the
+<tt class="docutils literal"><span class="pre">request_id</span></tt> is number unique to each session to keep track of a task between the
+server and the client.</p>
+<p>Finally, <tt class="docutils literal"><span class="pre">params</span></tt> are the arguments passed to the function from the client (the
+<tt class="docutils literal"><span class="pre">parameters</span></tt> field of the websocket <tt class="docutils literal"><span class="pre">task</span></tt>).</p>
+<p>Once again, this format is used both to keep the code uniform and make it more difficult for
+someone to hack the system.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="web_gui.html" class="btn btn-neutral float-right" title="Toyz Web GUI"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="custom_toyz.html" class="btn btn-neutral" title="Creating Custom Toyz"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Fred Moolekamp.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

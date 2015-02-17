@@ -75,6 +75,51 @@
 </ul>
 </li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="workspaces.html">Workspaces</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#data-sources">Data Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#tiles">Tiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="viewer.html">Image Viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#creating-a-new-viewer">Creating a new Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#image-viewer-controls">Image Viewer Controls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#saving-a-viewer-tile">Saving a Viewer Tile</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="highcharts.html">Highcharts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#creating-a-new-chart">Creating a New Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#adding-series-to-a-chart">Adding Series to a Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#modifying-a-charts-properties">Modifying a Charts Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#selecting-points-and-zooming-in">Selecting Points and Zooming in</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#removing-points">Removing Points</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="custom_toyz.html">Creating Custom Toyz</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#creating-and-installing-your-first-toy">Creating and Installing Your First Toy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#making-it-your-own">Making it Your Own</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="toyz_api.html">Toyz API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="toyz_api.html#toyz-core-js">toyz_core.js</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz_api.html#job-api">Job API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web_gui.html">Toyz Web GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#properties-for-all-parameters">Properties for all Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#container-parameters">Container Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#input-parameters">Input Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#input">input</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to Toyz</a></li>
+</ul>
 
         
       </div>
@@ -211,11 +256,15 @@
   </dt>
 
       
-  <dt><a href="toyz.utils.html#toyz.utils.core.check_user_shortcuts">check_user_shortcuts() (in module toyz.utils.core)</a>
+  <dt><a href="toyz.utils.html#toyz.utils.core.check_user_modules">check_user_modules() (in module toyz.utils.core)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="toyz.utils.html#toyz.utils.core.check_user_shortcuts">check_user_shortcuts() (in module toyz.utils.core)</a>
+  </dt>
+
       
   <dt><a href="toyz.utils.db_interfaces.html#toyz.utils.db_interfaces.sqlite_interface.check_user_type">check_user_type() (in module toyz.utils.db_interfaces.sqlite_interface)</a>
   </dt>
@@ -370,10 +419,6 @@
   </dt>
 
         
-  <dt><a href="toyz.web.html#toyz.web.app.ToyzStaticFileHandler.get">(toyz.web.app.ToyzStaticFileHandler method)</a>
-  </dt>
-
-        
   <dt><a href="toyz.web.html#toyz.web.app.ToyzTemplateHandler.get">(toyz.web.app.ToyzTemplateHandler method)</a>
   </dt>
 
@@ -397,6 +442,14 @@
   </dt>
 
       
+  <dt><a href="toyz.utils.html#toyz.utils.core.get_all_user_modules">get_all_user_modules() (in module toyz.utils.core)</a>
+  </dt>
+
+      
+  <dt><a href="toyz.utils.html#toyz.utils.core.get_all_user_toyz">get_all_user_toyz() (in module toyz.utils.core)</a>
+  </dt>
+
+      
   <dt><a href="toyz.utils.html#toyz.utils.core.get_bool">get_bool() (in module toyz.utils.core)</a>
   </dt>
 
@@ -411,6 +464,10 @@
 
       </dl></dd>
       
+  <dt><a href="toyz.web.html#toyz.web.tasks.get_file_info">get_file_info() (in module toyz.web.tasks)</a>
+  </dt>
+
+      
   <dt><a href="toyz.utils.html#toyz.utils.file_access.get_file_permissions">get_file_permissions() (in module toyz.utils.file_access)</a>
   </dt>
 
@@ -419,7 +476,11 @@
   </dt>
 
       
-  <dt><a href="toyz.web.html#toyz.web.tasks.get_io_info">get_io_info() (in module toyz.web.tasks)</a>
+  <dt><a href="toyz.web.html#toyz.web.tasks.get_img_info">get_img_info() (in module toyz.web.tasks)</a>
+  </dt>
+
+      
+  <dt><a href="toyz.web.html#toyz.web.tasks.get_img_tile">get_img_tile() (in module toyz.web.tasks)</a>
   </dt>
 
       
@@ -475,6 +536,14 @@
 
       </dl></dd>
       
+  <dt><a href="toyz.web.html#toyz.web.tasks.get_tile_info">get_tile_info() (in module toyz.web.tasks)</a>
+  </dt>
+
+      
+  <dt><a href="toyz.utils.html#toyz.utils.core.get_toyz_module">get_toyz_module() (in module toyz.utils.core)</a>
+  </dt>
+
+      
   <dt><a href="toyz.web.html#toyz.web.app.ToyzHandler.get_toyz_path">get_toyz_path() (toyz.web.app.ToyzHandler method)</a>
   </dt>
 
@@ -487,7 +556,15 @@
   </dt>
 
       
+  <dt><a href="toyz.utils.html#toyz.utils.core.get_user_toyz">get_user_toyz() (in module toyz.utils.core)</a>
+  </dt>
+
+      
   <dt><a href="toyz.utils.html#toyz.utils.core.get_user_type">get_user_type() (in module toyz.utils.core)</a>
+  </dt>
+
+      
+  <dt><a href="toyz.web.html#toyz.web.tasks.get_workspace_info">get_workspace_info() (in module toyz.web.tasks)</a>
   </dt>
 
   </dl></td>
@@ -641,6 +718,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="toyz.web.html#toyz.web.app.ToyzStaticFileHandler.parse_url_path">parse_url_path() (toyz.web.app.ToyzStaticFileHandler method)</a>
+  </dt>
+
+      
   <dt><a href="toyz.web.html#toyz.web.app.AuthLoginHandler.post">post() (toyz.web.app.AuthLoginHandler method)</a>
   </dt>
 
@@ -661,11 +742,15 @@
   </dt>
 
       
-  <dt><a href="toyz.web.html#toyz.web.app.ToyzWebApp.respond">respond() (toyz.web.app.ToyzWebApp method)</a>
+  <dt><a href="toyz.web.html#toyz.web.tasks.reset_pwd">reset_pwd() (in module toyz.web.tasks)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="toyz.web.html#toyz.web.app.ToyzWebApp.respond">respond() (toyz.web.app.ToyzWebApp method)</a>
+  </dt>
+
       
   <dt><a href="toyz.utils.html#toyz.utils.core.run_job">run_job() (in module toyz.utils.core)</a>
   </dt>

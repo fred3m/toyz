@@ -1,0 +1,316 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Workspaces &mdash; Toyz 0.0.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="Toyz 0.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Image Viewer" href="viewer.html"/>
+        <link rel="prev" title="Getting Started" href="getting_started.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> Toyz</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#what-is-toyz">What is Toyz?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#possible-use-cases">Possible Use Cases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#first-time-setup">First Time Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#running-a-toyz-application">Running a Toyz Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#configuring-a-new-toyz-web-application">Configuring a New Toyz Web Application</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Workspaces</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#data-sources">Data Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tiles">Tiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="viewer.html">Image Viewer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#creating-a-new-viewer">Creating a new Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#image-viewer-controls">Image Viewer Controls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#saving-a-viewer-tile">Saving a Viewer Tile</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="highcharts.html">Highcharts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#creating-a-new-chart">Creating a New Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#adding-series-to-a-chart">Adding Series to a Chart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#modifying-a-charts-properties">Modifying a Charts Properties</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#selecting-points-and-zooming-in">Selecting Points and Zooming in</a></li>
+<li class="toctree-l2"><a class="reference internal" href="highcharts.html#removing-points">Removing Points</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="custom_toyz.html">Creating Custom Toyz</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#creating-and-installing-your-first-toy">Creating and Installing Your First Toy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_toyz.html#making-it-your-own">Making it Your Own</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="toyz_api.html">Toyz API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="toyz_api.html#toyz-core-js">toyz_core.js</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz_api.html#job-api">Job API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="web_gui.html">Toyz Web GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#properties-for-all-parameters">Properties for all Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#container-parameters">Container Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#input-parameters">Input Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="web_gui.html#input">input</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to Toyz</a></li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Toyz</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Workspaces</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/workspaces.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <p>.._workspaces:</p>
+<div class="section" id="workspaces">
+<h1>Workspaces<a class="headerlink" href="#workspaces" title="Permalink to this headline">¶</a></h1>
+<p>Workspaces are designed to be customizable work environments for Toyz users. A workspace consists
+of a set of tiles that can be moved and resized in a browser and linked to a number of different
+native tools as well as customizable tools added by the user. Tiles can share data sources,
+allowing interactive plots to be linked to each other or other tiles to make it easier to
+visualize large, high-dimensional data sets.</p>
+<p>Workspaces can also be saved so that at a later time the user can reload data sources and tiles
+and pick up right where they left off, or share their current work with a collegue who also has
+access to their toy application.</p>
+<p>Workspaces can be accessed by navigating to <tt class="docutils literal"><span class="pre">host:port/workspaces</span></tt> or from the main menu
+at <tt class="docutils literal"><span class="pre">host:port</span></tt>, choosing the <strong>Toyz</strong> tab and clicking <strong>New Workspace</strong>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Sharing workspaces with other users has not been implemented yet</p>
+</div>
+<div class="section" id="data-sources">
+<span id="id1"></span><h2>Data Sources<a class="headerlink" href="#data-sources" title="Permalink to this headline">¶</a></h2>
+<p>To allow multiple plots and other tiles to have their data points linked together, a list of
+data sources can be loaded for each workspace. Any tiles that linked to a given data source
+will receive updates whenever that data source has changed, for example if points are selected,
+added, or removed.</p>
+<div class="section" id="adding-a-data-source">
+<span id="add-data-source"></span><h3>Adding a Data Source<a class="headerlink" href="#adding-a-data-source" title="Permalink to this headline">¶</a></h3>
+<p>To add a new data source right-click on the workspace area and choose either <strong>Datasources</strong>,
+which will open a dialog that lists all of the current data sources, and clicking the <strong>New</strong>
+button, or choose <strong>new-&gt;source</strong> from the context (right-click) menu.</p>
+<p>A dialog will pop up to allow you to choose a file from the server. First choose which module you
+would like to use for file i/o (currently on <tt class="docutils literal"><span class="pre">numpy</span></tt> and <tt class="docutils literal"><span class="pre">pandas</span></tt> are supported). Next choose
+a file from the server. If you don&#8217;t know the path, click on the button labeled <tt class="docutils literal"><span class="pre">...</span></tt> which
+opens a file dialog. A user can only browse directories that he/she has been given <tt class="docutils literal"><span class="pre">find</span></tt> or
+<tt class="docutils literal"><span class="pre">read</span></tt> access to.</p>
+<p>Depending on the module and file type you choose there will be different options available. There
+is currently limited support for different file types and if you would like access to a file
+type that is currently unsupported please consider updating Toyz so that other users can benefit.</p>
+<p>Once you have finished click <tt class="docutils literal"><span class="pre">Open</span></tt> to load the file from the server into the current
+workspace. If you have the file dialog open, notice that the source has now been added to the
+list of sources. You can also change the name of the source to something more explicit than
+<tt class="docutils literal"><span class="pre">data-0</span></tt>.</p>
+</div>
+<div class="section" id="editing-or-reloading-a-data-source">
+<h3>Editing or Reloading a Data Source<a class="headerlink" href="#editing-or-reloading-a-data-source" title="Permalink to this headline">¶</a></h3>
+<p>If you make changes to a data file and want to repopulate the source with the new data, open the
+<strong>Datasources</strong> dialog and choose <strong>Edit</strong>. This will open the source dialog with all of the
+options you had previously selected when you opened the source initially. To keep all of the
+settings the same just choose <strong>Open</strong>, otherwise make any changes to the input format.</p>
+</div>
+</div>
+<div class="section" id="tiles">
+<h2>Tiles<a class="headerlink" href="#tiles" title="Permalink to this headline">¶</a></h2>
+<p>Tiles are like mini apps that can be used to display interactive content on the workspace. They
+can be linked to data sources or each other, so they are not independent apps, but they are
+customizable in that users can shoose their location, dimensions, and even add their own
+custom tools.</p>
+<div class="section" id="adding-and-positioning-a-tile">
+<span id="add-tile"></span><h3>Adding and Positioning a Tile<a class="headerlink" href="#adding-and-positioning-a-tile" title="Permalink to this headline">¶</a></h3>
+<p>To add a new tile right-click on the workspace area and choose <tt class="docutils literal"><span class="pre">new-&gt;tile</span></tt>. The newly
+created tile will consist of a dark grey border with a white interior. To re-position the tile
+click anywhere on the dark gray border and drag it into position. To resize, theoretically move
+the cursor to any corner, but I&#8217;ve found that the bottom right corner works best. When you see
+the resize cursor click and drag the tile to the desired dimensions.</p>
+</div>
+<div class="section" id="adding-content-to-a-tile">
+<h3>Adding Content to a Tile<a class="headerlink" href="#adding-content-to-a-tile" title="Permalink to this headline">¶</a></h3>
+<p>Right-click anywhere in the white part of the tile to open the tile context menu. Notice that it
+contains all of the menu options from the workspace wit two additional options: <tt class="docutils literal"><span class="pre">Tile</span> <span class="pre">Type</span></tt> and
+<tt class="docutils literal"><span class="pre">Remove</span> <span class="pre">Tile</span></tt> (guess what that does). If you move the cursor over <tt class="docutils literal"><span class="pre">Tile</span> <span class="pre">Type</span></tt> it will display
+all of the different tile types enabled for the current user. At this time the default tile
+types are <tt class="docutils literal"><span class="pre">Highcharts</span></tt>, which are interactive plots, and <tt class="docutils literal"><span class="pre">Viewer</span></tt>, which is an image viewer
+capable of displaying large mosaic images. If you have created custom Toyz then your tiles
+will also show up in this menu.</p>
+<p>For more information on the available tiles see <em class="xref std std-ref">highcharts</em> and <a class="reference internal" href="viewer.html#viewer"><em>Image Viewer</em></a> .</p>
+</div>
+</div>
+<div class="section" id="loading-and-saving-a-workspace">
+<h2>Loading and Saving a Workspace<a class="headerlink" href="#loading-and-saving-a-workspace" title="Permalink to this headline">¶</a></h2>
+<p>If you have a workspace you would like to save for later use, right-click on the workspace and
+choose either <tt class="docutils literal"><span class="pre">Save</span> <span class="pre">Workspace</span></tt> or <tt class="docutils literal"><span class="pre">Save</span> <span class="pre">Workspace</span> <span class="pre">as</span></tt>. This will prompt you to enter a name
+for the workspace. If you choose a name of an existing workspace (that you have created) you will
+be alerted and given the chance to rename your workspace.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">When a workspace is saved, only the <em>configuration</em> of the tiles and data sources are saved,
+<strong>Not the content</strong>. This means that if you have a set of plots open and the data source is
+changed, when you load the workspace it will load the <strong>new data</strong>.</p>
+</div>
+<p>To load a previously saved workspace, first make sure that you have a clean, new workspace by
+hitting the reload button in the browser window. This helps prevent memory leaks that may
+exist in the code. Then right-click on the workspace and choose <tt class="docutils literal"><span class="pre">Load</span> <span class="pre">Workspace</span></tt>. A drop
+down menu will appear with all of the available workspaces for the current user id.</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="viewer.html" class="btn btn-neutral float-right" title="Image Viewer"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="getting_started.html" class="btn btn-neutral" title="Getting Started"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Fred Moolekamp.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
