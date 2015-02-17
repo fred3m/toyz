@@ -55,7 +55,7 @@ Toyz.Workspace.contextMenu_items = function(workspace){
     return items;
 };
 
-Toyz.Workspace.tile_contextMenu_items = function(workspace, custom_tiles){
+Toyz.Workspace.tile_contextMenu_items = function(options){
     var tile_types = $.extend(true, {
         highcharts: {
             name: 'Highcharts',
@@ -67,12 +67,12 @@ Toyz.Workspace.tile_contextMenu_items = function(workspace, custom_tiles){
             namespace: 'Toyz.Viewer',
             url: '/static/web/static/viewer.js'
         }
-    }, custom_tiles);
+    }, options.custom_tiles);
     
     for(var tile in tile_types){
         tile_types[tile].callback = function(key, options){
             this.tiles[options.$trigger.prop('id')].load_api(key, options.commands[key]);
-        }.bind(workspace)
+        }.bind(options.workspace)
     };
     
     var items = {
@@ -386,7 +386,7 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
     this.websocket.send_task({
         task: {
             module: 'toyz.web.tasks',
-            task: 'get_io_info',
+            task: 'get_workspace_info',
             parameters: {}
         },
         callback: function(result){
@@ -404,6 +404,32 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
                 at: "center",
                 of: window
             });
+            
+            // Create workspace context menu
+            $.contextMenu({
+                selector: '.context-menu-one', 
+                callback: function(key, options) {
+                    this[key](options);
+                }.bind(this),
+                items: Toyz.Workspace.contextMenu_items(this)
+            });
+    
+            //create tile context menu
+            var tile_menu = Toyz.Workspace.tile_contextMenu_items({
+                workspace:this,
+                custom_tiles: result.tiles
+            });
+            this.tile_types = tile_menu.tile_type.items;
+            $.contextMenu({
+                selector: '.context-menu-tile',
+                callback: function(key, options){
+                    this[key](options);
+                }.bind(this),
+                items: tile_menu
+            });
+            for(var error in result.import_error){
+                console.log('WARNING: ', result.import_error[error])
+            };
         }.bind(this)
     });
     
@@ -441,24 +467,6 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
             }.bind(this)
         }
     });
-    
-    // Create workspace context menu
-    $.contextMenu({
-        selector: '.context-menu-one', 
-        callback: function(key, options) {
-            this[key](options);
-        }.bind(this),
-        items: Toyz.Workspace.contextMenu_items(this)
-    });
-    
-    //create tile context menu
-    $.contextMenu({
-        selector: '.context-menu-tile',
-        callback: function(key, options){
-            this[key](options);
-        }.bind(this),
-        items: Toyz.Workspace.tile_contextMenu_items(this)
-    })
 };
 Toyz.Workspace.Workspace.prototype.save_workspace = function(params){
     if(this.name===undefined){
@@ -733,7 +741,7 @@ Toyz.Workspace.Workspace.prototype.load_tile_apis = function(api_list, tiles){
             tiles
         );
     };
-    var all_apis = Toyz.Workspace.tile_contextMenu_items(this).tile_type.items;
+    var all_apis = this.tile_types;
     console.log('all apis', all_apis);
     console.log('api', api_list[0]);
     if(api_list.length>0){
@@ -760,7 +768,7 @@ Toyz.Workspace.Workspace.prototype.update_all_tiles = function(tiles){
             width: tiles[tile_id].width,
             height: tiles[tile_id].height
         });
-        var all_apis = Toyz.Workspace.tile_contextMenu_items(this).tile_type.items;
+        var all_apis = this.tile_types;
         new_tiles[tile_id].update({
             contents: {
                 workspace: this,

@@ -443,9 +443,10 @@ def create_paths(toyz_settings, tid, params):
     }
     return response
 
-def get_io_info(toyz_settings, tid, params):
+def get_workspace_info(toyz_settings, tid, params):
     """
-    Get I/O settings for different packages (pure python, numpy, pandas, etc)
+    Get I/O settings for different packages (pure python, numpy, pandas, etc) and
+    other settings for the current users workspaces
     """
     import toyz.utils.io as io
     
@@ -489,9 +490,22 @@ def get_io_info(toyz_settings, tid, params):
         }
     }
     
+    tiles = {}
+    import_error = {}
+    modules = db_utils.get_param(toyz_settings.db, 'modules', user_id=tid['user_id'])
+    print('modules',modules)
+    for module in modules:
+        try:
+            config = importlib.import_module(module+'.config')
+            tiles.update(config.workspace_tiles)
+        except ImportError:
+            import_error[module] = 'could not import' + module+'.config'
+    
     response = {
-        'id': 'io_info',
-        'io_info': info
+        'id': 'workspace_info',
+        'io_info': info,
+        'tiles': tiles,
+        'import_error': import_error
     }
     
     return response

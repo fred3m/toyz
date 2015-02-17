@@ -6,6 +6,7 @@ from __future__ import division,print_function
 import os
 import sys
 import importlib
+import imp
 import base64
 import uuid
 import cPickle as pickle
@@ -256,10 +257,69 @@ def check_user_shortcuts(toyz_settings, user_id, shortcuts=None):
         paths = db_utils.get_param(toyz_settings.db, 'paths', user_id=user_id)
         # Ensure that the user has full access to his/her home directory
         if shortcuts['user'] not in paths or paths[shortcuts['user']] !='frwx':
-            print('UPDATING SHORTCUT')
             db_utils.update_param(toyz_settings.db, 'paths', user_id=user_id, 
                 paths={shortcuts['user']: 'frwx'})
     return shortcuts
+
+def get_all_user_modules(toyz_settings, user_id):
+    """
+    Get all modules available for the user
+    """
+    groups = db_utils.get_param(toyz_settings.db, 'groups', user_id=user_id)
+    user_modules = db_utils.get_param(toyz_settings.db, 'modules', user_id=user_id)
+    user_modules.extend(toyz_settings.config.approved_modules)
+    for group_id in groups:
+        user_modules.extend(db_utils.get_param(toyz_settings.db, 'modules', group_id=group_id))
+    return list(set(user_modules))
+
+def check_user_modules(toyz_settings, user_id, module):
+    """
+    Check to see if a module is available for the user
+    """
+    user_modules = get_all_user_modules(toyz_settings, user_id)
+    if (module in user_modules or 
+            (module.endswith('.tasks') and module[:-6] in user_modules) or
+            (module.endswith('.config') and module[:-7] in user_modules)):
+        return True
+    return False
+
+def get_all_user_toyz(toyz_settings, user_id):
+    """
+    Get all available Toyz paths for the current user
+    """
+    groups = db_utils.get_param(toyz_settings.db, 'groups', user_id=user_id)
+    user_toyz = {}
+    for group_id in groups:
+        user_toyz.update(db_utils.get_param(toyz_settings.db, 'toyz', group_id=group_id))
+    user_toyz.update(db_utils.get_param(toyz_settings.db, 'toyz', user_id=user_id))
+    return user_toyz
+
+def get_user_toyz(toyz_settings, user_id, toy):
+    """
+    If a toy is contained in a users toyz paths, get the module and return it
+    """
+    user_toyz = get_all_user_toyz(toyz_settings, user_id)
+    if toy in user_toyz:
+        return imp.load_source(toy, user_toyz[toy])
+    elif toy.endswith('.tasks') and toy[:-6] in user_toyz:
+        return imp.load_source(toy, os.path.join(user_toyz[toy[:-6]], 'tasks.py'))
+    elif toy.endswith('.config') and toy[:-7] in user_toyz:
+        return imp.load_source(toy, os.path.join(user_toyz[toy[:-7]],'config.py'))
+    return None
+
+def get_toyz_module(toyz_settings, user_id, module):
+    """
+    Get a toyz module from either installed modules or one in a users toyz paths.
+    An installed toy will take precedence if it is in the toy paths as opposed to installed
+    modules.
+    """
+    toyz_module = get_user_toyz(toyz_settings, user_id, module)
+    if toyz_module is not None:
+        return toyz_module
+    if toyz_module is None and check_user_modules(toyz_settings, user_id, module):
+        return importlib.import_module(module)
+    else:
+        raise ToyzJobError(module+" not found in " +user_id+"'s approved modules")
 
 def run_job(toyz_settings, job):
     """
@@ -353,14 +413,16 @@ def run_job(toyz_settings, job):
     import traceback
     response={}
     try:
-        module = job["module"]
-        #base_module = module.split('.')[0]
-        if module in toyz_settings.config.approved_modules:
-            toyz_module = importlib.import_module(module)
-            task = getattr(toyz_module, job["task"])
-            response = task(toyz_settings, job['id'],job['parameters'])
-        else:
-            raise ToyzJobError("Module is not listed in approved modules")
+        try:
+            if job['module'].split('.')[-1] == 'tasks': 
+                toyz_module = get_toyz_module(toyz_settings,job['id']['user_id'],job['module'])
+            else:
+                raise ImportError()
+        except ImportError:
+            ToyzJobError(job['module']+" not found in " + 
+                job['id']['user_id']+"'s approved modules")
+        task = getattr(toyz_module, job["task"])
+        response = task(toyz_settings, job['id'],job['parameters'])
     except ToyzJobError as error:
         response = {
             'id':"ERROR",

@@ -1,4 +1,4 @@
-Toyz for Data Analysis and Reduction
+Toyz for Data Reduction and Analysis
 ====================================
 
 What is Toyz?

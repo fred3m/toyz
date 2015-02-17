@@ -12,7 +12,7 @@ Toyz.Viewer.dependencies_loaded = function(){
 
 Toyz.Viewer.scales = [-1,0.1,0.25,0.5,1,2,4,8,16,32,64];
 
-Toyz.Viewer.load_dependencies = function(callback, params){
+Toyz.Viewer.load_dependencies = function(callback){
     callback();
 };
 

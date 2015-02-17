@@ -12,7 +12,7 @@ Toyz.API.Highcharts.dependencies_loaded = function(){
         return false;
     }
 };
-Toyz.API.Highcharts.load_dependencies = function(callback, params){
+Toyz.API.Highcharts.load_dependencies = function(callback){
     // Check to see if highcharts loaded from the server, if not load from the web
     // Note: Highcharts has put a usage limit on its js files, so it is a good
     // idea to have the source code located on the server

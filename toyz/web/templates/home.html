@@ -49,13 +49,13 @@
                 
                 if(result.hasOwnProperty('modules')){
                     my_params.params.approved_modules = Toyz.Console.Settings.getModuleSettings({
-                        legend: 'Modules',
+                        legend: 'Toyz Modules',
                         param_name: 'modules'
                     });
                 };
                 if(result.hasOwnProperty('toyz')){
                     my_params.params.approved_toyz = Toyz.Console.Settings.getToyzSettings({
-                        legend: 'Toyz',
+                        legend: 'Toyz Paths',
                         param_name: 'toyz',
                     });
                 };
@@ -292,11 +292,11 @@
         
         window.onload=function(){
             Toyz.Core.load_dependencies(
-                dependencies={
+                {
                     core: true,
                     js: ['/static/web/static/settings.js']
                 }, 
-                callback=dependencies_onload
+                dependencies_onload
             );
         };
         </script>

@@ -153,11 +153,11 @@ Toyz.Console.Settings.UserSettings = function(params){
             }
         },
         modules: new Toyz.Console.Settings.getModuleSettings({
-            legend:'Modules',
+            legend:'Toyz Modules',
             param_name: 'modules'
         }),
         toyz: new Toyz.Console.Settings.getToyzSettings({
-            legend: 'Toyz',
+            legend: 'Toyz Paths',
             param_name: 'toyz',
             file_dialog: true
         }),
@@ -310,11 +310,11 @@ Toyz.Console.Settings.GroupSettings = function(params){
             }
         },
         modules: new Toyz.Console.Settings.getModuleSettings({
-            legend:'Modules',
+            legend:'Toyz Modules',
             param_name: 'modules'
         }),
         toyz: new Toyz.Console.Settings.getToyzSettings({
-            legend: 'Toyz',
+            legend: 'Toyz Paths',
             param_name: 'toyz',
             file_dialog: true
         }),

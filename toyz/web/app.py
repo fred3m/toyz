@@ -1,7 +1,7 @@
 """
 Runs the webapp for Toyz
 """
-# Copyright 2014 by Fred Moolekamp
+# Copyright 2015 by Fred Moolekamp
 # License: MIT
 
 from __future__ import division,print_function
@@ -28,27 +28,45 @@ import toyz.utils.db as db_utils
 from toyz.utils.errors import ToyzError, ToyzWebError
 
 class ToyzHandler:
-    """*Not yet implemented*"""
-    def get_toyz_path(self, path):
+    """
+    Handler for Toyz extensions
+    """
+    def get_toyz_path(self, path, path_type):
         """
         Given a toyz path, return the root path for the toy.
         """
+        import importlib
         toyz_info = path.split('/')
         toy_name = toyz_info[0]
-        rel_path = '/'.join(toyz_info[1:])
-        user_toyz = db_utils.get_param(self.application.toyz_settings, 'toyz', 
-            user_id=self.get_user_id())
-        
-        if toy_name in user_toyz:
-            root, path = os.path.split(user_toyz[toy])
-        else:
+        rel_path = toyz_info[1:-1]
+        filename = toyz_info[-1]
+        config = core.get_toyz_module(
+            self.application.toyz_settings, self.get_user_id(), toy_name+'.config')
+        if path_type == 'static':
+            for root in config.static_paths:
+                pathlist = [root]+rel_path
+                fullpath = os.path.join(*pathlist)
+                if os.path.isfile(os.path.join(fullpath, filename)):
+                    return {
+                        'fullpath': fullpath,
+                        'filename': filename
+                    }
             raise tornado.web.HTTPError(404)
-            
-        permissions = find_parent_permissions(self.application.db_settings, user, path)
-        if 'r' in permissions or 'x' in permissions:
-            return root, rel_path
-        else:
+        elif path_type == 'template':
+            for root in config.template_paths:
+                pathlist = [root]+rel_path
+                fullpath = os.path.join(*pathlist)
+                if os.path.isfile(os.path.join(fullpath, filename)):
+                    toyz_info = {
+                        'fullpath': fullpath,
+                        'filename': filename
+                    }
+                    if path in config.render_functions:
+                        toyz_info['render'] = config.render_functions[path]
+                    return toyz_info
             raise tornado.web.HTTPError(404)
+        else:
+            raise ToyzWebError("Unrecognized path type '"+path_type+"'")
     
     def get_current_user(self):
         """
@@ -57,8 +75,7 @@ class ToyzHandler:
         return self.get_secure_cookie("user")
     
     def get_user_id(self):
-        user_id = self.get_current_user().strip('"')
-        return user_id
+        return self.get_current_user().strip('"')
     
     def get_user_theme(self):
         return 'redmond'
@@ -83,10 +100,18 @@ class ToyzTemplateHandler(ToyzHandler, tornado.web.RequestHandler):
     
     @tornado.web.asynchronous
     def get(self, path):
-        self.template_path, rel_path=self.get_toyz_path(path)
-        self.render(rel_path)
+        toyz_info = self.get_toyz_path(path, 'template')
+        self.template_path = toyz_info['fullpath']
+        if 'render' in toyz_info:
+            toyz_info['render']({
+                'handler': self,
+                'path': path,
+                'filename': toyz_info['filename']
+            })
+        else:
+            self.render(toyz_info['filename'])
     
-    def get_template_path():
+    def get_template_path(self):
         return self.template_path
 
 class AuthToyzTemplateHandler(AuthHandler, ToyzTemplateHandler):
@@ -97,20 +122,12 @@ class AuthToyzTemplateHandler(AuthHandler, ToyzTemplateHandler):
 
 class ToyzStaticFileHandler(ToyzHandler, tornado.web.StaticFileHandler):
     """
-    Handler for all toyz added to the application.
+    Static file handler for all toyz added to the application.
     """
-    @tornado.web.asynchronous
-    def get(self, path):
-        # Called when the application recieves a **get** command from the client.
-        path = path.split('/')
-        filename = path[-1]
-        # If this is a unix system, and a '/' prefix so that the absolute path
-        # is taken
-        if os.sep == '/':
-            self.root = os.path.join('/','/'.join(path[:-1]))
-        print('root:', self.root)
-        print('filename', filename)
-        tornado.web.StaticFileHandler.get(self,filename)
+    
+    def parse_url_path(self, url_path):
+        toyz_info = self.get_toyz_path(url_path, 'static')
+        return os.path.join(toyz_info['fullpath'], toyz_info['filename'])
 
 class AuthToyzStaticFileHandler(AuthHandler, ToyzStaticFileHandler):
     """
@@ -120,22 +137,6 @@ class AuthToyzStaticFileHandler(AuthHandler, ToyzStaticFileHandler):
     @tornado.web.authenticated
     def get(self, path):
         ToyzStaticFileHandler.get(self, path)
-    
-    def validate_absolute_path(self, root, full_path):
-        """
-        Check that the user has permission to view the file
-        """
-        #print('root:{0}, full_path:{1}\n\n'.format(root, full_path))
-        permissions = file_access.get_parent_permissions(
-            self.application.toyz_settings.db, full_path, 
-            user_id=self.get_current_user().strip('"'))
-        if 'r' in permissions or 'x' in permissions:
-            absolute_path = tornado.web.StaticFileHandler.validate_absolute_path(
-                    self, root, full_path)
-        else:
-            absolute_path = None
-        print('Absoulte path:', absolute_path)
-        return absolute_path
 
 class AuthStaticFileHandler(AuthHandler, tornado.web.StaticFileHandler):
     """
@@ -159,7 +160,7 @@ class AuthStaticFileHandler(AuthHandler, tornado.web.StaticFileHandler):
                     self, root, full_path)
         else:
             absolute_path = None
-        print('Absoulte path:', absolute_path)
+        #print('Absoulte path:', absolute_path)
         return absolute_path
 
 class AuthLoginHandler(AuthHandler, tornado.web.RequestHandler):
@@ -260,10 +261,10 @@ class Toyz3rdPartyHandler(ToyzHandler, tornado.web.StaticFileHandler):
         filename = path[-1]
         rel_path = path[1:-1]
         settings = self.application.toyz_settings.web.third_party
-        print('SETTINGS KEYS:', settings.keys())
+        #print('SETTINGS KEYS:', settings.keys())
         if pkg_name not in settings:
             raise ToyzWebError("Library '{0}' not found in third_party.py".format(pkg_name))
-        print('settings:', settings[pkg_name])
+        #print('settings:', settings[pkg_name])
         if len(rel_path)>0:
             static_path = os.path.join(settings[pkg_name]['path'], *rel_path)
         else:
@@ -411,7 +412,7 @@ class ToyzWebApp(tornado.web.Application):
             (r"/workspace/(.*)", workspace_handler),
             (r"/file/(.*)", static_handler, {'path': file_path}),
             (r"/toyz/static/(.*)", toyz_static_handler, {'path': '/'}),
-            (r"/toyz/template/(.*)", toyz_template_handler),
+            (r"/toyz/templates/(.*)", toyz_template_handler),
             (r"/toyz_core.js", core_handler),
             (r"/third_party/(.*)", third_party_handler, {'path':core.ROOT_DIR}),
             (r"/job", WebSocketHandler),
