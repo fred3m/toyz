@@ -1,8 +1,8 @@
 """
 Error classes used in Toyz.
 """
-# Copyright 2014 by Fred Moolekamp
-# License: MIT
+# Copyright 2015 by Fred Moolekamp
+# License: LGPLv3
 
 import traceback
 

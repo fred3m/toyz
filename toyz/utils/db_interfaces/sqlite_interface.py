@@ -1,5 +1,5 @@
 # Copyright 2014 by Fred Moolekamp
-# License: MIT
+# License: LGPLv3
 """
 Database interface to sqlite
 """

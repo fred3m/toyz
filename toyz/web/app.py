@@ -2,7 +2,7 @@
 Runs the webapp for Toyz
 """
 # Copyright 2015 by Fred Moolekamp
-# License: MIT
+# License: LGPLv3
 
 from __future__ import division,print_function
 import sys

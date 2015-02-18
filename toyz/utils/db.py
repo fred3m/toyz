@@ -1,6 +1,6 @@
 # Utilities that may be necessary for all database interfaces
-# Copyright 2014 by Fred Moolekamp
-# License: MIT
+# Copyright 2015 by Fred Moolekamp
+# License: LGPLv3
 """
 To keep Toyz database agnostic this module works as a stardard API to access 
 any database interfaces written into the framework. Currently on the ``sqlite``

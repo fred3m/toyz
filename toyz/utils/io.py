@@ -1,5 +1,5 @@
-# Copywrite 2014 Fred Moolekamp
-# License: MIT
+# Copywrite 2015 Fred Moolekamp
+# License: LGPLv3
 """
 Tools to read/write files
 """

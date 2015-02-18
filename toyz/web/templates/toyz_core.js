@@ -1,6 +1,6 @@
 // Core for Toyz
-// Copyright 2014 by Fred Moolekamp
-// License: MIT
+// Copyright 2015 by Fred Moolekamp
+// License: LGPLv3
 
 // Global Namespace for Toyz scripts
 var Toyz=Toyz||{};

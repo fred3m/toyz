@@ -1,3 +1,5 @@
+# Copyright 2015 by Fred Moolekamp
+# License: LGPLv3
 from __future__ import print_function, division
 from collections import OrderedDict
 from toyz.utils.errors import ToyzJobError

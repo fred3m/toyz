@@ -1,6 +1,6 @@
 # Core classes and functions for Toyz
-# Copyright 2014 by Fred Moolekamp
-# License: MIT
+# Copyright 2015 by Fred Moolekamp
+# License: LGPLv3
 
 from __future__ import division,print_function
 import os

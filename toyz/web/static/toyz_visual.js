@@ -1,6 +1,6 @@
 // Visualization tools for Toyz applications
-// Copyright 2014 by Fred Moolekamp
-// License: MIT
+// Copyright 2015 by Fred Moolekamp
+// License: LGPLv3
 
 Toyz.namespace('Toyz.Visual');
 

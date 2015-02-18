@@ -1,6 +1,6 @@
 // API for highcharts
-// Copyright 2014 by Fred Moolekamp
-// License: MIT
+// Copyright 2015 by Fred Moolekamp
+// License: LGPLv3
 Toyz.namespace('Toyz.API.Highcharts');
 
 // Check to see if all of the API's dependencies have loaded

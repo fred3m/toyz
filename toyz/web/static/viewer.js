@@ -1,6 +1,6 @@
 // API for Image Viewers
 // Copyright 2015 by Fred Moolekamp
-// License: MIT
+// License: LGPLv3
 Toyz.namespace('Toyz.Viewer');
 
 Toyz.Core.set_debugger(['viewer']);
