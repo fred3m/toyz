@@ -73,7 +73,13 @@ io_modules = {
                 'optional': {
                     'sep': {'lbl':'sep'},
                     'delimiter': {'lbl':'delimiter'},
-                    'delim_whitespace': {'lbl':'delim_whitespace'},
+                    'delim_whitespace': {
+                        'lbl':'delim_whitespace',
+                        'prop': {
+                            'type': 'checkbox',
+                            'checked': True
+                        }
+                    },
                     'compression': {
                         'type': 'select',
                         'options': ['gzip', 'bz2']
