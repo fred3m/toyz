@@ -552,21 +552,27 @@ Toyz.Viewer.Controls = function(options){
                                 width: result.data[0].length,
                                 height: result.data.length,
                                 colorpad: {
-                                    set: function(img_info) {
-                                        console.log('this in callback', this);
+                                    set: function(colormap) {
                                         var file_info = this.frames[this.viewer_frame].file_info;
-                                        file_info.images[file_info.frame] = $.extend(true,
-                                            file_info.images[file_info.frame],
-                                            img_info
-                                        );
-                                        file_info.images[file_info.frame].tiles = {};
+                                        file_info.colormap = colormap;
+                                        // Change the colormap for all frames, and 
+                                        // clear the dict of loaded tiles
+                                        for(var i in file_info.images){
+                                            file_info.images[i].colormap = colormap;
+                                            delete file_info.images[i].tiles;
+                                            console.log('file_info in', file_info);
+                                        };
+
                                         this.get_img_info(this.viewer_frame, file_info.frame);
                                     }.bind(options.parent)
                                 }
                             });
                         }else{
+                            var file_info = 
+                                options.parent.frames[options.parent.viewer_frame].file_info;
+                                this.workspace.colorpad.$div.dialog('open');
                             this.workspace.colorpad.update({
-                                
+                                colormap: file_info.images[file_info.frame].colormap
                             });
                         };
                     }.bind(this, options, params)
@@ -1321,11 +1327,11 @@ Toyz.Viewer.set_pixel = function(image_data, x, y, r, g, b, a){
 // Map a 2D image to a canvas context imageData object
 Toyz.Viewer.map_image=function(image, ctx, img_info){
     var image_data = ctx.createImageData(image[0].length, image.length);
-    var cmap = Toyz.Viewer.Colormaps[img_info.colormap].slice(0,
-                Toyz.Viewer.Colormaps[img_info.colormap].length);
-    if(img_info.invert_color===true){
-        cmap = Toyz.Viewer.Colormaps[img_info.colormap+'_r'].slice(0,
-                    Toyz.Viewer.Colormaps[img_info.colormap+'_r'].length);
+    var cmap = Toyz.Viewer.Colormaps[img_info.colormap.name].slice(0,
+                Toyz.Viewer.Colormaps[img_info.colormap.name].length);
+    if(img_info.colormap.invert_color===true){
+        cmap = Toyz.Viewer.Colormaps[img_info.colormap.name+'_r'].slice(0,
+                    Toyz.Viewer.Colormaps[img_info.colormap.name+'_r'].length);
     };
     
     for(var i=0;i<image.length;i++){
@@ -1342,17 +1348,17 @@ Toyz.Viewer.map_image=function(image, ctx, img_info){
             if(img_info.invert_y){
                 y = image.length-i;
             };
-            if(pixel<=img_info.px_min){
+            if(pixel<=img_info.colormap.px_min){
                 rgb_idx = 0
-            }else if(pixel>=img_info.px_max){
+            }else if(pixel>=img_info.colormap.px_max){
                 rgb_idx = 255
             }else{
-                if(img_info.color_scale=='linear'){
-                    var linearmap = 255/(img_info.px_max-img_info.px_min);
-                    rgb_idx = Math.round(linearmap*(pixel-img_info.px_min));
-                }else if(img_info.color_scale=='log'){
-                    var shift = 1 - img_info.px_min;
-                    var logscale = 255/Toyz.Core.log10(img_info.px_max+shift)
+                if(img_info.colormap.color_scale=='linear'){
+                    var linearmap = 255/(img_info.colormap.px_max-img_info.colormap.px_min);
+                    rgb_idx = Math.round(linearmap*(pixel-img_info.colormap.px_min));
+                }else if(img_info.colormap.color_scale=='log'){
+                    var shift = 1 - img_info.colormap.px_min;
+                    var logscale = 255/Toyz.Core.log10(img_info.colormap.px_max+shift)
                     var rgb_idx = Math.round(Toyz.Core.log10(pixel+shift)* logscale);
                 }else{
                     throw Error("Unrecognized colormap scale!")
@@ -1390,8 +1396,8 @@ Toyz.Viewer.Colorbar = function(options){
     for(var opt in options){
         this[opt] = options[opt];
     };
-    this.xmin = this.img_info.px_min;
-    this.xmax = this.img_info.px_max;
+    this.xmin = this.img_info.colormap.px_min;
+    this.xmax = this.img_info.colormap.px_max;
     this.$div = $('<div/>').append(this.$canvas);
 };
 Toyz.Viewer.Colorbar.prototype.build = function(){
@@ -1442,11 +1448,13 @@ Toyz.Viewer.ColormapDialog = function(options){
                 width: options.width,
                 height: options.height,
                 img_info: {
-                    px_min: 0,
-                    px_max: 255,
-                    color_scale: 'linear',
-                    colormap: cmap,
-                    invert_color: false
+                    colormap: {
+                        name: cmap,
+                        px_min: 0,
+                        px_max: 255,
+                        color_scale: 'linear',
+                        invert_color: false
+                    }
                 }
             });
             colorbar.set({});
@@ -1504,20 +1512,20 @@ Toyz.Viewer.Colorpad = function(options){
         width: 600,
         height: 400,
         img_info: {
-            px_min: 0,
-            px_max: 10,
-            py_min: 0,
-            py_max: 10,
-            colormap: 'Spectral',
-            color_scale: 'linear',
-            invert_color: false
+            colormap: {
+                name: 'Spectral',
+                px_min: 0,
+                px_max: 10,
+                color_scale: 'linear',
+                invert_color: false
+            }
         }
     },options);
     this.width = options.width;
     this.height = options.height;
     this.img_info = $.extend(true,{}, options.img_info);
-    this.img_info.px_min = Math.floor(this.img_info.px_min);
-    this.img_info.px_max = Math.ceil(this.img_info.px_max);
+    this.img_info.colormap.px_min = Math.floor(this.img_info.colormap.px_min);
+    this.img_info.colormap.px_max = Math.ceil(this.img_info.colormap.px_max);
     this.set = function(img_info){alert("you never defined the set function")};
     // Set options for colorpad
     for(var opt in options.colorpad){
@@ -1548,13 +1556,13 @@ Toyz.Viewer.Colorpad = function(options){
                 // clear the checked radio box
                 $('input[name="colormap_dialog"]:checked').prop('checked', false);
                 // check the selected colormap
-                $('input[name="colormap_dialog"][value="'+this.img_info.colormap+'"]')
+                $('input[name="colormap_dialog"][value="'+this.img_info.colormap.name+'"]')
                     .prop('checked', true);
                 this.colormap_dialog.$div.dialog('open');
             }.bind(this),
             Set: function(){
                 console.log('this', this);
-                this.set(this.img_info);
+                this.set(this.img_info.colormap);
                 this.$div.dialog("close");
             }.bind(this),
             Cancel: function(){
@@ -1571,10 +1579,10 @@ Toyz.Viewer.Colorpad = function(options){
             // Link the dialog to change the colormap
             this.colormap_dialog = new Toyz.Viewer.ColormapDialog({
                 $parent: this.$div,
-                set: function(colormap){
+                set: function(colormap_name){
                     this.update({
-                        img_info: {
-                            colormap: colormap
+                        colormap: {
+                            name: colormap_name
                         }
                     });
                     this.colormap_dialog.$div.dialog('close');
@@ -1598,17 +1606,20 @@ Toyz.Viewer.Colorpad.prototype.update = function(update){
     var color_range_update = {};
     var color_slider_update = {};
     var colorbar_update = {};
-    var update_img_info = false;
+    var update_colormap = false;
     
-    if(update.hasOwnProperty('img_info')){
-        this.img_info = $.extend(true, {}, this.img_info, update.img_info);
-        this.img_info.px_min = Math.floor(this.img_info.px_min);
-        this.img_info.px_max = Math.ceil(this.img_info.px_max);
+    if(update.hasOwnProperty('colormap')){
+        if(update.colormap.hasOwnProperty('px_max') || update.colormap.hasOwnProperty('px_min')){
+            this.img_info.colormap.set_bounds = true;
+        };
+        this.img_info.colormap = $.extend(true, {}, this.img_info.colormap, update.colormap);
+        this.img_info.colormap.px_min = Math.floor(this.img_info.colormap.px_min);
+        this.img_info.colormap.px_max = Math.ceil(this.img_info.colormap.px_max);
         if(this.img_info.hasOwnProperty('tiles')){
             delete this.img_info.tiles;
         };
         delete update.img_info;
-        update_img_info = true;
+        update_colormap = true;
     };
     if(update.hasOwnProperty('data')){
         this.data = update.data;
@@ -1622,9 +1633,9 @@ Toyz.Viewer.Colorpad.prototype.update = function(update){
             color_slider_update.xmin = update.xmin;
             colorbar_update.xmin = update.xmin;
             color_range_update.min = update.xmin;
-            if(update.xmin>this.img_info.px_min){
-                this.img_info.px_min = update.xmin;
-                update_img_info = true;
+            if(update.xmin>this.img_info.colormap.px_min){
+                this.img_info.colormap.px_min = update.xmin;
+                update_colormap = true;
             };
             xmin = update.xmin;
         }else{
@@ -1634,29 +1645,34 @@ Toyz.Viewer.Colorpad.prototype.update = function(update){
             color_slider_update.xmax = update.xmax;
             colorbar_update.xmax = update.xmax;
             color_range_update.max = update.xmax;
-            if(update.xmax<this.img_info.px_max){
-                this.img_info.px_max = update.xmax;
-                update_img_info = true;
+            if(update.xmax<this.img_info.colormap.px_max){
+                this.img_info.colormap.px_max = update.xmax;
+                update_colormap = true;
             };
             xmax = update.xmax;
         }else{
             xmax = color_slider.xmax;
         };
         color_slider_update.ymax = (xmax-xmin)/2;
+        this.img_info.colormap.set_bounds = true;
     };
     
-    if(update_img_info===true){
+    if(update_colormap===true){
         colorbar_update.img_info = this.img_info;
         // Store color_range values
-        color_range_update.values = [this.img_info.px_min, this.img_info.px_max];
+        color_range_update.values = [
+            this.img_info.colormap.px_min, 
+            this.img_info.colormap.px_max
+        ];
         // Calculate color_slider values
         var color_slider = this.gui.params.color_slider;
         color_slider_update = $.extend(true, color_slider_update, {
-            x_value: (this.img_info.px_max+this.img_info.px_min)/2 - color_slider.xmin,
-            y_value: (this.img_info.px_max-this.img_info.px_min)/2
+            x_value: (this.img_info.colormap.px_max+this.img_info.colormap.px_min)/2 
+                            - color_slider.xmin,
+            y_value: (this.img_info.colormap.px_max-this.img_info.colormap.px_min)/2
         });
-        update.px_min = this.img_info.px_min;
-        update.px_max = this.img_info.px_max;
+        update.px_min = this.img_info.colormap.px_min;
+        update.px_max = this.img_info.colormap.px_max;
     };
     
     // All current updates will cause the background image to change
@@ -1710,19 +1726,19 @@ Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
                 div_class: 'viewer-colormap-ctrl',
                 width: options.width,
                 height: options.height,
-                xmin: this.img_info.px_min,
-                xmax: this.img_info.px_max,
+                xmin: this.img_info.colormap.px_min,
+                xmax: this.img_info.colormap.px_max,
                 ymin: 0,
-                ymax: (this.img_info.px_max-this.img_info.px_min)/2,
-                x_value: (this.img_info.px_max+this.img_info.px_min)/2 - this.img_info.px_min,
-                y_value: (this.img_info.px_max-this.img_info.px_min)/2,
+                ymax: (this.img_info.colormap.px_max-this.img_info.colormap.px_min)/2,
+                x_value: (this.img_info.colormap.px_max+this.img_info.colormap.px_min)/2 - this.img_info.colormap.px_min,
+                y_value: (this.img_info.colormap.px_max-this.img_info.colormap.px_min)/2,
                 x_name: 'bias',
                 y_name: 'contrast',
                 onupdate: function(slider2d, params){
                     // If the cursor position was changed by the user, update the rest of the
                     // fields
                     this.update({
-                        img_info: {
+                        colormap: {
                             px_min: slider2d.xmin+Math.floor(slider2d.x_value-slider2d.y_value),
                             px_max: slider2d.xmin+Math.ceil(slider2d.x_value+slider2d.y_value)
                         }
@@ -1737,7 +1753,7 @@ Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
                     xmin: {
                         prop: {
                             type: 'Number',
-                            value: this.img_info.px_min
+                            value: this.img_info.colormap.px_min
                         },
                         div_css: {
                             float: 'left'
@@ -1753,7 +1769,7 @@ Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
                     xmax: {
                         prop: {
                             type: 'Number',
-                            value: this.img_info.px_max
+                            value: this.img_info.colormap.px_max
                         },
                         div_css: {
                             float: 'right'
@@ -1776,7 +1792,7 @@ Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
                         lbl: 'Pixels values from',
                         prop: {
                             type: 'Number',
-                            value: this.img_info.px_min
+                            value: this.img_info.colormap.px_min
                         },
                         div_css: {
                             float: 'left'
@@ -1784,7 +1800,7 @@ Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
                         func: {
                             change: function(event){
                                 this.update({
-                                    img_info: {
+                                    colormap: {
                                         px_min: Number(event.currentTarget.value)
                                     }
                                 })
@@ -1795,7 +1811,7 @@ Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
                         lbl: ' to ',
                         prop: {
                             type: 'Number',
-                            value: this.img_info.px_max
+                            value: this.img_info.colormap.px_max
                         },
                         div_css: {
                             float: 'left'
@@ -1817,12 +1833,12 @@ Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
                 div_class: 'viewer-colormap-ctrl',
                 options: {
                     range: true,
-                    min: this.img_info.px_min,
-                    max: this.img_info.px_max,
-                    values: [this.img_info.px_min, this.img_info.px_max],
+                    min: this.img_info.colormap.px_min,
+                    max: this.img_info.colormap.px_max,
+                    values: [this.img_info.colormap.px_min, this.img_info.colormap.px_max],
                     slide: function(event, ui){
                         this.update({
-                            img_info: {
+                            colormap: {
                                 px_min: ui.values[0],
                                 px_max: ui.values[1]
                             }
@@ -1841,11 +1857,11 @@ Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
                         div_css: {
                             float: 'left'
                         },
-                        default_val: this.img_info.color_scale,
+                        default_val: this.img_info.colormap.color_scale,
                         func: {
                             change: function(event){
                                 this.update({
-                                    img_info: {
+                                    colormap: {
                                         color_scale: event.currentTarget.value
                                     }
                                 })
@@ -1856,7 +1872,7 @@ Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
                         lbl: 'invert scale',
                         prop: {
                             type: 'checkbox',
-                            checked: this.img_info.invert_color
+                            checked: this.img_info.colormap.invert_color
                         },
                         div_css: {
                             float: 'right'
@@ -1865,7 +1881,7 @@ Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
                             change: function(event){
                                 var params = this.gui.get();
                                 this.update({
-                                    img_info: {
+                                    colormap: {
                                         invert_color: params.invert_color
                                     }
                                 })

@@ -73,6 +73,12 @@ def get_file_info(file_info):
         'invert_x': False,
         'invert_y': False,
         'tile_format': 'png',
+        'colormap': {
+            'name': 'Spectral',
+            'color_scale': 'linear',
+            'invert_color': False,
+            'set_bounds': False
+        }
     }
     
     for default in file_defaults:
@@ -109,17 +115,17 @@ def get_img_info(file_info, img_info):
         data = hdulist[int(img_info['frame'])].data
         height, width = data.shape
         
-        defaults = {
-            'px_min': float(data.min()),
-            'px_max': float(data.max()),
-            'colormap': 'Spectral',
-            'color_scale': 'linear',
-            'invert_color': False
-        }
-        
-        for default in defaults:
-            if default not in img_info:
-                img_info[default] = defaults[default]
+        if('colormap' not in img_info):
+            if(file_info['colormap']['set_bounds']):
+                px_min = file_info['px_min']
+                px_max = file_info['px_max']
+            else:
+                px_min = float(data.min())
+                px_max = float(data.max())
+            img_info['colormap'] = file_info['colormap']
+            if not file_info['colormap']['set_bounds']:
+                img_info['colormap']['px_min'] = float(data.min())
+                img_info['colormap']['px_max'] = float(data.max())
         
         #TODO: For now I always invert the y-axis for fits files. Change this in the future
         # to allow the user to specify
@@ -136,9 +142,7 @@ def get_img_info(file_info, img_info):
         import numpy as np
         
         img = Image.open(file_info['filepath'])
-        img_info['px_min'] = 0
-        img_info['px_max'] = 0
-        img_info['colormap'] = 'none'
+        img_info['colormap'] = {}
         width, height = img.size
     img_info['width'] = width
     img_info['height'] = height
@@ -173,8 +177,10 @@ def get_img_info(file_info, img_info):
 def get_tile_filename(file_info, img_info, x0_idx, xf_idx, y0_idx, yf_idx):
     filename_params = [file_info['filename'], file_info['frame'],
         x0_idx, xf_idx, y0_idx, yf_idx, 
-        "{0:.3f}".format(img_info['scale']), img_info['colormap'], 
-        "{0:.2f}".format(img_info['px_min']), "{0:.2f}".format(img_info['px_max'])]
+        "{0:.3f}".format(img_info['scale']), img_info['colormap']['name'], 
+        "{0:.2f}".format(img_info['colormap']['px_min']),
+        "{0:.2f}".format(img_info['colormap']['px_max']), 
+        str(img_info['colormap']['invert_color'])]
     new_filename = '_'.join([str(f) for f in filename_params])
     new_filepath = os.path.join(img_info['save_path'], new_filename+'.'+file_info['tile_format'])
     return new_filepath
@@ -322,13 +328,11 @@ def create_tile(file_info, img_info, tile_info):
         if img_info['invert_x']:
             data = np.fliplr(data)
         
-        #TODO: remove the following test lines
-        #img_info['px_min'] = 0
-        #img_info['px_max'] = 500
-        #img_info['colormap'] = 'afmhot'
-        
-        norm = Normalize(img_info['px_min'], img_info['px_max'], True)
-        colormap = getattr(cmap, img_info['colormap'])
+        norm = Normalize(img_info['colormap']['px_min'], img_info['colormap']['px_max'], True)
+        colormap_name = img_info['colormap']['name']
+        if img_info['colormap']['invert_color']:
+            colormap_name = colormap_name + '_r'
+        colormap = getattr(cmap, colormap_name)
         cm = cmap.ScalarMappable(norm, colormap)
         img = np.uint8(cm.to_rgba(data)*255)
         img = Image.fromarray(img)
