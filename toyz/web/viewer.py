@@ -72,7 +72,7 @@ def get_file_info(file_info):
         'resampling': 'NEAREST',
         'invert_x': False,
         'invert_y': False,
-        'tile_format': 'jpg'
+        'tile_format': 'png',
     }
     
     for default in file_defaults:
@@ -108,12 +108,18 @@ def get_img_info(file_info, img_info):
         hdulist = pyfits.open(file_info['filepath'])
         data = hdulist[int(img_info['frame'])].data
         height, width = data.shape
-        if 'px_min' not in img_info:
-            img_info['px_min'] = float(data.min())
-        if 'px_max' not in img_info:
-             img_info['px_max'] = float(data.max())
-        if 'colormap' not in img_info:
-            img_info['colormap'] = 'Spectral'
+        
+        defaults = {
+            'px_min': float(data.min()),
+            'px_max': float(data.max()),
+            'colormap': 'Spectral',
+            'color_scale': 'linear',
+            'invert_color': False
+        }
+        
+        for default in defaults:
+            if default not in img_info:
+                img_info[default] = defaults[default]
         
         #TODO: For now I always invert the y-axis for fits files. Change this in the future
         # to allow the user to specify
@@ -317,9 +323,9 @@ def create_tile(file_info, img_info, tile_info):
             data = np.fliplr(data)
         
         #TODO: remove the following test lines
-        img_info['px_min'] = 0
-        img_info['px_max'] = 500
-        img_info['colormap'] = 'afmhot'
+        #img_info['px_min'] = 0
+        #img_info['px_max'] = 500
+        #img_info['colormap'] = 'afmhot'
         
         norm = Normalize(img_info['px_min'], img_info['px_max'], True)
         colormap = getattr(cmap, img_info['colormap'])
@@ -346,3 +352,37 @@ def create_tile(file_info, img_info, tile_info):
     else:
         return False, ''
     return True, tile_info
+
+def get_img_data(data_type, file_info, img_info, x0, xf, y0, yf, **kwargs):
+    """
+    Get data from an image or FITS file
+    """
+    if data_type == 'data':
+        if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
+            pyfits = import_fits()
+            hdulist = pyfits.open(file_info['filepath'])
+            data = hdulist[int(img_info['frame'])].data
+        else:
+            try:
+                from PIL import Image
+            except ImportError:
+                raise ToyzJobError(
+                    "You must have PIL (Python Imaging Library) installed to "
+                    "open files of this type"
+                )
+            import numpy as np
+            img = Image.open(file_info['filepath'])
+            data = np.array(img)
+        x0 = max(0, x0)
+        y0 = max(0, y0)
+        xf = min(data.shape[1], xf)
+        yf = min(data.shape[0], yf)
+        data = data[y0:yf, x0:xf]
+        
+        return {
+            'id': 'data',
+            'data': data.tolist()
+        }
+    else:
+        raise ToyzJobError("Loading that data type has not been implemented yet")
+            

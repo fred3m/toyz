@@ -56,7 +56,7 @@ Toyz.Core.core_js = [
 
 Toyz.Core.core_css = [
     "/third_party/jquery_ui_themes/{{user_theme}}/jquery-ui.min.css",
-    "/static/web/static/toyz.css?=test",
+    "/static/web/static/toyz.css",
     "/third_party/jquery-contextMenu/jquery.contextMenu.css"
 ];
 
@@ -519,8 +519,8 @@ Toyz.Core.load_css = function(styles, callback){
         };
     };
     
-    var style = styles[0];
     if(styles.length>0){
+        var style = styles[0];
         console.log('loading', style);
         styles.shift();
         var load_css = Toyz.Core.load_css.bind(undefined, styles, callback);

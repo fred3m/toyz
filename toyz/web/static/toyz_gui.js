@@ -8,7 +8,9 @@ Toyz.Gui.get_param = function(param){
     var params = {};
     if(param.type=='div' || param.type=='conditional' || param.type=='list'){
         params = param.get();
-    }else if(param.type=='input' || param.type=='select'){
+    }else if(param.type=='input' || param.type=='select' || param.type=='slider' ||
+        param.type=='slider2d'
+    ){
         params[param.name] = param.get();
     }else{
         //console.log('no get for',param.name, param);
@@ -651,8 +653,8 @@ Toyz.Gui.Select = function(param){
             };
         };
     };
-    if(this.hasOwnProperty('defaultVal')){
-        this.$input.val(this.defaultVal);
+    if(this.hasOwnProperty('default_val')){
+        this.$input.val(this.default_val);
     };
 };
 Toyz.Gui.Select.prototype = new Toyz.Gui.Param();
@@ -754,6 +756,12 @@ Toyz.Gui.Gui.prototype.build_gui = function(options){
     // Allow for custom parameters to be inserted
     //console.log('about to create param', param.name, param);
     if(param.type == 'custom'){
+        if(!param.hasOwnProperty('get') && !param.__proto__.hasOwnProperty('get')){
+            param.get = function(){return undefined};
+        };
+        if(!param.hasOwnProperty('set') && !param.__proto__.hasOwnProperty('set')){
+            param.set = function(){return undefined};
+        };
         gui_param = param;
     }else if(param.type=='div'){
         gui_param = new Toyz.Gui.Div(options);
@@ -763,6 +771,10 @@ Toyz.Gui.Gui.prototype.build_gui = function(options){
         gui_param = new Toyz.Gui.List(options);
     }else if(param.type=='select'){
         gui_param = new Toyz.Gui.Select(param);
+    }else if(param.type=='slider'){
+        gui_param = new Toyz.Gui.Slider(param);
+    }else if(param.type=='slider2d'){
+        gui_param = new Toyz.Gui.Slider2d(param);
     }else{
         gui_param = new Toyz.Gui.Param(param);
     };
@@ -784,7 +796,7 @@ Toyz.Gui.Gui.prototype.get = function(){
             params = $.extend(true, params, Toyz.Gui.get_param(this.params[param]));
         };
     };
-    console.log('parameters', params);
+    //console.log('parameters', params);
     return params;
 };
 // Toyz.Gui.set_params current options:
@@ -803,91 +815,190 @@ Toyz.Gui.Gui.prototype.set_params = function(options){
     this.root.set(options);
 };
 
-// Two dimensional slider
-Toyz.Gui.initSlider2d=function(options){
-    var slider2d=$.extend(true,{
-        xmin:0,
-        xmax:10,
-        ymin:0,
-        ymax:10,
-        xScale:1,
-        yScale:1,
-        cursor:{
-            x:0,
-            y:0,
-            size:5,
-            fill:'white',
-            line:'black',
-            lineWidth:2,
-            visible:true
-        },
-        update:function(params){
-            if(params.type=='cursorPos'){
-                var rect=slider2d.canvas.getBoundingClientRect();
-                slider2d.cursor.x=params['event'].clientX-rect.left;
-                slider2d.cursor.y=params['event'].clientY-rect.top;
-                slider2d.xValue=slider2d.cursor.x*slider2d.xScale;
-                slider2d.yValue=slider2d.ymax-slider2d.cursor.y*slider2d.yScale;
-            }else if(params.type=='value pair'){
-                slider2d.xValue=params.xValue;
-                slider2d.yValue=params.yValue;
-                slider2d.cursor.x=params.xValue/slider2d.xScale;
-                slider2d.cursor.y=(slider2d.ymax-params.yValue)/slider2d.yScale;
-            };
-            slider2d.drawCursor();
-            slider2d.onupdate({
-                xValue:slider2d.xValue,
-                yValue:slider2d.yValue
+// Slider control
+Toyz.Gui.Slider = function(param){
+    this.$div = $('<div/>');
+    for(var p in param){
+        this[p] = param[p];
+    };
+    // If the user defines a css class for the div, include it
+    if(this.hasOwnProperty('div_class')){
+        this.$div.addClass(this.div_class);
+    };
+    if(this.hasOwnProperty('div_css')){
+        this.$div.css(this.div_css);
+    };
+    this.$inner = $('<div/>');
+    this.$inner.slider($.extend(true,{
+        range: false,
+        min: 0,
+        max: 10
+    }, this.options));
+    this.$div.append(this.$inner);
+};
+Toyz.Gui.Slider.prototype.get = function(){
+    var new_val = this.$inner.slider('option', 'value');
+    this.onupdate(new_val);
+    return new_val;
+};
+Toyz.Gui.Slider.prototype.set = function(values, options){
+    //this.$inner.slider('option', 'values', value);
+    this.$inner.slider('option', values);
+};
+Toyz.Gui.Slider.prototype.onupdate = function(){};
+
+// 2d slider control
+Toyz.Gui.Slider2d = function(param){
+    console.log('Slider2d param', param);
+    // set default options
+    this.background = undefined;
+    this.width = 400;
+    this.height = 200;
+    this.xmin = 0;
+    this.ymin = 0;
+    this.xmax = 10;
+    this.ymax = 10;
+    this.x_value = 0;
+    this.y_value = 0;
+    this.x_name = 'x';
+    this.y_name = 'y';
+    this.cursor = {
+        x: 5,
+        y: 5,
+        size: 5,
+        fill: 'white',
+        line: 'black',
+        line_width: 2,
+        visible: true
+    };
+    this.onupdate = function(){};
+    // Set kwargs
+    for(var opt in param){
+        this[opt] = param[opt];
+    };
+    // Build canvas to display cursor (and background, if specified)
+    this.$canvas = $('<canvas/>')
+        .prop({
+            width: this.width,
+            height: this.height
+        })
+        .mousedown(function(event){
+            this.mouse_down = true;
+            this.set({
+                cursor_event:event
             });
-        },
-        drawCursor:function(){
-            if(slider2d.cursor.visible){
-                var ctx=slider2d.canvas.getContext('2d');
-                ctx.canvas.width=ctx.canvas.width;
-                ctx.beginPath();
-                ctx.arc(slider2d.cursor.x,slider2d.cursor.y,slider2d.cursor.size,0,2*Math.PI);
-                ctx.fillStyle=slider2d.cursor.fill;
-                ctx.fill();
-                ctx.lineWidth=slider2d.cursor.lineWidth;
-                ctx.strokeStyle=slider2d.cursor.line;
-                ctx.stroke();  
-            };
-        },
-        onupdate:function(values){}
-    },options);
-    
-    slider2d.canvas=$.extend(slider2d.canvas,{
-        mouseDown:false,
-        onmousedown:function(event){
-            slider2d.canvas.mouseDown=true;
-            slider2d.update({
-                type:'cursorPos',
-                event:event
-            });
-        },
-        onmouseup:function(event){
-            slider2d.canvas.mouseDown=false;
-        },
-        onmousemove:function(event){
-            if(slider2d.canvas.mouseDown){
-                slider2d.update({
-                    type:'cursorPos',
-                    event:event
+        }.bind(this))
+        .mouseup(function(event){
+            this.mouse_down = false;
+        }.bind(this))
+        .mousemove(function(event){
+            if(this.mouse_down){
+                this.set({
+                    cursor_event: event
                 });
             }
-        }
+        }.bind(this));
+    this.mouse_down = false;
+    
+    // Set the initial position of the cursor
+    // pass x_value so that the cursor x and y will be set
+    // pass xmin so that the x and y scale will be set
+    this.set({
+        x_value: this.x_value,
+        xmin: this.xmin
     });
     
-    slider2d.xScale=(slider2d.xmax-slider2d.xmin)/slider2d.canvas.width;
-    slider2d.yScale=(slider2d.ymax-slider2d.ymin)/slider2d.canvas.height;
-    slider2d.xValue=(slider2d.xmax-slider2d.xmin)/2;
-    slider2d.yValue=(slider2d.ymax-slider2d.ymin)/2;
-    slider2d.update({
-        type:'value pair',
-        xValue:slider2d.xValue,
-        yValue:slider2d.yValue
-    });
-    return slider2d;
+    this.$div = $('<div/>').append(this.$canvas);
+};
+Toyz.Gui.Slider2d.prototype.get = function(){
+    result = {};
+    result[this.name] = {};
+    result[this.name][this.x_name] = this.x_value;
+    result[this.name][this.y_name] = this.y_value;
+    return result;
+};
+Toyz.Gui.Slider2d.prototype.set = function(values, options){
+    var update_cursor = false;
+    var update_values = false;
+    var update_scale = false;
+    
+    if(values.hasOwnProperty('cursor_event')){
+        var rect = this.$canvas[0].getBoundingClientRect();
+        //console.log('rect',rect);
+        //console.log('client X,Y: ', values.cursor_event.clientX, values.cursor_event.clientY);
+        this.cursor.x = values.cursor_event.clientX-rect.left;
+        this.cursor.y = values.cursor_event.clientY-rect.top;
+        delete values.cursor_event;
+        update_values = true;
+    };
+    if(values.hasOwnProperty(this.x_name)){
+        this.x_value = values[this.x_name];
+        delete values[this.x_name];
+    };
+    if(values.hasOwnProperty(this.y_name)){
+        this.y_value = values[this.y_name];
+        delete vvalues[this.y_name];
+    };
+    if(values.hasOwnProperty('x_value') || values.hasOwnProperty('y_value') ||
+        values.hasOwnProperty('x_scale') || values.hasOwnProperty('y_scale') ||
+        values.hasOwnProperty('xmin') || values.hasOwnProperty('xmax') ||
+        values.hasOwnProperty(this.x_name) || values.hasOwnProperty(this.y_name) ||
+        values.hasOwnProperty('background')
+    ){
+        update_cursor = true;
+    };
+    if(values.hasOwnProperty('xmin') || values.hasOwnProperty('xmax') ||
+        values.hasOwnProperty('ymin') || values.hasOwnProperty('ymax')
+    ){
+        update_scale = true;
+    };
+    
+    if(update_values===true && (update_cursor===true || update_scale===true)){
+        console.log('values', values);
+        throw Error("Received cursor_event and values in the same set command");
+    };
+    
+    // Update specified values
+    for(var v in values){
+        this[v] = values[v];
+    };
+    
+    // update the scale based on the bounds
+    if(update_scale===true){
+        this.x_scale = (this.xmax-this.xmin)/this.width;
+        this.y_scale = (this.ymax-this.ymin)/this.height;
+    };
+    // update the cursor position and redraw it
+    if(update_cursor===true){
+        this.cursor.x = this.x_value/this.x_scale;
+        this.cursor.y = (this.ymax-this.y_value)/this.y_scale;
+        this.draw_cursor();
+    };
+    // Cursor moved, so update the values and notify other controls of an update
+    if(update_values===true){
+        this.x_value = this.cursor.x*this.x_scale;
+        this.y_value = this.ymax-this.cursor.y*this.y_scale;
+        this.draw_cursor();
+        this.onupdate(this, values);
+    };
+};
+Toyz.Gui.Slider2d.prototype.draw_cursor = function(){
+    if(this.cursor.visible){
+        var ctx=this.$canvas[0].getContext('2d');
+        // fastest way to clear the canvas is to set the width = itself
+        this.$canvas[0].width = this.$canvas[0].width;
+        //console.log('cursor', this.cursor);
+        if(!(this.background===undefined)){
+            ctx.putImageData(this.background,0,0);
+        };
+        ctx.beginPath();
+        ctx.arc(this.cursor.x,this.cursor.y,this.cursor.size,0,2*Math.PI);
+        ctx.fillStyle = this.cursor.fill;
+        ctx.fill();
+        ctx.lineWidth = this.cursor.line_width;
+        ctx.strokeStyle=this.cursor.line;
+        ctx.stroke();  
+    };
 };
 
 console.log('toyz_gui.js loaded');

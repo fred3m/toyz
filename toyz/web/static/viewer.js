@@ -493,7 +493,7 @@ Toyz.Viewer.Controls = function(options){
     this.hist = {
         input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-hist',
         func: {
-            click: function(){
+            click: function(event){
                 this.change_active_tool('hist', event.currentTarget);
             }.bind(options.parent)
         },
@@ -506,7 +506,7 @@ Toyz.Viewer.Controls = function(options){
     this.surface = {
         input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-surface',
         func: {
-            click: function(){
+            click: function(event){
                 this.change_active_tool('surface', event.currentTarget);
             }.bind(options.parent)
         },
@@ -517,16 +517,61 @@ Toyz.Viewer.Controls = function(options){
         },
     };
     this.colormap = {
+        input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-colormap',
         prop:{
-            input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-colormap',
             type: 'image',
             title: 'open colormap editor',
             value: ''
         },
         func:{
-            click: function() {
-                
-            }
+            click: function(event) {
+                this.change_active_tool('surface', event.currentTarget);
+                var file_info = $.extend(true, {}, this.frames[this.viewer_frame].file_info);
+                var img_info = $.extend(true, {}, file_info.images[file_info.frame]);
+                delete file_info.images;
+                var params = {
+                    data_type: 'data',
+                    file_info: file_info,
+                    img_info: img_info,
+                    x0: img_info.viewer.x_center/img_info.viewer.scale-200,
+                    xf: img_info.viewer.x_center/img_info.viewer.scale+200,
+                    y0: img_info.viewer.y_center/img_info.viewer.scale-100,
+                    yf: img_info.viewer.y_center/img_info.viewer.scale+100
+                };
+                this.workspace.websocket.send_task({
+                    task: {
+                        module: 'toyz.web.tasks',
+                        task: 'get_img_data',
+                        parameters: params
+                    },
+                    callback: function(options, params, result){
+                        if(!this.workspace.hasOwnProperty('colorpad')){
+                            this.workspace.colorpad = new Toyz.Viewer.Colorpad({
+                                img_info: params.img_info,
+                                data: result.data,
+                                width: result.data[0].length,
+                                height: result.data.length,
+                                colorpad: {
+                                    set: function(img_info) {
+                                        console.log('this in callback', this);
+                                        var file_info = this.frames[this.viewer_frame].file_info;
+                                        file_info.images[file_info.frame] = $.extend(true,
+                                            file_info.images[file_info.frame],
+                                            img_info
+                                        );
+                                        file_info.images[file_info.frame].tiles = {};
+                                        this.get_img_info(this.viewer_frame, file_info.frame);
+                                    }.bind(options.parent)
+                                }
+                            });
+                        }else{
+                            this.workspace.colorpad.update({
+                                
+                            });
+                        };
+                    }.bind(this, options, params)
+                });
+            }.bind(options.parent)
         }
     },
     // Image Info
@@ -728,7 +773,7 @@ Toyz.Viewer.Contents = function(params){
                 'previous_viewer_frame', 'input_viewer_frame', 'next_viewer_frame',
                 'last_viewer_frame'],
             Zoom: ['zoom_out', 'zoom_in', 'zoom_bestfit', 'zoom_fullsize', 'zoom_input'],
-            Tools: ['rect', 'center', 'hist', 'surface'],
+            Tools: ['rect', 'center', 'hist', 'surface', 'colormap'],
             'Image Info': ['img_coords', 'physical_coords', 'pixel_val']
         };
     };
@@ -1267,32 +1312,573 @@ Toyz.Viewer.DrawingTools = {
 };
 // Map a pixel on a 1D canvas context imageData array
 Toyz.Viewer.set_pixel = function(image_data, x, y, r, g, b, a){
-    index=(x+y*image_data.width)*4;
-    imageData.data[index+0]=r;
-    imageData.data[index+1]=g;
-    imageData.data[index+2]=b;
-    imageData.data[index+3]=a;
+    index = (x+y*image_data.width)*4;
+    image_data.data[index+0] = r;
+    image_data.data[index+1] = g;
+    image_data.data[index+2] = b;
+    image_data.data[index+3] = a;
 };
 // Map a 2D image to a canvas context imageData object
-Toyz.Viewer.map_image=function(image, ctx, colormap){
-    var image_data=ctx.createImageData(image[0].length,image.length);
-    var rgbArray=fitsPyp.extractColormap(colormap);
-    if(colormap.scale=='linear'){
-        for(var i=0;i<image.length;i++){
-            for(var j=0;j<image[i].length;j++){
-                var rgb=fitsPyp.linearmapPixel(image[i][j],colormap,rgbArray);
-                fitsPyp.setPixel(imageData,j,image.length-i,rgb[0],rgb[1],rgb[2],255);
-            }
-        };
-    }else if(colormap.scale=='log'){
-        for(var i=0;i<image.length;i++){
-            for(var j=0;j<image[i].length;j++){
-                var rgb=fitsPyp.logmapPixel(image[i][j],colormap,rgbArray);
-                fitsPyp.setPixel(imageData,j,image.length-i,rgb[0],rgb[1],rgb[2],255);
-            }
-        };
-    }else{
-        alert('colormap scale not supported yet or not recognized');
-    }
-    return imageData;
+Toyz.Viewer.map_image=function(image, ctx, img_info){
+    var image_data = ctx.createImageData(image[0].length, image.length);
+    var cmap = Toyz.Viewer.Colormaps[img_info.colormap].slice(0,
+                Toyz.Viewer.Colormaps[img_info.colormap].length);
+    if(img_info.invert_color===true){
+        cmap = Toyz.Viewer.Colormaps[img_info.colormap+'_r'].slice(0,
+                    Toyz.Viewer.Colormaps[img_info.colormap+'_r'].length);
+    };
+    
+    for(var i=0;i<image.length;i++){
+        for(var j=0; j<image[i].length; j++){
+            var rgb;
+            var rgb_idx;
+            var x = j;
+            var y = i;
+            var pixel = image[i][j];
+            // invert image if necessary
+            if(img_info.invert_x){
+                x = image[i].length-j;
+            };
+            if(img_info.invert_y){
+                y = image.length-i;
+            };
+            if(pixel<=img_info.px_min){
+                rgb_idx = 0
+            }else if(pixel>=img_info.px_max){
+                rgb_idx = 255
+            }else{
+                if(img_info.color_scale=='linear'){
+                    var linearmap = 255/(img_info.px_max-img_info.px_min);
+                    rgb_idx = Math.round(linearmap*(pixel-img_info.px_min));
+                }else if(img_info.color_scale=='log'){
+                    var shift = 1 - img_info.px_min;
+                    var logscale = 255/Toyz.Core.log10(img_info.px_max+shift)
+                    var rgb_idx = Math.round(Toyz.Core.log10(pixel+shift)* logscale);
+                }else{
+                    throw Error("Unrecognized colormap scale!")
+                };
+            };
+            // in case of a rounding error in the mapping
+            if(rgb_idx<0){
+                rgb_idx = 0;
+            }else if(rgb>255){
+                rgb_idx = 255;
+            };
+            rgb = cmap[rgb_idx];
+            Toyz.Viewer.set_pixel(image_data , x ,y , rgb[0], rgb[1], rgb[2], 255);
+        }
+    };
+    return image_data;
 };
+
+Toyz.Viewer.Colorbar = function(options){
+    this.type = 'custom';
+    if(!options.hasOwnProperty('img_info')){
+        throw Error("img_info required to create a colorbar")
+    };
+    if(!options.hasOwnProperty('width')){
+        options.width = 400;
+    };
+    if(!options.hasOwnProperty('height')){
+        options.height = 200;
+    };
+    this.$canvas = $('<canvas/>').prop({
+        width: options.width,
+        height: options.height
+    });
+    this.image = [];
+    for(var opt in options){
+        this[opt] = options[opt];
+    };
+    this.xmin = this.img_info.px_min;
+    this.xmax = this.img_info.px_max;
+    this.$div = $('<div/>').append(this.$canvas);
+};
+Toyz.Viewer.Colorbar.prototype.build = function(){
+    this.image = [];
+    for(var i=0; i<this.$canvas[0].height; i++){
+        this.image.push([]);
+        for(var j=0; j<this.$canvas[0].width; j++){
+            this.image[i].push(0);
+        };
+    };
+    for(var j=0; j<this.$canvas[0].width; j++){
+        var pixel_bar = Math.round(this.xmin+j*(this.xmax-this.xmin)/this.$canvas[0].width);
+        if(j<100){
+            //console.log('pixel_bar', pixel_bar, j, this.xmin, this.xmax, this.$canvas[0].width);
+        };
+        for(var i=0;i<this.$canvas[0].height;i++){
+            this.image[i][j] = pixel_bar;
+        };
+    };
+};
+Toyz.Viewer.Colorbar.prototype.set = function(values, options){
+    //console.log('colorbar values', values);
+    for(var v in values){
+        this[v] = values[v];
+    };
+    var ctx = this.$canvas[0].getContext('2d');
+    this.build();
+    var img_data = Toyz.Viewer.map_image(
+        this.image, 
+        ctx, 
+        this.img_info
+    );
+    ctx.putImageData(img_data, 0, 0);
+};
+Toyz.Viewer.Colorbar.prototype.get = function(){return undefined};
+
+Toyz.Viewer.ColormapDialog = function(options){
+    options = $.extend(true, {
+        width: 255,
+        height: 20,
+        set: function(){alert("You haven't created a 'set' function yet")}
+    }, options);
+    this.$div = $('<div/>');
+    this.set = options.set;
+    for(var cmap in Toyz.Viewer.Colormaps){
+        if(cmap.substr(cmap.length-2,2)!='_r'){
+            var colorbar = new Toyz.Viewer.Colorbar({
+                width: options.width,
+                height: options.height,
+                img_info: {
+                    px_min: 0,
+                    px_max: 255,
+                    color_scale: 'linear',
+                    colormap: cmap,
+                    invert_color: false
+                }
+            });
+            colorbar.set({});
+            var $radio = $('<input/>')
+                .prop({
+                    type: 'radio',
+                    value: cmap,
+                    name: 'colormap_dialog'
+                })
+                .css('display','inline-block');
+            var $lbl = $('<label/>')
+                .text(cmap)
+                .css({
+                    display: 'inline-block',
+                    'margin-left': 4,
+                    'margin-right': 4
+                });
+            var $div = $('<div/>').css('clear', 'both');
+            $div.append($radio)
+                .append($lbl)
+                .append(colorbar.$canvas.css('display', 'inline-block'));
+            this.$div.append($div);
+        };
+    };
+    
+    this.$div.dialog({
+        resizable: true,
+        draggable: true,
+        autoOpen: false,
+        modal: true,
+        width: 'auto',
+        title: 'Colormaps',
+        maxHeight: $(window).height(),
+        position: {
+            my: "left top",
+            at: "left top",
+            of: window
+        },
+        buttons: {
+            Select: function(){
+                var cmap = $('input[name="colormap_dialog"]:checked').val();
+                this.set(cmap);
+            }.bind(this),
+            Cancel: function(){
+                this.$div.dialog('close');
+            }.bind(this)
+        }
+    }).css("font-size", "12px");
+};
+
+Toyz.Viewer.Colorpad = function(options){
+    this.$div = $('<div/>');
+    // set default options
+    options = $.extend(true, {
+        width: 600,
+        height: 400,
+        img_info: {
+            px_min: 0,
+            px_max: 10,
+            py_min: 0,
+            py_max: 10,
+            colormap: 'Spectral',
+            color_scale: 'linear',
+            invert_color: false
+        }
+    },options);
+    this.width = options.width;
+    this.height = options.height;
+    this.img_info = $.extend(true,{}, options.img_info);
+    this.img_info.px_min = Math.floor(this.img_info.px_min);
+    this.img_info.px_max = Math.ceil(this.img_info.px_max);
+    this.set = function(img_info){alert("you never defined the set function")};
+    // Set options for colorpad
+    for(var opt in options.colorpad){
+        this[opt] = options.colorpad[opt];
+    };
+    // Save the original img_info in case the user wants to reset
+    this.original_info = this.img_info;
+    // GUI in dialog
+    this.gui = this.get_gui($.extend(true, {}, options, {
+        $parent: this.$div
+    }));
+    // Colorpad dialog
+    this.$div.dialog($.extend(true, {
+        resizable: true,
+        draggable: true,
+        autoOpen: true,
+        modal: false,
+        width: 'auto',
+        title: 'Colormap',
+        maxHeight: $(window).height(),
+        position: {
+            my: "center top",
+            at: "center top",
+            of: window
+        },
+        buttons: {
+            Colormap: function(){
+                // clear the checked radio box
+                $('input[name="colormap_dialog"]:checked').prop('checked', false);
+                // check the selected colormap
+                $('input[name="colormap_dialog"][value="'+this.img_info.colormap+'"]')
+                    .prop('checked', true);
+                this.colormap_dialog.$div.dialog('open');
+            }.bind(this),
+            Set: function(){
+                console.log('this', this);
+                this.set(this.img_info);
+                this.$div.dialog("close");
+            }.bind(this),
+            Cancel: function(){
+                this.$div.dialog("close");
+            }.bind(this)
+        }
+    },options.dialog)).css("font-size", "12px");
+    
+    Toyz.Core.load_dependencies(
+        {
+            js: ['/static/web/static/cm.js'],
+        },
+        function(options){
+            // Link the dialog to change the colormap
+            this.colormap_dialog = new Toyz.Viewer.ColormapDialog({
+                $parent: this.$div,
+                set: function(colormap){
+                    this.update({
+                        img_info: {
+                            colormap: colormap
+                        }
+                    });
+                    this.colormap_dialog.$div.dialog('close');
+                }.bind(this),
+            });
+            if(options.hasOwnProperty('data')){
+                if(!options.hasOwnProperty('img_info')){
+                    throw Error("img_info required to initialize image data");
+                };
+                this.update({
+                    data: options.data,
+                    img_info: this.img_info
+                })
+            };
+        }.bind(this, options)
+    );
+    
+    console.log('Colorpad', this);
+};
+Toyz.Viewer.Colorpad.prototype.update = function(update){
+    var color_range_update = {};
+    var color_slider_update = {};
+    var colorbar_update = {};
+    var update_img_info = false;
+    
+    if(update.hasOwnProperty('img_info')){
+        this.img_info = $.extend(true, {}, this.img_info, update.img_info);
+        this.img_info.px_min = Math.floor(this.img_info.px_min);
+        this.img_info.px_max = Math.ceil(this.img_info.px_max);
+        if(this.img_info.hasOwnProperty('tiles')){
+            delete this.img_info.tiles;
+        };
+        delete update.img_info;
+        update_img_info = true;
+    };
+    if(update.hasOwnProperty('data')){
+        this.data = update.data;
+        delete update.data;
+    };
+    if(update.hasOwnProperty('xmin') || update.hasOwnProperty('xmax')){
+        var color_slider = this.gui.params.color_slider;
+        var xmin;
+        var xmax;
+        if(update.hasOwnProperty('xmin')){
+            color_slider_update.xmin = update.xmin;
+            colorbar_update.xmin = update.xmin;
+            color_range_update.min = update.xmin;
+            if(update.xmin>this.img_info.px_min){
+                this.img_info.px_min = update.xmin;
+                update_img_info = true;
+            };
+            xmin = update.xmin;
+        }else{
+            xmin = color_slider.xmin;
+        };
+        if(update.hasOwnProperty('xmax')){
+            color_slider_update.xmax = update.xmax;
+            colorbar_update.xmax = update.xmax;
+            color_range_update.max = update.xmax;
+            if(update.xmax<this.img_info.px_max){
+                this.img_info.px_max = update.xmax;
+                update_img_info = true;
+            };
+            xmax = update.xmax;
+        }else{
+            xmax = color_slider.xmax;
+        };
+        color_slider_update.ymax = (xmax-xmin)/2;
+    };
+    
+    if(update_img_info===true){
+        colorbar_update.img_info = this.img_info;
+        // Store color_range values
+        color_range_update.values = [this.img_info.px_min, this.img_info.px_max];
+        // Calculate color_slider values
+        var color_slider = this.gui.params.color_slider;
+        color_slider_update = $.extend(true, color_slider_update, {
+            x_value: (this.img_info.px_max+this.img_info.px_min)/2 - color_slider.xmin,
+            y_value: (this.img_info.px_max-this.img_info.px_min)/2
+        });
+        update.px_min = this.img_info.px_min;
+        update.px_max = this.img_info.px_max;
+    };
+    
+    // All current updates will cause the background image to change
+    color_slider_update.background = Toyz.Viewer.map_image(
+        this.data, 
+        this.gui.params.color_slider.$canvas[0].getContext('2d'),
+        this.img_info
+    );
+    
+    if(Object.keys(color_slider_update).length>0){
+        update.color_slider = color_slider_update;
+    };
+    if(Object.keys(colorbar_update).length>0){
+        update.colorbar = colorbar_update;
+    };
+    if(Object.keys(color_range_update).length>0){
+        update.color_range = color_range_update;
+    };
+    // Update all of the params
+    this.gui.set_params({
+        values: update,
+        change: false
+    });
+};
+Toyz.Viewer.Colorpad.prototype.change_image = function(options){
+    if(!options.hasOwnProperty('img_info')){
+        throw Error("img_info required to change image in Colorpad");
+    };
+    this.original_info = options.img_info;
+    this.update({img_info: options.img_info});
+    if(options.hasOwnProperty('set')){
+        this.set = options.set;
+    };
+};
+Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
+    if(!options.hasOwnProperty('$parent')){
+        throw Error("Must specify a parent element")
+    };
+    var $parent = options.$parent;
+    // Colorbar is the colorbar underneath the slider
+    var colorbar = new Toyz.Viewer.Colorbar({
+        width: Math.round(options.width),
+        height: 20,
+        img_info: this.img_info
+    });
+    var ctrls = {
+        type: 'div',
+        params: {
+            color_slider:{
+                type: 'slider2d',
+                div_class: 'viewer-colormap-ctrl',
+                width: options.width,
+                height: options.height,
+                xmin: this.img_info.px_min,
+                xmax: this.img_info.px_max,
+                ymin: 0,
+                ymax: (this.img_info.px_max-this.img_info.px_min)/2,
+                x_value: (this.img_info.px_max+this.img_info.px_min)/2 - this.img_info.px_min,
+                y_value: (this.img_info.px_max-this.img_info.px_min)/2,
+                x_name: 'bias',
+                y_name: 'contrast',
+                onupdate: function(slider2d, params){
+                    // If the cursor position was changed by the user, update the rest of the
+                    // fields
+                    this.update({
+                        img_info: {
+                            px_min: slider2d.xmin+Math.floor(slider2d.x_value-slider2d.y_value),
+                            px_max: slider2d.xmin+Math.ceil(slider2d.x_value+slider2d.y_value)
+                        }
+                    });
+                }.bind(this)
+            },
+            colorbar: colorbar,
+            data_range_div: {
+                type: 'div',
+                div_class: 'viewer-colormap-ctrl',
+                params: {
+                    xmin: {
+                        prop: {
+                            type: 'Number',
+                            value: this.img_info.px_min
+                        },
+                        div_css: {
+                            float: 'left'
+                        },
+                        func: {
+                            change: function(event){
+                                this.update({
+                                    xmin: Number(event.currentTarget.value)
+                                });
+                            }.bind(this)
+                        }
+                    },
+                    xmax: {
+                        prop: {
+                            type: 'Number',
+                            value: this.img_info.px_max
+                        },
+                        div_css: {
+                            float: 'right'
+                        },
+                        func: {
+                            change: function(event){
+                                this.update({
+                                    xmax: Number(event.currentTarget.value)
+                                });
+                            }.bind(this)
+                        }
+                    }
+                }
+            },
+            pixel_div: {
+                type: 'div',
+                div_class: 'viewer-colormap-ctrl',
+                params: {
+                    px_min: {
+                        lbl: 'Pixels values from',
+                        prop: {
+                            type: 'Number',
+                            value: this.img_info.px_min
+                        },
+                        div_css: {
+                            float: 'left'
+                        },
+                        func: {
+                            change: function(event){
+                                this.update({
+                                    img_info: {
+                                        px_min: Number(event.currentTarget.value)
+                                    }
+                                })
+                            }.bind(this)
+                        }
+                    },
+                    px_max: {
+                        lbl: ' to ',
+                        prop: {
+                            type: 'Number',
+                            value: this.img_info.px_max
+                        },
+                        div_css: {
+                            float: 'left'
+                        },
+                        func: {
+                            change: function(event){
+                                this.update({
+                                    img_info: {
+                                        px_max: Number(event.currentTarget.value)
+                                    }
+                                })
+                            }.bind(this)
+                        }
+                    }
+                }
+            },
+            color_range: {
+                type: 'slider',
+                div_class: 'viewer-colormap-ctrl',
+                options: {
+                    range: true,
+                    min: this.img_info.px_min,
+                    max: this.img_info.px_max,
+                    values: [this.img_info.px_min, this.img_info.px_max],
+                    slide: function(event, ui){
+                        this.update({
+                            img_info: {
+                                px_min: ui.values[0],
+                                px_max: ui.values[1]
+                            }
+                        })
+                    }.bind(this)
+                }
+            },
+            colormap_div: {
+                type: 'div',
+                div_class: 'viewer-colormap-ctrl',
+                params: {
+                    color_scale: {
+                        type: 'select',
+                        lbl: 'Color scale',
+                        options: ['linear', 'log'],
+                        div_css: {
+                            float: 'left'
+                        },
+                        default_val: this.img_info.color_scale,
+                        func: {
+                            change: function(event){
+                                this.update({
+                                    img_info: {
+                                        color_scale: event.currentTarget.value
+                                    }
+                                })
+                            }.bind(this)
+                        }
+                    },
+                    invert_color: {
+                        lbl: 'invert scale',
+                        prop: {
+                            type: 'checkbox',
+                            checked: this.img_info.invert_color
+                        },
+                        div_css: {
+                            float: 'right'
+                        },
+                        func: {
+                            change: function(event){
+                                var params = this.gui.get();
+                                this.update({
+                                    img_info: {
+                                        invert_color: params.invert_color
+                                    }
+                                })
+                            }.bind(this)
+                        }
+                    }
+                }
+            }
+        }
+    };
+    var gui = new Toyz.Gui.Gui({
+        params: ctrls,
+        $parent: $parent
+    });
+    return gui;
+}
