@@ -387,7 +387,7 @@ def get_toyz_module(toyz_settings, user_id, module):
     else:
         raise ToyzJobError(module+" not found in " +user_id+"'s approved modules")
 
-def run_job(toyz_settings, session_vars, pipe, job):
+def run_job(toyz_settings, pipe, job):
     """
     Loads modules and runs a job (function) sent from a client. Any errors will be trapped 
     and flagged as a :py:class:`toyz.utils.errors.ToyzError` and sent back to the client who 
@@ -404,11 +404,6 @@ def run_job(toyz_settings, session_vars, pipe, job):
         toyz_settings ( :py:class:`toyz.utils.core.ToyzSettings` ):
             - Settings for the application runnning the job (may be needed to load user info 
               or check permissions)
-        session_vars: *dict*
-            - Global variables for the current session. This allows large files to be 
-              stored in memory instead of neeing to be reloaded by each job, but add
-              new global variables with caution. If multiple users have sessions running
-              this can quickly take up a lot of memory.
         pipe: *multiprocessing.Pipe*
             - Communication with the parent process.
             - It may be useful to pass progress notifications to a client as a job
@@ -499,7 +494,7 @@ def run_job(toyz_settings, session_vars, pipe, job):
             ToyzJobError(job['module']+" not found in " + 
                 job['id']['user_id']+"'s approved modules")
         task = getattr(toyz_module, job["task"])
-        response = task(toyz_settings, session_vars, pipe, job['id'], job['parameters'])
+        response = task(toyz_settings, pipe, job['id'], job['parameters'])
     except ToyzJobError as error:
         response = {
             'id':"ERROR",

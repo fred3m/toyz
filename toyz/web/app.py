@@ -283,13 +283,12 @@ def job_process(pipe):
     Process created for the websocket. When a job is received from the Toyz
     Application it is run in this process and a response is sent.
     """
-    session_vars = {}
     while True:
         try:
             msg = pipe.recv()    # Read from the output pipe and do nothing
             job = msg['job']
             toyz_settings = msg['toyz_settings']
-            result = core.run_job(toyz_settings, session_vars, pipe, job)
+            result = core.run_job(toyz_settings, pipe, job)
             pipe.send(result)
         except EOFError:
             break
