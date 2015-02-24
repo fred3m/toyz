@@ -410,7 +410,7 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
     elif data_type == 'datapoint':
         return {
             'id': 'datapoint',
-            'px_value': data.tolist()[kwargs['y']][kwargs['x']]
+            'px_value': float(data[kwargs['y'],kwargs['x']])
         }
     else:
         raise ToyzJobError("Loading that data type has not been implemented yet")
