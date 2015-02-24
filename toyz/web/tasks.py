@@ -691,7 +691,7 @@ def get_img_data(toyz_settings, tid, params):
     Get data from an image or FITS file
     """
     import toyz.web.viewer as viewer
-    core.check4keys(params, ['data_type', 'file_info', 'img_info', 'x0', 'xf', 'y0', 'yf'])
+    core.check4keys(params, ['data_type', 'file_info', 'img_info'])
     
     response = viewer.get_img_data(**params)
     return response

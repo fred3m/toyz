@@ -560,7 +560,6 @@ Toyz.Viewer.Controls = function(options){
                                         for(var i in file_info.images){
                                             file_info.images[i].colormap = colormap;
                                             delete file_info.images[i].tiles;
-                                            console.log('file_info in', file_info);
                                         };
 
                                         this.get_img_info(this.viewer_frame, file_info.frame);
@@ -594,18 +593,9 @@ Toyz.Viewer.Controls = function(options){
                     file_info.images[file_info.frame].hasOwnProperty('height')
                 ){
                     var img_info = file_info.images[file_info.frame];
-                    if(typeof event.offsetX === "undefined" || 
-                        typeof event.offsetY === "undefined"
-                    ) {
-                       var targetOffset = $(event.target).offset();
-                       event.offsetX = event.pageX - targetOffset.left;
-                       event.offsetY = event.pageY - targetOffset.top;
-                    };
-                    var x = event.target.offsetLeft+event.offsetX;
-                    var y = event.target.offsetTop+event.offsetY;
-                    var xy = this.get_coords(x, y, img_info);
-                    x = xy[0];
-                    y = xy[1];
+                    var xy = this.extract_coords(event, img_info);
+                    var x = xy[0];
+                    var y = xy[1];
                     var coords = 
                         (Math.round(x/img_info.scale*1000)/1000).toString()+','
                         +(Math.round(y/img_info.scale*1000)/1000).toString();
@@ -628,10 +618,42 @@ Toyz.Viewer.Controls = function(options){
         type: 'lbl',
         lbl: 'Pixel Value: ',
         input_class: 'viewer-ctrl-info-btn',
+        pixel_timeout: undefined,
+        get_datapoint: function(event){
+            var ctrl = this.ctrl_panel.gui.params;
+            var file_info = this.frames[this.viewer_frame].file_info;
+            if(file_info!==undefined){
+                var img_info = file_info.images[file_info.frame];
+                var xy = this.extract_coords(event, img_info);
+                var x = Math.round(xy[0]/img_info.scale);
+                var y = Math.round(xy[1]/img_info.scale);
+                this.workspace.websocket.send_task({
+                    task: {
+                        module: 'toyz.web.tasks',
+                        task: 'get_img_data',
+                        parameters: {
+                            data_type: 'datapoint',
+                            file_info: file_info,
+                            img_info: img_info,
+                            x: x,
+                            y: y
+                        }
+                    },
+                    callback: function(result){
+                        this.pixel_val.$input.text(result.px_value);
+                    }.bind(ctrl)
+                });
+            };
+        },
         events: {
-            rx_datapoint: function(event){
+            mousemove: function(event){
+                // Update the pixel value every 200ms
                 var ctrl = this.ctrl_panel.gui.params;
-                this.pixel_val.$input.val(event.px_val);
+                clearTimeout(ctrl.pixel_val.pixel_timeout);
+                ctrl.pixel_val.pixel_timeout = setTimeout(function(){
+                    ctrl.pixel_val.pixel_timeout = undefined;
+                    ctrl.pixel_val.get_datapoint.call(this, event);
+                }.bind(this), 100);
             }.bind(options.parent)
         }
     };
@@ -1259,6 +1281,19 @@ Toyz.Viewer.Contents.prototype.set_scale = function(viewer_frame, scale){
     };
     this.update(viewer_frame, 'scale', img_info.viewer.scale);
 };
+Toyz.Viewer.Contents.prototype.extract_coords = function(event, img_info){
+    if(typeof event.offsetX === "undefined" || 
+        typeof event.offsetY === "undefined"
+    ) {
+       var targetOffset = $(event.target).offset();
+       event.offsetX = event.pageX - targetOffset.left;
+       event.offsetY = event.pageY - targetOffset.top;
+    };
+    var x = event.target.offsetLeft+event.offsetX;
+    var y = event.target.offsetTop+event.offsetY;
+    var xy = this.get_coords(x, y, img_info);
+    return xy;
+}
 Toyz.Viewer.Contents.prototype.get_coords = function(x, y, img_info){
     if(img_info.invert_y===true){
         y = img_info.height*img_info.scale-y;

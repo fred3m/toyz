@@ -256,6 +256,7 @@ def get_tile_info(file_info, img_info):
                     tile['left'] = xf
                     tile['right'] = x0
                 new_tiles[tile_idx] = tile
+    print('viewer:', img_info['viewer'])
     print('new tiles', new_tiles.keys())
     return all_tiles, new_tiles
 
@@ -357,11 +358,11 @@ def create_tile(file_info, img_info, tile_info):
         return False, ''
     return True, tile_info
 
-def get_img_data(data_type, file_info, img_info, x0, xf, y0, yf, **kwargs):
+def get_img_data(data_type, file_info, img_info, **kwargs):
     """
     Get data from an image or FITS file
     """
-    if data_type == 'data':
+    if data_type == 'data' or data_type == 'datapoint':
         if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
             pyfits = import_fits()
             hdulist = pyfits.open(file_info['filepath'])
@@ -377,15 +378,22 @@ def get_img_data(data_type, file_info, img_info, x0, xf, y0, yf, **kwargs):
             import numpy as np
             img = Image.open(file_info['filepath'])
             data = np.array(img)
-        x0 = max(0, x0)
-        y0 = max(0, y0)
-        xf = min(data.shape[1], xf)
-        yf = min(data.shape[0], yf)
+    
+    if data_type == 'data':
+        x0 = max(0, kwargs['x0'])
+        y0 = max(0, kwargs['y0'])
+        xf = min(data.shape[1], kwargs['xf'])
+        yf = min(data.shape[0], kwargs['yf'])
         data = data[y0:yf, x0:xf]
         
         return {
             'id': 'data',
             'data': data.tolist()
+        }
+    elif data_type == 'datapoint':
+        return {
+            'id': 'datapoint',
+            'px_value': data.tolist()[kwargs['y']][kwargs['x']]
         }
     else:
         raise ToyzJobError("Loading that data type has not been implemented yet")
