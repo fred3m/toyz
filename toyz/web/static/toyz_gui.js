@@ -197,6 +197,8 @@ Toyz.Gui.Param.prototype.set_param = function(value, options){
     };
     if(this.$input.prop('type')=='checkbox'){
         this.$input.prop('checked', val);
+    }else if(this.type=='lbl'){
+        this.$input.text(val);
     }else{
         this.$input.val(val);
     };

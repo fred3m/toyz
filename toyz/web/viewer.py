@@ -82,6 +82,7 @@ def get_file_info(file_info):
         file_info['img_type'] == 'image'
     
     if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
+        file_info['file_type'] = 'img_array'
         hdulist = get_file(file_info)
         file_info['hdulist'] = [hdu.__class__.__name__ for hdu in hdulist]
         if 'images' not in file_info:
@@ -91,6 +92,7 @@ def get_file_info(file_info):
         if len(file_info['images']) == 0:
             raise ToyzJobError("FITS file does not contain any recognized image hdu's")
     else:
+        file_info['file_type'] = 'img'
         file_info['images'] = {'0':{'frame': '0'}}
     
     file_defaults = {
@@ -381,6 +383,7 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
     """
     Get data from an image or FITS file
     """
+    print('kwargs', kwargs)
     if data_type == 'data' or data_type == 'datapoint':
         if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
             hdulist = get_file(file_info)
@@ -402,9 +405,14 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
         xf = min(data.shape[1], kwargs['xf'])
         yf = min(data.shape[0], kwargs['yf'])
         data = data[y0:yf, x0:xf]
-        
+        print('data shape', data.shape)
         return {
             'id': 'data',
+            'min': float(data.min()),
+            'max': float(data.max()),
+            'mean': float(data.mean()),
+            'median': float(np.median(data)),
+            'std_dev': float(np.std(data)),
             'data': data.tolist()
         }
     elif data_type == 'datapoint':

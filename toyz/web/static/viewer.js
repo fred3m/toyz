@@ -495,6 +495,24 @@ Toyz.Viewer.Controls = function(options){
         func: {
             click: function(event){
                 this.change_active_tool('hist', event.currentTarget);
+                Toyz.Workspace.load_api_dependencies(
+                    'highcharts',
+                    'Toyz.API.Highcharts',
+                    '/static/web/static/api/highcharts.js',
+                    function(){
+                        if(!this.hasOwnProperty('hist_dialog')){
+                            var file_info = this.frames[this.viewer_frame].file_info;
+                            var img_info = file_info.images[file_info.frame];
+                            this.hist_dialog = new Toyz.Viewer.HistogramDialog({
+                                parent: this,
+                                cursor: {
+                                    x: img_info.x_center,
+                                    y: img_info.y_center
+                                }
+                            })
+                        };
+                    }.bind(this)
+                )
             }.bind(options.parent)
         },
         prop: {
@@ -502,6 +520,25 @@ Toyz.Viewer.Controls = function(options){
             title: 'get histogram',
             value: ''
         },
+        events: {
+            mousedown: function(event){
+                if(this.tools.active_tool=='hist'){
+                    var file_info = this.frames[this.viewer_frame].file_info;
+                    var img_info = file_info.images[file_info.frame];
+                    var x = event.target.offsetLeft+event.offsetX;
+                    var y = event.target.offsetTop+event.offsetY;
+                    var xy = this.extract_coords(event, img_info);
+                    var x = xy[0];
+                    var y = xy[1];
+                    this.hist_dialog.update({
+                        cursor: {
+                            x: x,
+                            y: y
+                        }
+                    });
+                };
+            }.bind(options.parent)
+        }
     };
     this.surface = {
         input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-surface',
@@ -622,7 +659,7 @@ Toyz.Viewer.Controls = function(options){
         get_datapoint: function(event){
             var ctrl = this.ctrl_panel.gui.params;
             var file_info = this.frames[this.viewer_frame].file_info;
-            if(file_info!==undefined){
+            if(file_info!==undefined && file_info.file_type=='img_array'){
                 var img_info = file_info.images[file_info.frame];
                 var xy = this.extract_coords(event, img_info);
                 var x = Math.round(xy[0]/img_info.scale);
@@ -1765,7 +1802,8 @@ Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
                 xmax: this.img_info.colormap.px_max,
                 ymin: 0,
                 ymax: (this.img_info.colormap.px_max-this.img_info.colormap.px_min)/2,
-                x_value: (this.img_info.colormap.px_max+this.img_info.colormap.px_min)/2 - this.img_info.colormap.px_min,
+                x_value: (this.img_info.colormap.px_max+this.img_info.colormap.px_min)/2 
+                            - this.img_info.colormap.px_min,
                 y_value: (this.img_info.colormap.px_max-this.img_info.colormap.px_min)/2,
                 x_name: 'bias',
                 y_name: 'contrast',
@@ -1932,4 +1970,248 @@ Toyz.Viewer.Colorpad.prototype.get_gui = function(options){
         $parent: $parent
     });
     return gui;
-}
+};
+
+Toyz.Viewer.Histogram = function(options){
+    if(!options.hasOwnProperty('settings')){
+        options = {settings: options};
+    };
+    options = $.extend(true,{
+        settings: {
+            chart: {
+                type: 'column',
+                width: 400,
+                height: 300
+            },
+            title: {
+                text: 'Pixel values'
+            },
+            xAxis: {
+                text: 'Pixel value',
+                labels: {
+                    rotation: -45
+                }
+            },
+            yAxis: {
+                text: 'Number of Points'
+            },
+            series: [{}]
+        },
+        bin_type: 'columns',
+        columns: 20,
+    }, options);
+    console.log('options', options);
+    this.$div = $('<div/>').addClass('viewer-hist-div');
+    for(var opt in options){
+        this[opt] = options[opt];
+    };
+    this.$div.highcharts(this.settings);
+};
+Toyz.Viewer.Histogram.prototype.update = function(update){
+    for(var u in update){
+        this[u] = update[u];
+    };
+    this.build_histogram();
+    this.$div.highcharts(this.settings);
+    console.log('highcharts settings', this.settings);
+    console.log('histogram', this);
+};
+Toyz.Viewer.Histogram.prototype.build_histogram = function(){
+    var bins = [];
+    if(this.bin_type == 'columns'){
+        var range = this.dataset.max-this.dataset.min;
+        console.log('columns', this.columns);
+        bins = new Array(this.columns);
+        console.log('bin length', bins.length);
+        this.settings.xAxis.categories = new Array(this.columns);
+        for(var i=0; i<bins.length; i++){
+            bins[i]=0;
+        };
+        for(var i=0; i<this.dataset.data.length; i++){
+            for(var j=0; j<this.dataset.data[i].length; j++){
+                var bin = Math.round(this.columns*(this.dataset.data[i][j]-this.dataset.min)/range);
+                if(bin<0){
+                    bin = 0;
+                }else if(bin>bins.length-1){
+                    bin = bins.length-1;
+                };
+                bins[bin]+=1;
+            }
+        };
+        this.settings.series[0].data = [];
+        for(var i=0; i<bins.length; i++){
+            var bin_value = Math.round(i*range/this.columns+this.dataset.min);
+            this.settings.series[0].data.push([bin_value, bins[i]]);
+        };
+    }else{
+        throw Error("Bin type is not supported yet");
+    };
+    return bins;
+};
+
+Toyz.Viewer.HistogramDialog = function(options){
+    if(!options.hasOwnProperty('parent')){
+        throw Error("HistogramDialog must be initialized with a parent viewer");
+    };
+    this.parent = options.parent;
+    options = $.extend(true, {
+        min: 1,
+        max: 100,
+        step: 1,
+        value: 10,
+        chart: {
+            settings:{},
+            bin_type: 'columns',
+            columns: 20,
+            width: 400,
+            height: 300
+        },
+        cursor: {
+            x: 0,
+            y: 0
+        }
+    }, options);
+    this.cursor = options.cursor;
+    
+    this.$div = $('<div/>');
+    
+    var elements = {
+        type: 'div',
+        params: {
+            hist: new Toyz.Viewer.Histogram(options.chart),
+            width: {
+                lbl: 'area width',
+                prop: {
+                    value: options.value,
+                    type: 'Number'
+                },
+                func: {
+                    change: function(event){
+                        this.update({
+                            width: Number(event.currentTarget.value)
+                        })
+                    }.bind(this)
+                }
+            },
+            bins: {
+                lbl: 'number of bins',
+                prop: {
+                    type: 'Number',
+                    value: options.chart.columns
+                },
+                func: {
+                    change: function(event){
+                        this.update({
+                            hist: {
+                                columns: Number(event.currentTarget.value)
+                            }
+                        })
+                    }.bind(this)
+                }
+            },
+            stats: {
+                type: 'div',
+                legend: 'Stats',
+                params: {
+                    mean: {
+                        lbl: 'mean',
+                        type: 'lbl'
+                    },
+                    std_dev: {
+                        lbl: '\u03C3',
+                        type: 'lbl'
+                    },
+                    median: {
+                        lbl: 'median',
+                        type: 'lbl'
+                    },
+                    min: {
+                        lbl: 'min',
+                        type: 'lbl'
+                    },
+                    max: {
+                        lbl: 'max',
+                        type: 'lbl'
+                    }
+                }
+            }
+        }
+    };
+    
+    this.gui = new Toyz.Gui.Gui({
+        params: elements,
+        $parent: this.$div
+    });
+    
+    this.$div.dialog($.extend(true, {
+        resizable: true,
+        draggable: true,
+        autoOpen: false,
+        modal: false,
+        width: 'auto',//options.chart.width+20,
+        title: 'Pixel Values',
+        maxHeight: $(window).height(),
+        position: {
+            my: "left top",
+            at: "left top",
+            of: $(window)
+        },
+        buttons: {}
+    },options.dialog)).css("font-size", "12px");
+};
+Toyz.Viewer.HistogramDialog.prototype.update = function(update){
+    console.log('hist update');
+    var update_hist = false;
+    var update_data = false;
+    if(update.hasOwnProperty('width') || update.hasOwnProperty('data')){
+        update_data = true;
+    };
+    if(update.hasOwnProperty('hist')){
+        this.gui.params.hist.update(update.hist)
+    }else if(update_hist){
+        this.gui.params.hist.update({});
+    };
+    if(update.hasOwnProperty('cursor')){
+        this.cursor = update.cursor;
+        this.$div.dialog('open');
+        update_data = true;
+    };
+    if(update_data===true){
+        console.log('updating data');
+        var file_info = $.extend(true, {},this.parent.frames[this.parent.viewer_frame].file_info);
+        var img_info = $.extend(true, {}, file_info.images[file_info.frame]);
+        delete file_info.images;
+        delete img_info.tiles;
+        var half_width = Math.floor(this.gui.get().width)/2;
+        console.log('cursor', this.cursor);
+        console.log('half_width', half_width);
+        this.parent.workspace.websocket.send_task({
+            task: {
+                module: 'toyz.web.tasks',
+                task: 'get_img_data',
+                parameters: {
+                    file_info: file_info,
+                    img_info: img_info,
+                    data_type: 'data',
+                    x0: this.cursor.x-half_width,
+                    xf: this.cursor.x+half_width,
+                    y0: this.cursor.y-half_width,
+                    yf: this.cursor.y+half_width
+                }
+            },
+            callback: function(result){
+                console.log('result', result);
+                this.gui.params.hist.update({
+                    dataset: $.extend(true,{}, result)
+                });
+                delete result.data
+                delete result.id
+                // Update the statistics
+                this.gui.set_params({
+                    change: false,
+                    values: result
+                });
+            }.bind(this)
+        })
+    };
+};
