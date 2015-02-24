@@ -11,7 +11,8 @@ import os.path
 import shutil
 import importlib
 import socket
-from futures import ProcessPoolExecutor
+import multiprocessing
+#from futures import ProcessPoolExecutor
 
 import tornado.ioloop
 import tornado.options
@@ -276,7 +277,24 @@ class AuthToyz3rdPartyHandler(AuthHandler, Toyz3rdPartyHandler):
     @tornado.web.authenticated
     def get(self, path):
         Toyz3rdPartyHandler.get(self, path)
-        
+
+def job_process(pipe):
+    """
+    Process created for the websocket. When a job is received from the Toyz
+    Application it is run in this process and a response is sent.
+    """
+    session_vars = {}
+    while True:
+        try:
+            msg = pipe.recv()    # Read from the output pipe and do nothing
+            job = msg['job']
+            toyz_settings = msg['toyz_settings']
+            result = core.run_job(toyz_settings, session_vars, pipe, job)
+            pipe.send(result)
+        except EOFError:
+            break
+    print('job_process finished')
+
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     """
     Websocket that handles jobs sent to the server from clients
@@ -321,8 +339,18 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                 'traceback':''
             })
         session_id = decoded['id']['session_id']
-        
-        self.application.process_job(decoded)
+        self.job_pipe.send({
+            'job': decoded,
+            'toyz_settings': self.application.toyz_settings
+        })
+    
+    def send_response(self, remote_pipe, events, error=None):
+        if events & tornado.ioloop.IOLoop.READ:
+            result = remote_pipe.recv()
+            #print("Result:", result)
+            self.write_message(result['response'])
+        elif events & tornado.ioloop.IOLoop.ERROR:
+            print("ERROR: ", error)    
 
 class MainHandler(ToyzHandler, tornado.web.RequestHandler):
     """
@@ -461,6 +489,16 @@ class ToyzWebApp(tornado.web.Application):
             'path': os.path.join(shortcuts['temp'], session_id),
         }
         core.create_paths(websocket.session['path'])
+        
+        #initialize process for session jobs
+        websocket.job_pipe, remote_pipe = multiprocessing.Pipe()
+        websocket.process = multiprocessing.Process(
+            target = job_process, args=(remote_pipe,))
+        websocket.process.start()
+        process_events = (tornado.ioloop.IOLoop.READ | tornado.ioloop.IOLoop.ERROR)
+        tornado.ioloop.IOLoop.current().add_handler(
+            websocket.job_pipe, websocket.send_response, process_events)
+        
         websocket.write_message({
             'id': 'initialize',
             'user_id': user_id,
@@ -482,69 +520,6 @@ class ToyzWebApp(tornado.web.Application):
             shutil.rmtree(shortcuts['temp'])
         
         print('active users remaining:', self.user_sessions.keys())
-    
-    def process_job(self, msg):
-        """
-        Currently all jobs are run directly from the web app. Later a job server
-        might be implemented that will maintain a queue of long duration jobs, so this 
-        function will be used to tag the batch jobs and send them to the job application.
-        
-        Parameters
-            - msg (*dict*): Message sent from web client (see 
-              :py:func:`toyz.utils.core.run_job` for the format of the msg)
-        """
-        if 'batch' in msg:
-            # TODO write code to run a batch job, or send it to a batch
-            # server
-            pass
-        else:
-            result = self.run_job(msg)
-            tornado.ioloop.IOLoop.instance().add_future(result, self.respond)
-    
-    @tornado.gen.coroutine
-    def run_job(self, msg):
-        """
-        Run a job by opening a new process (possible on a new cpu) and passing the
-        job and parameters to the process. This function is actually a generator of a
-        `Future()` object, so the exception `tornado.gen.Return` is raised to return
-        the result.
-        
-        In the future this function will be modified to be threaded for certain
-        types of web applications, allowing variables to be passed more easily and
-        stored in work environments when that type of usage is prefereable.
-        
-        Parameters
-            - msg (*dict*): Message sent from web client (see 
-              :py:func:`toyz.utils.core.run_job` for the format of the msg)
-            
-        Returns
-            - result (*future* containing a *dict* ): Message to send back to the user. 
-              If there is no response, then ``result={}``
-        """
-        pool = ProcessPoolExecutor(1)
-        result = yield pool.submit(core.run_job, self.toyz_settings, msg)
-        pool.shutdown()
-        raise tornado.gen.Return(result)
-    
-    def respond(self, response):
-        """
-        Once a job has completed, including jobs run by an external job application, 
-        send the response to the user. Also, update any objects that need to be updated.
-        
-        Parameters
-            - response (*dict* ): Message to send to the user.
-              See :py:func:`toyz.utils.core.run_job` for the format of the msg.
-        """
-        result = response.result()
-        # Check to see if the application has any fields that need to be updated
-        if 'update_app' in result:
-            for prop in result['update_app']:
-                self.update(prop)
-            del result['update_app']
-        # respond to the client
-        if result != {}:
-            session = self.user_sessions[result['id']['user_id']][result['id']['session_id']]
-            session.write_message(result['response'])
     
     def update(self, attr):
         """
