@@ -1,4 +1,3 @@
-
 # Job tasks sent from web client
 # Copyright 2015 by Fred Moolekamp
 # License: LGPLv3
@@ -15,9 +14,10 @@ from toyz.utils import core
 from toyz.utils import file_access
 from toyz.utils import db as db_utils
 from toyz.utils.errors import ToyzJobError
+from toyz.web import session_vars
 import six
 
-def load_user_settings(toyz_settings, tid, params):
+def load_user_settings(toyz_settings, pipe, tid, params):
     """
     Load settings for a given user
     
@@ -95,7 +95,7 @@ def load_user_settings(toyz_settings, tid, params):
         })
     return response
 
-def load_user_info(toyz_settings, tid, params):
+def load_user_info(toyz_settings, pipe, tid, params):
     """
     Load info for a given user from the database
     
@@ -135,7 +135,7 @@ def load_user_info(toyz_settings, tid, params):
     
     return response
 
-def save_user_info(toyz_settings, tid, params):
+def save_user_info(toyz_settings, pipe, tid, params):
     """
     Save a users info. If any admin settings are being changed, ensures that the user
     is in the admin group.
@@ -194,7 +194,7 @@ def save_user_info(toyz_settings, tid, params):
     
     return response
 
-def update_toyz_settings(toyz_settings, tid, params):
+def update_toyz_settings(toyz_settings, pipe, tid, params):
     """
     Update the toyz settings for the application
     """
@@ -230,7 +230,7 @@ def update_toyz_settings(toyz_settings, tid, params):
     
     return response
 
-def add_new_user(toyz_settings, tid, params):
+def add_new_user(toyz_settings, pipe, tid, params):
     """
     Add a new user to the toyz application.
     
@@ -268,7 +268,7 @@ def add_new_user(toyz_settings, tid, params):
     }
     return response
 
-def change_pwd(toyz_settings, tid, params):
+def change_pwd(toyz_settings, pipe, tid, params):
     """
     Change a users password.
     
@@ -308,7 +308,7 @@ def change_pwd(toyz_settings, tid, params):
     }
     return response
 
-def reset_pwd(toyz_settings, tid, params):
+def reset_pwd(toyz_settings, pipe, tid, params):
     """
     Reset a users password
     """
@@ -329,7 +329,7 @@ def reset_pwd(toyz_settings, tid, params):
     }
     return response
 
-def load_directory(toyz_settings, tid, params):
+def load_directory(toyz_settings, pipe, tid, params):
     """
     Used by the file browser to load the folders and files in a given path.
     
@@ -411,7 +411,7 @@ def load_directory(toyz_settings, tid, params):
     #print('path info:', response)
     return response
 
-def create_paths(toyz_settings, tid, params):
+def create_paths(toyz_settings, pipe, tid, params):
     """
     Creates a new path on the server (if it does not already exist).
     
@@ -443,7 +443,7 @@ def create_paths(toyz_settings, tid, params):
     }
     return response
 
-def get_workspace_info(toyz_settings, tid, params):
+def get_workspace_info(toyz_settings, pipe, tid, params):
     """
     Get I/O settings for different packages (pure python, numpy, pandas, etc) and
     other settings for the current users workspaces
@@ -510,7 +510,7 @@ def get_workspace_info(toyz_settings, tid, params):
     
     return response
 
-def load_data_file(toyz_settings, tid, params):
+def load_data_file(toyz_settings, pipe, tid, params):
     """
     Load a data file given a set of parameters from the browser, initialized by
     ``get_io_info``.
@@ -532,7 +532,7 @@ def load_data_file(toyz_settings, tid, params):
     #print('response', response)
     return response
 
-def save_workspace(toyz_settings, tid, params):
+def save_workspace(toyz_settings, pipe, tid, params):
     """
     Save a workspace for later use
     """
@@ -555,7 +555,7 @@ def save_workspace(toyz_settings, tid, params):
     
     return response
 
-def load_workspace(toyz_settings, tid, params):
+def load_workspace(toyz_settings, pipe, tid, params):
     """
     Load a workspace
     """
@@ -572,7 +572,7 @@ def load_workspace(toyz_settings, tid, params):
     
     return response
 
-def get_file_info(toyz_settings, tid, params):
+def get_file_info(toyz_settings, pipe, tid, params):
     """
     Get information about an image file
     """
@@ -589,7 +589,7 @@ def get_file_info(toyz_settings, tid, params):
     img_info = file_info['images'][file_info['frame']]
     img_info.update(params['img_info'])
     # Get the tile map for the first image
-    result = get_img_info(toyz_settings, tid, {
+    result = get_img_info(toyz_settings, pipe, tid, {
         'file_info': file_info,
         'img_info': img_info
     })
@@ -602,7 +602,7 @@ def get_file_info(toyz_settings, tid, params):
     }
     return response
 
-def get_img_info(toyz_settings, tid, params):
+def get_img_info(toyz_settings, pipe, tid, params):
     """
     Map a large image into a set of tiles that make up the larger image
     """
@@ -621,7 +621,7 @@ def get_img_info(toyz_settings, tid, params):
     params['img_info']['save_path'] = save_path
     img_info = viewer.get_img_info(params['file_info'], params['img_info'])
     
-    result = get_tile_info(toyz_settings, tid, {
+    result = get_tile_info(toyz_settings, pipe, tid, {
         'file_info': params['file_info'],
         'img_info': img_info
     })
@@ -634,7 +634,7 @@ def get_img_info(toyz_settings, tid, params):
     print('************************************************')
     return response
 
-def get_tile_info(toyz_settings, tid, params):
+def get_tile_info(toyz_settings, pipe, tid, params):
     """
     Get new tiles that need to be loaded
     """
@@ -660,7 +660,7 @@ def get_tile_info(toyz_settings, tid, params):
     }
     return response
 
-def get_img_tile(toyz_settings, tid, params):
+def get_img_tile(toyz_settings, pipe, tid, params):
     """
     Load a tile from a larger image and notify the client it has been created
     """
@@ -686,7 +686,7 @@ def get_img_tile(toyz_settings, tid, params):
     
     return response
 
-def get_img_data(toyz_settings, tid, params):
+def get_img_data(toyz_settings, pipe, tid, params):
     """
     Get data from an image or FITS file
     """

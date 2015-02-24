@@ -5,7 +5,18 @@ from collections import OrderedDict
 from toyz.utils.errors import ToyzJobError
 import math
 import os
+import numpy as np
 from toyz.utils import core
+from toyz.web import session_vars
+
+# Set the default values for the sessions global variables if they have not already been set
+viewer_variables = {
+    'filepath': None,
+    'img_file': None,
+}
+for v in viewer_variables:
+    if not hasattr(session_vars, v):
+        setattr(session_vars, v, viewer_variables[v])
 
 # It may be desirabe in the future to allow users to choose what type of image they
 # want to send to the client. For now the default is sent to jpg, since it is the
@@ -40,6 +51,24 @@ def import_fits():
                 "You must have astropy or pyfits installed to view FITS images")
     return pyfits
 
+def get_file(file_info):
+    """
+    If the image has already been loaded into memory, access it here.
+    Otherwise, store the image for later use
+    """
+    if session_vars.filepath == file_info['filepath']:
+        img_file = session_vars.img_file
+    else:
+        print('loading', file_info['filepath'])
+        if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
+            pyfits = import_fits()
+            img_file = pyfits.open(file_info['filepath'])
+        else:
+            img_file = Image.open(file_info['filepath'])
+        session_vars.filepath = file_info['filepath']
+        session_vars.img_file = img_file
+    return img_file
+
 def get_file_info(file_info):
     file_split = file_info['filepath'].split('.')
     file_info['filename'] = os.path.basename(file_split[0])
@@ -53,10 +82,7 @@ def get_file_info(file_info):
         file_info['img_type'] == 'image'
     
     if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
-        pyfits = import_fits()
-        import numpy as np
-        
-        hdulist = pyfits.open(file_info['filepath'])
+        hdulist = get_file(file_info)
         file_info['hdulist'] = [hdu.__class__.__name__ for hdu in hdulist]
         if 'images' not in file_info:
             file_info['images'] = OrderedDict(
@@ -109,9 +135,7 @@ def get_best_fit(data_width, data_height, img_viewer):
 
 def get_img_info(file_info, img_info):
     if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
-        pyfits = import_fits()
-        import numpy as np
-        hdulist = pyfits.open(file_info['filepath'])
+        hdulist = get_file(file_info)
         data = hdulist[int(img_info['frame'])].data
         height, width = data.shape
         
@@ -139,9 +163,7 @@ def get_img_info(file_info, img_info):
                 "You must have PIL (Python Imaging Library) installed to "
                 "open files of this type"
             )
-        import numpy as np
-        
-        img = Image.open(file_info['filepath'])
+        img = get_file(file_info)
         img_info['colormap'] = {}
         width, height = img.size
     img_info['width'] = width
@@ -261,7 +283,6 @@ def get_tile_info(file_info, img_info):
     return all_tiles, new_tiles
 
 def scale_data(file_info, img_info, tile_info, data):
-    import numpy as np
     if img_info['scale']==1:
         data = data[tile_info['y0_idx']:tile_info['yf_idx'],
             tile_info['x0_idx']:tile_info['xf_idx']]
@@ -305,15 +326,13 @@ def create_tile(file_info, img_info, tile_info):
         )
     
     if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
-        pyfits = import_fits()
-        import numpy as np
         try:
             from matplotlib import cm as cmap
             from matplotlib.colors import Normalize, LinearSegmentedColormap
         except ImportError:
             raise ToyzJobError("You must have matplotlib installed to load FITS images")
         
-        hdulist = pyfits.open(file_info['filepath'])
+        hdulist = get_file(file_info)
         data = hdulist[int(img_info['frame'])].data
         # If no advanced resampling algorithm is used, scale the data as quickly as possible.
         # Otherwise crop the data.
@@ -342,7 +361,7 @@ def create_tile(file_info, img_info, tile_info):
                 (tile_info['width'], tile_info['height']), 
                 getattr(Image, file_info['resampling']))
     else:
-        img = Image.open(file_info['filepath'])
+        img = get_file(file_info)
         img = img.crop((
             tile_info['x0_idx'], tile_info['y0_idx'], 
             tile_info['xf_idx'], 
@@ -364,8 +383,7 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
     """
     if data_type == 'data' or data_type == 'datapoint':
         if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
-            pyfits = import_fits()
-            hdulist = pyfits.open(file_info['filepath'])
+            hdulist = get_file(file_info)
             data = hdulist[int(img_info['frame'])].data
         else:
             try:
@@ -375,8 +393,7 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
                     "You must have PIL (Python Imaging Library) installed to "
                     "open files of this type"
                 )
-            import numpy as np
-            img = Image.open(file_info['filepath'])
+            img = get_file(file_info)
             data = np.array(img)
     
     if data_type == 'data':
@@ -393,7 +410,7 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
     elif data_type == 'datapoint':
         return {
             'id': 'datapoint',
-            'px_value': data.tolist()[kwargs['y']][kwargs['x']]
+            'px_value': float(data[kwargs['y'],kwargs['x']])
         }
     else:
         raise ToyzJobError("Loading that data type has not been implemented yet")
