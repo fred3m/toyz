@@ -687,56 +687,14 @@ Toyz.Viewer.Controls = function(options){
             }.bind(options.parent)
         }
     };
-    this.physical_coords = {
-        type: 'lbl',
-        lbl: 'Physical Coords: ',
-        input_class: 'viewer-ctrl-info-btn viewer-ctrl-info-coord-div',
-        events: {
-            mousemove: function(event){
-                var ctrl = this.ctrl_panel.gui.params;
-            }.bind(options.parent)
-        }
-    };
     this.pixel_val = {
         type: 'lbl',
         lbl: 'Pixel Value: ',
         input_class: 'viewer-ctrl-info-btn',
         pixel_timeout: undefined,
-        get_datapoint: function(event){
-            var ctrl = this.ctrl_panel.gui.params;
-            var file_info = this.frames[this.viewer_frame].file_info;
-            if(file_info!==undefined && file_info.file_type=='img_array'){
-                var img_info = file_info.images[file_info.frame];
-                var xy = this.extract_coords(event, img_info);
-                var x = Math.round(xy[0]/img_info.scale);
-                var y = Math.round(xy[1]/img_info.scale);
-                this.workspace.websocket.send_task({
-                    task: {
-                        module: 'toyz.web.tasks',
-                        task: 'get_img_data',
-                        parameters: {
-                            data_type: 'datapoint',
-                            file_info: file_info,
-                            img_info: img_info,
-                            x: x,
-                            y: y
-                        }
-                    },
-                    callback: function(result){
-                        this.pixel_val.$input.text(result.px_value);
-                    }.bind(ctrl)
-                });
-            };
-        },
         events: {
-            mousemove: function(event){
-                // Update the pixel value every 200ms
-                var ctrl = this.ctrl_panel.gui.params;
-                clearTimeout(ctrl.pixel_val.pixel_timeout);
-                ctrl.pixel_val.pixel_timeout = setTimeout(function(){
-                    ctrl.pixel_val.pixel_timeout = undefined;
-                    ctrl.pixel_val.get_datapoint.call(this, event);
-                }.bind(this), 100);
+            rx_datapoint: function(result){
+                this.ctrl_panel.gui.params.pixel_val.$input.text(result.px_value)
             }.bind(options.parent)
         }
     };
@@ -865,6 +823,7 @@ Toyz.Viewer.Contents = function(params){
         for(var i=0; i<this.events.mousemove.length; i++){
             this.events.mousemove[i](event);
         };
+        this.onmousemove(event);
     }.bind(this));
     
     // Mouseup functions
@@ -885,7 +844,7 @@ Toyz.Viewer.Contents = function(params){
                 'last_viewer_frame'],
             Zoom: ['zoom_out', 'zoom_in', 'zoom_bestfit', 'zoom_fullsize', 'zoom_input'],
             Tools: ['rect', 'center', 'hist', 'surface', 'colormap'],
-            'Image Info': ['img_coords', 'physical_coords', 'pixel_val']
+            'Image Info': ['img_coords', 'pixel_val']
         };
     };
     // Setup variables used by different tools
@@ -1223,6 +1182,43 @@ Toyz.Viewer.Contents.prototype.rx_tile_info = function(
         console.log('tile did not need to be created');
     };
 };
+Toyz.Viewer.Contents.prototype.onmousemove = function(event){
+    // Update the pixel value every 200ms
+    var ctrl = this.ctrl_panel.gui.params;
+    clearTimeout(this.mousemove_timeout);
+    this.mousemove_timeout = setTimeout(function(event){
+        this.mousemove_timeout = undefined;
+        var file_info = this.frames[this.viewer_frame].file_info;
+        if(file_info!==undefined && file_info.file_type=='img_array'){
+            var img_info = file_info.images[file_info.frame];
+            var xy = this.extract_coords(event, img_info);
+            var x = Math.round(xy[0]/img_info.scale);
+            var y = Math.round(xy[1]/img_info.scale);
+            this.workspace.websocket.send_task({
+                task: {
+                    module: 'toyz.web.tasks',
+                    task: 'get_img_data',
+                    parameters: {
+                        data_type: 'datapoint',
+                        file_info: file_info,
+                        img_info: img_info,
+                        x: x,
+                        y: y
+                    }
+                },
+                callback: function(result){
+                    this.rx_datapoint(result);
+                }.bind(this)
+            });
+        };
+    }.bind(this, event), 100);
+};
+Toyz.Viewer.Contents.prototype.rx_datapoint = function(result){
+    for(var i=0; i<this.events.rx_datapoint.length; i++){
+        this.events.rx_datapoint[i](result);
+    };
+};
+
 Toyz.Viewer.Contents.prototype.init_controls = function(options){
     options = $.extend(true, {
         controls: {}

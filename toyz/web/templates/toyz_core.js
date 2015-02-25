@@ -565,23 +565,6 @@ Toyz.Core.load_dependencies=function(dependencies, callback){
     Toyz.Core.load_js(scripts, css_callback);
 };
 
-// Makes a deep copy of a JSON object
-// Note: this does not work with a date type!
-Toyz.Core.deepCopy=function(obj){
-    return JSON.parse(JSON.stringify(obj));
-};
-
-// Base 10 logarithm
-Toyz.Core.log10=function(x){
-    return Math.log(x)/Math.log(10);
-};
-// Gaussian function
-Toyz.Core.gaussian=function(x,amplitude,mean,stdDev){
-    var gaussian=amplitude*Math.exp(-Math.pow((x-mean)/(2*stdDev),2));
-    //console.log("gaussian:",x,amplitude,mean,stdDev,gaussian);
-    return gaussian
-};
-
 // Check to see if required keys are present in an object
 Toyz.Core.check4key=function(obj,keys,errorMsg){
     var msg=errorMsg||"Missing parameter ";
