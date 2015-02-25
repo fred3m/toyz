@@ -545,6 +545,33 @@ Toyz.Viewer.Controls = function(options){
         func: {
             click: function(event){
                 this.change_active_tool('surface', event.currentTarget);
+                Toyz.Core.load_dependencies(
+                    {
+                        js: [
+                            "http://www.google.com/jsapi",
+                            "/third_party/graph_3d/graph3d.js"
+                        ]
+                    },
+                    function(){
+                        console.log('loaded');
+                        google.load('visualization', '1.0', {
+                            callback: function() {
+                                console.log('all loaded');
+                                if(!this.hasOwnProperty('surface_dialog')){
+                                    var file_info = this.frames[this.viewer_frame].file_info;
+                                    var img_info = file_info.images[file_info.frame];
+                                    this.surface_dialog = new Toyz.Viewer.SurfaceDialog({
+                                        parent: this,
+                                        cursor: {
+                                            x: img_info.x_center,
+                                            y: img_info.y_center
+                                        }
+                                    })
+                                };
+                            }.bind(this)
+                        });
+                    }.bind(this)
+                );
             }.bind(options.parent)
         },
         prop: {
@@ -552,6 +579,25 @@ Toyz.Viewer.Controls = function(options){
             title: 'get surface plot',
             value: ''
         },
+        events: {
+            mousedown: function(event){
+                if(this.tools.active_tool=='surface'){
+                    var file_info = this.frames[this.viewer_frame].file_info;
+                    var img_info = file_info.images[file_info.frame];
+                    var x = event.target.offsetLeft+event.offsetX;
+                    var y = event.target.offsetTop+event.offsetY;
+                    var xy = this.extract_coords(event, img_info);
+                    var x = xy[0];
+                    var y = xy[1];
+                    this.surface_dialog.update({
+                        cursor: {
+                            x: x,
+                            y: y
+                        }
+                    });
+                };
+            }.bind(options.parent)
+        }
     };
     this.colormap = {
         input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-colormap',
@@ -2000,7 +2046,6 @@ Toyz.Viewer.Histogram = function(options){
         bin_type: 'columns',
         columns: 20,
     }, options);
-    console.log('options', options);
     this.$div = $('<div/>').addClass('viewer-hist-div');
     for(var opt in options){
         this[opt] = options[opt];
@@ -2013,16 +2058,12 @@ Toyz.Viewer.Histogram.prototype.update = function(update){
     };
     this.build_histogram();
     this.$div.highcharts(this.settings);
-    console.log('highcharts settings', this.settings);
-    console.log('histogram', this);
 };
 Toyz.Viewer.Histogram.prototype.build_histogram = function(){
     var bins = [];
     if(this.bin_type == 'columns'){
         var range = this.dataset.max-this.dataset.min;
-        console.log('columns', this.columns);
         bins = new Array(this.columns);
-        console.log('bin length', bins.length);
         this.settings.xAxis.categories = new Array(this.columns);
         for(var i=0; i<bins.length; i++){
             bins[i]=0;
@@ -2160,7 +2201,6 @@ Toyz.Viewer.HistogramDialog = function(options){
     },options.dialog)).css("font-size", "12px");
 };
 Toyz.Viewer.HistogramDialog.prototype.update = function(update){
-    console.log('hist update');
     var update_hist = false;
     var update_data = false;
     if(update.hasOwnProperty('width') || update.hasOwnProperty('data')){
@@ -2177,14 +2217,11 @@ Toyz.Viewer.HistogramDialog.prototype.update = function(update){
         update_data = true;
     };
     if(update_data===true){
-        console.log('updating data');
         var file_info = $.extend(true, {},this.parent.frames[this.parent.viewer_frame].file_info);
         var img_info = $.extend(true, {}, file_info.images[file_info.frame]);
         delete file_info.images;
         delete img_info.tiles;
         var half_width = Math.floor(this.gui.get().width)/2;
-        console.log('cursor', this.cursor);
-        console.log('half_width', half_width);
         this.parent.workspace.websocket.send_task({
             task: {
                 module: 'toyz.web.tasks',
@@ -2215,3 +2252,247 @@ Toyz.Viewer.HistogramDialog.prototype.update = function(update){
         })
     };
 };
+
+// Initialize an interactive surface plot and functions to modify and update it
+// Note: for now this requires the use of Google Visualization API but in the future
+// this will be switched to d3.js
+Toyz.Viewer.SurfacePlot = function(options){
+    options = $.extend(true,{
+        settings: {
+            width: '300px',
+            height: '300px',
+            style: "surface",
+            showPerspective: true,
+            showGrid: true,
+            showShadow: false,
+            keepAspectRatio: true,
+            verticalRatio: 1
+        }
+    }, options);
+    
+    this.data = undefined;
+    this.$div = $('<div/>');
+    this.plot = new links.Graph3d(this.$div[0]);
+    for(var opt in options){
+        this[opt] = options[opt]
+    };
+};
+Toyz.Viewer.SurfacePlot.prototype.update = function(update){
+    if(update.hasOwnProperty('data')){
+        // We must convert the data into a form that Google visualization wants
+        this.data = new google.visualization.DataTable();
+        this.data.addColumn('number', 'x');
+        this.data.addColumn('number', 'y');
+        this.data.addColumn('number', 'value');
+        for(var i=0; i<update.data.length; i++){
+            for(var j=0; j<update.data[i].length; j++){
+                this.data.addRow([j,i,update.data[i][j]]);
+            }
+        };
+    };
+    if(update.hasOwnProperty('settings')){
+        this.settings = $.extend(true, this.settings, update.settings);
+    };
+    if(this.data!==undefined){
+        this.draw();
+    };
+};
+Toyz.Viewer.SurfacePlot.prototype.draw = function(){
+    console.log('data', this.data);
+    console.log('settings', this.settings);
+    this.plot.draw(this.data, this.settings);
+};
+
+Toyz.Viewer.SurfaceDialog = function(options){
+    if(!options.hasOwnProperty('parent')){
+        throw Error("HistogramDialog must be initialized with a parent viewer");
+    };
+    this.parent = options.parent;
+    options = $.extend(true, {
+        plot: {},
+        cursor: {
+            x: 0,
+            y: 0
+        },
+        plot_width: 10,
+        fit_type: 'gaussian'
+    }, options);
+    this.cursor = options.cursor;
+    this.plot_width = options.plot_width
+    
+    this.$div = $('<div/>').css({
+        height: '400px',
+        width: '400px',
+        'min-height': '400px',
+    });
+    this.plot = new Toyz.Viewer.SurfacePlot(options.plot);
+    this.$div.append(this.plot.$div);
+    this.$div[0].width = 400;
+    this.$div[0].height = 1000;
+    var elements = {
+        type: 'div',
+        params: {
+            plot_width: {
+                lbl: 'plot area width',
+                prop: {
+                    type: 'Number',
+                    value: options.plot_width
+                },
+                func: {
+                    change: function(event){
+                        this.update({
+                            plot_width: event.currentTarget.value
+                        })
+                    }.bind(this)
+                }
+            },
+            fit_type: {
+                type: 'conditional',
+                selector:{
+                    fit_type: {
+                        type: 'select',
+                        options: ['gaussian', 'moffat'],
+                        default_val: options.fit_type
+                    }
+                },
+                param_sets: {
+                    gaussian: {
+                        type: 'div',
+                        legend: 'Best gaussian fit',
+                        params: {
+                            center: {
+                                type: 'lbl',
+                                lbl: 'coords'
+                            },
+                            amplitude: {
+                                type: 'lbl',
+                                lbl: 'amplitude'
+                            },
+                            sigma_x: {
+                                type: 'lbl',
+                                lbl: '\u03C3 x'
+                            },
+                            sigma_y: {
+                                type: 'lbl',
+                                lbl: '\u03C3 y'
+                            },
+                            theta: {
+                                type: 'lbl',
+                                lbl: '\u03B8'
+                            }
+                        }
+                    },
+                    moffat: {
+                        type: 'div',
+                        legend: 'Best moffat fit',
+                        params: {
+                            center: {
+                                type: 'lbl',
+                                lbl: 'coords',
+                            },
+                            fwhm1: {
+                                type: 'lbl',
+                                lbl: 'fwhm1'
+                            },
+                            fwhm2: {
+                                type: 'lbl',
+                                lbl: 'fwhm2'
+                            },
+                            beta: {
+                                type: 'lbl',
+                                lbl: '\u03B2'
+                            },
+                            theta: {
+                                type: 'lbl',
+                                lbl: '\03B8'
+                            },
+                            amplitude: {
+                                type: 'lbl',
+                                lbl: 'amplitude'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    
+    this.gui = new Toyz.Gui.Gui({
+        params: elements,
+        $parent: this.$div
+    });
+    
+    this.$div.dialog($.extend(true, {
+        resizable: true,
+        draggable: true,
+        autoOpen: false,
+        modal: false,
+        width: 'auto',
+        title: 'Surface Plot',
+        maxHeight: $(window).height(),
+        position: {
+            my: "left top",
+            at: "left top",
+            of: $(window)
+        },
+        buttons: {}
+    },options.dialog)).css("font-size", "12px");
+};
+Toyz.Viewer.SurfaceDialog.prototype.update = function(update){
+    var update_plot = false;
+    var update_data = false;
+    if(update.hasOwnProperty('plot_width') || update.hasOwnProperty('data') ||
+        update.hasOwnProperty('fit_type')
+    ){
+        update_data = true;
+    };
+    for(var u in update){
+        this[u] = update[u]
+    };
+    if(update.hasOwnProperty('plot')){
+        this.gui.params.plot.update(update.plot);
+    };
+    if(update.hasOwnProperty('cursor')){
+        this.cursor = update.cursor;
+        this.$div.dialog('open');
+        update_data = true;
+    };
+    if(update_data===true){
+        var file_info = $.extend(true, {},this.parent.frames[this.parent.viewer_frame].file_info);
+        var img_info = $.extend(true, {}, file_info.images[file_info.frame]);
+        delete file_info.images;
+        delete img_info.tiles;
+        var params = this.gui.get();
+        var half_width = Math.floor(this.plot_width)/2;
+        console.log('params', params);
+        this.parent.workspace.websocket.send_task({
+            task: {
+                module: 'toyz.web.tasks',
+                task: 'get_img_data',
+                parameters: {
+                    file_info: file_info,
+                    img_info: img_info,
+                    data_type: 'fit2d',
+                    fit_type: params.conditions.fit_type,
+                    x0: this.cursor.x-half_width,
+                    xf: this.cursor.x+half_width,
+                    y0: this.cursor.y-half_width,
+                    yf: this.cursor.y+half_width
+                }
+            },
+            callback: function(result){
+                console.log('surface result', result);
+                this.plot.update({
+                    data: result.data
+                });
+                delete result.data
+                delete result.id
+                // Update the statistics
+                this.gui.set_params({
+                    change: false,
+                    values: result
+                });
+            }.bind(this)
+        })
+    };
+}

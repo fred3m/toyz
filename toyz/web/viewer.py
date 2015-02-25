@@ -384,20 +384,19 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
     Get data from an image or FITS file
     """
     print('kwargs', kwargs)
-    if data_type == 'data' or data_type == 'datapoint':
-        if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
-            hdulist = get_file(file_info)
-            data = hdulist[int(img_info['frame'])].data
-        else:
-            try:
-                from PIL import Image
-            except ImportError:
-                raise ToyzJobError(
-                    "You must have PIL (Python Imaging Library) installed to "
-                    "open files of this type"
-                )
-            img = get_file(file_info)
-            data = np.array(img)
+    if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
+        hdulist = get_file(file_info)
+        data = hdulist[int(img_info['frame'])].data
+    else:
+        try:
+            from PIL import Image
+        except ImportError:
+            raise ToyzJobError(
+                "You must have PIL (Python Imaging Library) installed to "
+                "open files of this type"
+            )
+        img = get_file(file_info)
+        data = np.array(img)
     
     if data_type == 'data':
         x0 = max(0, kwargs['x0'])
@@ -405,7 +404,6 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
         xf = min(data.shape[1], kwargs['xf'])
         yf = min(data.shape[0], kwargs['yf'])
         data = data[y0:yf, x0:xf]
-        print('data shape', data.shape)
         return {
             'id': 'data',
             'min': float(data.min()),
@@ -419,6 +417,16 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
         return {
             'id': 'datapoint',
             'px_value': float(data[kwargs['y'],kwargs['x']])
+        }
+    elif data_type == 'fit2d':
+        x0 = max(0, kwargs['x0'])
+        y0 = max(0, kwargs['y0'])
+        xf = min(data.shape[1], kwargs['xf'])
+        yf = min(data.shape[0], kwargs['yf'])
+        data = data[y0:yf, x0:xf]
+        return {
+            'id': 'data',
+            'data': data.tolist()
         }
     else:
         raise ToyzJobError("Loading that data type has not been implemented yet")
