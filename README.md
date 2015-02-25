@@ -1,5 +1,5 @@
-Toyz for Data Reduction and Analysis
-====================================
+Toyz for Data Analysis
+======================
 
 What is Toyz?
 -------------
