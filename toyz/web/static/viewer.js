@@ -503,14 +503,22 @@ Toyz.Viewer.Controls = function(options){
                 var file_info = $.extend(true, {}, this.frames[this.viewer_frame].file_info);
                 var img_info = $.extend(true, {}, file_info.images[file_info.frame]);
                 delete file_info.images;
+                var x = img_info.viewer.x_center/img_info.viewer.scale;
+                var y = img_info.viewer.y_center/img_info.viewer.scale;
+                if(img_info.invert_x===true){
+                    x = img_info.width-x;
+                };
+                if(img_info.invert_y===true){
+                    y = img_info.height-y;
+                }
                 var params = {
                     data_type: 'data',
                     file_info: file_info,
                     img_info: img_info,
-                    x0: img_info.viewer.x_center/img_info.viewer.scale-200,
-                    xf: img_info.viewer.x_center/img_info.viewer.scale+200,
-                    y0: img_info.viewer.y_center/img_info.viewer.scale-100,
-                    yf: img_info.viewer.y_center/img_info.viewer.scale+100
+                    x0: x-200,
+                    xf: x+200,
+                    y0: y-100,
+                    yf: y+100
                 };
                 this.workspace.websocket.send_task({
                     task: {
@@ -545,7 +553,9 @@ Toyz.Viewer.Controls = function(options){
                                 options.parent.frames[options.parent.viewer_frame].file_info;
                                 this.workspace.colorpad.$div.dialog('open');
                             this.workspace.colorpad.update({
-                                colormap: file_info.images[file_info.frame].colormap
+                                colormap: file_info.images[file_info.frame].colormap,
+                                img_info: file_info.images[file_info.frame],
+                                data: result.data
                             });
                         };
                     }.bind(this, options, params)
