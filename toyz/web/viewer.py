@@ -383,7 +383,6 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
     """
     Get data from an image or FITS file
     """
-    print('kwargs', kwargs)
     if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
         hdulist = get_file(file_info)
         data = hdulist[int(img_info['frame'])].data
