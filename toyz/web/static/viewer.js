@@ -515,10 +515,11 @@ Toyz.Viewer.Controls = function(options){
                     data_type: 'data',
                     file_info: file_info,
                     img_info: img_info,
-                    x0: x-200,
-                    xf: x+200,
-                    y0: y-100,
-                    yf: y+100
+                    x: x,
+                    y: y,
+                    width: 400,
+                    height: 200,
+                    scale: true
                 };
                 this.workspace.websocket.send_task({
                     task: {

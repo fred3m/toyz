@@ -398,12 +398,23 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
         data = np.array(img)
     
     if data_type == 'data':
-        x0 = max(0, kwargs['x0'])
-        y0 = max(0, kwargs['y0'])
-        xf = min(data.shape[1], kwargs['xf'])
-        yf = min(data.shape[0], kwargs['yf'])
-        data = data[y0:yf, x0:xf]
-        return {
+        width = int(kwargs['width']/2/img_info['viewer']['scale'])
+        height = int(kwargs['height']/2/img_info['viewer']['scale'])
+        x0 = max(0, kwargs['x']-width)
+        y0 = max(0, kwargs['y']-height)
+        xf = min(data.shape[1], kwargs['x']+width-1)
+        yf = min(data.shape[0], kwargs['y']+height-1)
+        if 'scale' in kwargs:
+            tile_data = {
+                'x0_idx': x0,
+                'y0_idx': y0,
+                'xf_idx': xf,
+                'yf_idx': yf
+            }
+            data = scale_data(file_info, img_info, tile_data, data)
+        else:
+            data = data[y0:yf, x0:xf]
+        response = {
             'id': 'data',
             'min': float(data.min()),
             'max': float(data.max()),
@@ -413,20 +424,18 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
             'data': data.tolist()
         }
     elif data_type == 'datapoint':
-        return {
-            'id': 'datapoint',
-            'px_value': float(data[kwargs['y'],kwargs['x']])
-        }
-    elif data_type == 'fit2d':
-        x0 = max(0, kwargs['x0'])
-        y0 = max(0, kwargs['y0'])
-        xf = min(data.shape[1], kwargs['xf'])
-        yf = min(data.shape[0], kwargs['yf'])
-        data = data[y0:yf, x0:xf]
-        return {
-            'id': 'data',
-            'data': data.tolist()
-        }
+        if (kwargs['x']<data.shape[1] and kwargs['y']<data.shape[0] and
+                kwargs['x']>=0 and kwargs['y']>=0):
+            response = {
+                'id': 'datapoint',
+                'px_value': float(data[kwargs['y'],kwargs['x']])
+            }
+        else:
+            response = {
+                'id': 'datapoint',
+                'px_value': 0
+            }
     else:
         raise ToyzJobError("Loading that data type has not been implemented yet")
+    return response
             
