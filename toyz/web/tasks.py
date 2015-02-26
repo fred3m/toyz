@@ -63,11 +63,11 @@ def load_user_settings(toyz_settings, pipe, tid, params):
     if tid['user_id']=='admin' or 'admin' in groups:
         all_users = db_utils.get_all_ids(dbs, 'user_id')
         all_groups = db_utils.get_all_ids(dbs, 'group_id')
-        user_settings = load_user_info(toyz_settings, tid, {
+        user_settings = load_user_info(toyz_settings, pipe, tid, {
             'user_id': 'admin',
             'user_attr': ['groups', 'modules', 'toyz', 'paths'],
         })
-        group_settings = load_user_info(toyz_settings, tid, {
+        group_settings = load_user_info(toyz_settings, pipe, tid, {
             'group_id': 'admin',
             'user_attr': ['groups', 'modules', 'toyz', 'paths'],
         })
