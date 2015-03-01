@@ -17,7 +17,7 @@ Toyz.Console.Settings.getModuleSettings = function(params){
     modules.params[params.param_name] = {
         type: 'list',
         format: 'list',
-        newItem: {}
+        new_item: {}
     };
     return modules;
 }
@@ -34,7 +34,7 @@ Toyz.Console.Settings.getToyzSettings = function(params){
     toyz.params[params.param_name] = {
         type: 'list',
         format: 'dict',
-        newItem: {
+        new_item: {
             type:'div',
             params:{
                 key: {
@@ -58,7 +58,7 @@ Toyz.Console.Settings.getThirdParty = function(params){
             third_party: {
                 type: 'list',
                 format: 'dict',
-                newItem: {
+                new_item: {
                     type:'div',
                     params:{
                         key: {
@@ -120,7 +120,7 @@ Toyz.Console.Settings.UserSettings = function(params){
                 groups: {
                     type: 'list',
                     format: 'list',
-                    newItem: {
+                    new_item: {
                         type: 'select',
                         options: params.groups
                     }
@@ -137,7 +137,7 @@ Toyz.Console.Settings.UserSettings = function(params){
                 paths: {
                     type: 'list',
                     format: 'dict',
-                    newItem: {
+                    new_item: {
                         type:'div',
                         params: {
                             value: {
@@ -277,7 +277,7 @@ Toyz.Console.Settings.GroupSettings = function(params){
                 users: {
                     type: 'list',
                     format: 'list',
-                    newItem: {
+                    new_item: {
                         type: 'select',
                         options: params.users
                     }
@@ -294,7 +294,7 @@ Toyz.Console.Settings.GroupSettings = function(params){
                 paths: {
                     type: 'list',
                     format: 'dict',
-                    newItem: {
+                    new_item: {
                         type:'div',
                         params: {
                             value: {
@@ -548,7 +548,7 @@ Toyz.Console.Settings.getAccountSettings = function(params){
                     shortcuts: {
                         type: 'list',
                         format: 'dict',
-                        newItem: {
+                        new_item: {
                             type:'div',
                             params: {
                                 key: {
