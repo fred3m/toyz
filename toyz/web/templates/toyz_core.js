@@ -434,6 +434,164 @@ Toyz.Core.FileSelect.prototype.update = function(values){
     };
 };
 
+// Object to act as a javascript version of a pandas dataframe,
+// allowing data to be stored more compactly as an array but have
+// individual columns or rows accessed by a keyword.
+// To access columns by keyword, the property 'columns' must be set.
+// To access rows by keyword, the property 'index_cols' must be set to a list of
+// the column names or numbers to use as row indices
+Toyz.Core.Dataframe = function(options){
+    this.data = options.data;
+    this.columns = [];
+    this.index_cols = [];
+    this.update(options);
+};
+// Update any field in the dataframe
+Toyz.Core.Dataframe.prototype.update = function(update){
+    console.log('update', update);
+    for(var u in update){
+        console.log(u, update[u]);
+        this[u] = update[u];
+    };
+    // If the row index columns are updated, make sure they are all valid names
+    if(update.hasOwnProperty('index_cols')){
+        for(var i=0; i<update.index_cols.length; i++){
+            if(Toyz.Core.is_string(update.index_cols[i])){
+                var row_idx = this.columns.indexOf(update.index_cols[i]);
+                if(row_idx<0){
+                    throw Error("Tried to set index_cols but '" +
+                                update.index_cols[i] +
+                                "' not found in columns"
+                    );
+                }else{
+                    update.index_cols[i] = row_idx;
+                }
+            };
+        };
+    };
+};
+// Get a column by name or number
+Toyz.Core.Dataframe.prototype.get_col = function(col_id){
+    if(Toyz.Core.is_string(col_id)){
+        var col_name = col_id;
+        col_id = this.columns.indexOf([col_id]);
+        if(col_id<0){
+            throw Error("Column '"+col_name+"' not found in columns");
+        };
+    };
+    return this.data.map(function(value,index) {return value[col_id]; });
+};
+// If a name is passed to row_id, get the number of the row matching that index
+Toyz.Core.Dataframe.prototype.get_row_indices = function(row_ids){
+    var row_indices = [];
+    if(!this.hasOwnProperty('index_cols')){
+        throw Error("To access a row you must define the dataframe's 'index_cols' ");
+    };
+    if(Toyz.Core.is_string(row_ids)){
+        if(this.index_cols.length>1){
+            throw Error('You only passed one index, but the dataframe has multiple indices')
+        }else{
+            var new_row_ids = {};
+            new_row_ids[this.index_cols[0]] = row_ids;
+            row_ids = new_row_ids;
+        };
+    };
+    var columns = {};
+    for(var i=0;i<this.index_cols.length;i++){
+        if(row_ids.hasOwnProperty(this.index_cols[i]) &&
+            row_ids[this.index_cols[i]] !== undefined
+        ){
+            columns[this.index_cols[i]] = this.get_col(this.index_cols[i]);
+        };
+    };
+    for(var i=0; i<this.data.length; i++){
+        var ismatch = true;
+        for(var col in columns){
+            // Allow users to pass undefined for an index (in instances with multiple
+            // indices)
+            if(columns[col][i]!=row_ids[col]){
+                ismatch=false;
+                break;
+            };
+        };
+        if(ismatch===true){
+            row_indices.push(i);
+        };
+    };
+    return row_indices;
+};
+// Allow user to access a row as either an array or JSON
+Toyz.Core.Dataframe.prototype.get_row = function(row_ids, options){
+    options = $.extend(true, {
+        row_type: 'json'
+    }, options);
+    var row;
+    var row_indices;
+    if($.isArray(row_ids) || isNaN(row_ids)){
+        row_indices = this.get_row_indices(row_ids);
+    }else{
+        row_indices = [row_ids];
+    };
+    if(row_indices.length==0){
+        throw Error('Row not found');
+    }else if(row_indices.length>1){
+        throw Error('Multiple matching rows, indices do not define a unique row');
+    };
+    var row_idx = row_indices[0];
+    console.log('row index',row_idx);
+    if(options.row_type=='array'){
+        row = this.data[row_idx]
+    }else if(options.row_type=='json'){
+        row = {};
+        for(var i=0; i<this.data[row_idx].length; i++){
+            row[this.columns[i]] = this.data[row_idx][i];
+        };
+    }else{
+        throw Error("row_type '"+options.row_type+"' not recognized");
+    };
+    return row;
+};
+Toyz.Core.Dataframe.prototype.add_row = function(row){
+    if($.isArray(row)){
+        if(row.length!=this.data[0].length){
+            throw Error('New row must either be JSON or an array the same length as '+
+                        'the number of data columns'
+            );
+        };
+        this.data.push(row);
+    }else{
+        if(this.columns.length==0){
+            throw Error("Rows can only be updated by column name if the names "+
+                        "of the columns have been specified"
+            );
+        };
+        // If the new row is missing any columns, set the values to undefined.
+        // If the new row is missing any index columns, throw an error
+        var new_row = [];
+        for(var i=0; i<this.columns.length; i++){
+            if(!row.hasOwnProperty(this.columns[i])){
+                if(this.index_cols.indexOf(this.columns[i])>-1){
+                    throw Error("New row is missing index column "+this.columns[i]);
+                }else{
+                    new_row.push(undefined);
+                };
+            }else{
+                new_row.push(row[this.columns[i]]);
+            };
+        };
+        this.data.push(new_row);
+    };
+};
+Toyz.Core.Dataframe.prototype.delete_row = function(row_ids){
+    var row_indices = this.get_row_indices(row_ids);
+    if(row_indices.length==0){
+        throw Error('No matching rows found to delete')
+    }else if(row_indices.length>1){
+        throw Error('Multiple rows found matching the given indices')
+    };
+    this.data = this.data.splice(row_indices[0],1);
+};
+
 Toyz.Core.set_debugger = function(groups, clearall){
     if(typeof groups==='string'){
         groups = [groups];
@@ -471,6 +629,13 @@ Toyz.Core.Logger=function(element){
         element.value=element.value+text+"\n\n";
         $(element).scrollTop(element.scrollHeight);
     };
+};
+
+Toyz.Core.is_string = function(obj){
+    if(Object.prototype.toString.call(obj)=='[object String]'){
+        return true;
+    };
+    return false;
 };
 
 // Dynamically load a list of scripts
@@ -576,6 +741,14 @@ Toyz.Core.check4key=function(obj,keys,errorMsg){
     };
     return true;
 };
+
+Toyz.Core.round = function(x, precision){
+    if(precision===undefined || isNaN(precision)){
+        precision = 3;
+    };
+    var pow10 = Math.pow(10,precision);
+    return Math.round(x*pow10)/pow10;
+}
 
 // Sort an array filled with numbers
 Toyz.Core.sort_num = function(a,b){return a-b};
