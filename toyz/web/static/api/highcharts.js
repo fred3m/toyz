@@ -85,7 +85,7 @@ Toyz.API.Highcharts.Gui = function(params){
                         type: 'list',
                         format: 'list',
                         items: [],
-                        newItem: {
+                        new_item: {
                             type: 'div',
                             init: function(new_item){
                                 this.update_columns();
