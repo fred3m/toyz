@@ -434,19 +434,6 @@ Toyz.Gui.List = function(options){
     
     if(!this.hasOwnProperty('buttons')){
         this.buttons={
-            add:{
-                type:'button',
-                lbl:'',
-                prop:{
-                    innerHTML:'+'
-                },
-                div_css:{
-                    float: 'left'
-                },
-                func:{
-                    click: this.add_item.bind(this)
-                }
-            },
             remove:{
                 type:'button',
                 lbl:'',
@@ -458,6 +445,19 @@ Toyz.Gui.List = function(options){
                 },
                 func:{
                     click:this.remove_item.bind(this)
+                }
+            },
+            add:{
+                type:'button',
+                lbl:'',
+                prop:{
+                    innerHTML:'+'
+                },
+                div_css:{
+                    float: 'left'
+                },
+                func:{
+                    click: this.add_item.bind(this)
                 }
             }
         }
@@ -570,7 +570,7 @@ Toyz.Gui.List.prototype.add_item = function(){
     var new_key = this.name + '-' + this.current_idx++;
     $radio.prop('value', new_key);
     $li.prop('id', new_key);
-    var new_item = $.extend(true, {}, this.newItem);
+    var new_item = $.extend(true, {}, this.new_item);
     new_item = this.gui.build_gui({
         param: new_item,
         $parent: $li,
@@ -688,6 +688,7 @@ Toyz.Gui.Select.prototype.set = function(value, options){
 };
 
 Toyz.Gui.Gui = function(options){
+    //console.log('Gui options', options);
     if(!options.hasOwnProperty('$parent')){
         throw Error("Toyz Gui requires a '$parent' div to hold the parameters");
     };
