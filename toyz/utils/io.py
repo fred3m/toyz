@@ -257,6 +257,16 @@ io_modules = {
                         }
                     }
                 }
+            },
+            'sql': {
+                'type': 'div',
+                'params': {
+                    'connection': {'lbl': 'SQLalchemy connection string'},
+                    'sql': {
+                        'lbl': 'SQL query or table name',
+                        'db': True
+                    },
+                }
             }
         }
     },
@@ -317,7 +327,7 @@ def load_unknown(str_in, single_ok=False):
     return val_out
 
 def load_data_file(io_module, file_type, file_options, io_modules=None, 
-        io_func=None, format='dict'):
+        io_func=None, format='dict', fillna='NaN'):
     """
     Loads a data file using a specified python module and a set of options. Currently
     only *numpy* and *pandas* are fully supported
@@ -330,19 +340,25 @@ def load_data_file(io_module, file_type, file_options, io_modules=None,
             - *Note*: the ``file_type`` must be supported by the given ``io_module``
         file_options ( *dict* ): 
             - dictionary of options as specified in the ``io_module``s documentation
-        io_modules ( *dict* ): 
+        io_modules ( *dict* , optional): 
             - Dictionary of custom io_modules not included in the toyz framework
             - This is currently unsupported, but will eventually allow users to specify
               their own i/o modules
-        io_func ( *string* ):
+        io_func ( *string* , optional):
             - name of custom i/o function
             - This is currently unsupported, but will eventually allow users to specify
               their own i/o functions
-        format ( *string* ):
-            - Currently data is returned a dictionary with its keys as the columns names
-              and values as a 1D list.
-            - It may be possible in the future to request other data formats, in which
-              case that format would be specified here
+        format ( *string* , optional):
+            - The default format is to return the data as a dictionary of columns
+            - If format is any other value, the raw data is returned for whatever
+              type of data was loaded (python list, numpy.array, pandas.DataFrame, etc)
+        fillna ( *string* ,optional):
+            - JSON does not encode NaN values, so they can be converted into strings or
+              some other value
+            - Toyz Workspaces use the default ``fillna='NaN'``
+            - To leave NaN values as such, use ``fillna=None``
+            - Note: If not using the ``dict`` format, NaN values are left alone and
+              this parameter is ignored
     """
     meta = ''
     if io_module == 'python':
@@ -358,17 +374,25 @@ def load_data_file(io_module, file_type, file_options, io_modules=None,
             raise ToyzIoError("Invalid file type '{0}' for python open file".format(file_type))
         columns = raw_data[0]
         del raw_data[0]
-        data = {col: [raw_data[m][n] for m in range(len(raw_data))] 
-            for n,col in enumerate(columns)}
+        if format=='dict':
+            data = {col: [raw_data[m][n] for m in range(len(raw_data))] 
+                for n,col in enumerate(columns)}
+        else:
+            data = raw_data
     elif io_module == 'numpy':
         import numpy as np
         raw_data = np.load(**file_options)
-        if len(raw_data.dtype) == 0:
-            columns = ['col-'+str(n) for n in range(raw_data.shape[1])]
-            data = {col: raw_data[:,n].tolist() for n,col in enumerate(columns)}
+        if format=='dict':
+            if fillna is not None:
+                raw_data = raw_data.astype(object).fillna(fillna)
+            if len(raw_data.dtype) == 0:
+                columns = ['col-'+str(n) for n in range(raw_data.shape[1])]
+                data = {col: raw_data[:,n].tolist() for n,col in enumerate(columns)}
+            else:
+                columns = raw_data.dtype.names
+                data = {col: raw_data[col].tolist() for col in columns}
         else:
-            columns = raw_data.dtype.names
-            data = {col: raw_data[col].tolist() for col in columns}
+            data = raw_data
     elif io_module == 'pandas':
         import pandas as pd
         if file_type == 'csv':
@@ -399,11 +423,22 @@ def load_data_file(io_module, file_type, file_options, io_modules=None,
             if 'columns' in file_options:
                 file_options['columns'] = load_list(file_options['columns'], False)
             df = pd.read_hdf(**file_options)
+        elif file_type == 'sql':
+            from sqlalchemy import create_engine
+            engine = create_engine(file_options['connection'])
+            sql = file_options['sql']
+            del file_options['connection']
+            del file_options['sql']
+            df = pd.read_sql(sql, engine, **file_options)
         else:
             raise ToyzIoError("File type is not yet supported")
-        columns = df.columns.values.tolist()
-        #data = df.values.tolist()
-        data = {col: df[col].values.tolist() for col in columns}
+        if format=='dict':
+            if fillna is not None:
+                df = df.astype(object).fillna(fillna)
+            columns = df.columns.values.tolist()
+            data = {col: df[col].values.tolist() for col in columns}
+        else:
+            data = df
         
     elif io_module == 'astropy':
         response = {
@@ -425,5 +460,8 @@ def load_data_file(io_module, file_type, file_options, io_modules=None,
             "io_module not found in toyz.utils.io.io_modules.\n"
             "Please specify a set of alternative io_modules or check your module name")
     
-    return columns, data, meta
+    if format=='dict':
+        return columns, data, meta
+    else:
+        return data
                 
