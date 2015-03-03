@@ -91,6 +91,32 @@ def get_bool(prompt):
         return get_bool(prompt)
     return bool_str
 
+# modified from https://www.xormedia.com/recursively-merge-dictionaries-in-python/
+# changes: keep track of keys used (to avoid infinite loops) and make copy optional
+def merge_dict(d1, d2, copy=False, keys=[]):
+    """
+    Python version of jQuery.extend that recursively merges two python
+    dictionaries. If ``copy`` is ``True`` then the new object is a copy, otherwise
+    d2 is merged into d1 (the same as $.extend). ``keys`` should never be passed
+    on the first call as it is used to keep track of which elements have been
+    used (to avoid infinite loops).
+    
+    """
+    if not isinstance(d2, dict):
+        return d2
+    if copy:
+        from copy import deepcopy
+        d1 = deepcopy(d1)
+    for key, value in d2.iteritems():
+        if key in d1 and isinstance(d1[key], dict) and d1[key] not in keys:
+            keys.append(key)
+            d1[key] = merge_dict(d1[key], value)
+        elif copy:
+            d1[key] = deepcopy(value)
+        else:
+            d1[key] = value
+    return d1
+
 def check_instance(obj, instances):
     """
     Check if an object is an instance of another object
