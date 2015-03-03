@@ -438,12 +438,12 @@ Toyz.Core.FileSelect.prototype.update = function(values){
 // allowing data to be stored more compactly as an array but have
 // individual columns or rows accessed by a keyword.
 // To access columns by keyword, the property 'columns' must be set.
-// To access rows by keyword, the property 'index_cols' must be set to a list of
+// To access rows by keyword, the property 'index' must be set to a list of
 // the column names or numbers to use as row indices
 Toyz.Core.Dataframe = function(options){
     this.data = options.data;
     this.columns = [];
-    this.index_cols = [];
+    this.index = [];
     this.update(options);
 };
 // Update any field in the dataframe
@@ -454,17 +454,17 @@ Toyz.Core.Dataframe.prototype.update = function(update){
         this[u] = update[u];
     };
     // If the row index columns are updated, make sure they are all valid names
-    if(update.hasOwnProperty('index_cols')){
-        for(var i=0; i<update.index_cols.length; i++){
-            if(Toyz.Core.is_string(update.index_cols[i])){
-                var row_idx = this.columns.indexOf(update.index_cols[i]);
+    if(update.hasOwnProperty('index')){
+        for(var i=0; i<update.index.length; i++){
+            if(Toyz.Core.is_string(update.index[i])){
+                var row_idx = this.columns.indexOf(update.index[i]);
                 if(row_idx<0){
-                    throw Error("Tried to set index_cols but '" +
-                                update.index_cols[i] +
+                    throw Error("Tried to set index but '" +
+                                update.index[i] +
                                 "' not found in columns"
                     );
                 }else{
-                    update.index_cols[i] = row_idx;
+                    update.index[i] = row_idx;
                 }
             };
         };
@@ -484,24 +484,24 @@ Toyz.Core.Dataframe.prototype.get_col = function(col_id){
 // If a name is passed to row_id, get the number of the row matching that index
 Toyz.Core.Dataframe.prototype.get_row_indices = function(row_ids){
     var row_indices = [];
-    if(!this.hasOwnProperty('index_cols')){
-        throw Error("To access a row you must define the dataframe's 'index_cols' ");
+    if(!this.hasOwnProperty('index')){
+        throw Error("To access a row you must define the dataframe's 'index' ");
     };
     if(Toyz.Core.is_string(row_ids)){
-        if(this.index_cols.length>1){
+        if(this.index.length>1){
             throw Error('You only passed one index, but the dataframe has multiple indices')
         }else{
             var new_row_ids = {};
-            new_row_ids[this.index_cols[0]] = row_ids;
+            new_row_ids[this.index[0]] = row_ids;
             row_ids = new_row_ids;
         };
     };
     var columns = {};
-    for(var i=0;i<this.index_cols.length;i++){
-        if(row_ids.hasOwnProperty(this.index_cols[i]) &&
-            row_ids[this.index_cols[i]] !== undefined
+    for(var i=0;i<this.index.length;i++){
+        if(row_ids.hasOwnProperty(this.index[i]) &&
+            row_ids[this.index[i]] !== undefined
         ){
-            columns[this.index_cols[i]] = this.get_col(this.index_cols[i]);
+            columns[this.index[i]] = this.get_col(this.index[i]);
         };
     };
     for(var i=0; i<this.data.length; i++){
@@ -570,7 +570,7 @@ Toyz.Core.Dataframe.prototype.add_row = function(row){
         var new_row = [];
         for(var i=0; i<this.columns.length; i++){
             if(!row.hasOwnProperty(this.columns[i])){
-                if(this.index_cols.indexOf(this.columns[i])>-1){
+                if(this.index.indexOf(this.columns[i])>-1){
                     throw Error("New row is missing index column "+this.columns[i]);
                 }else{
                     new_row.push(undefined);
