@@ -443,18 +443,18 @@ Toyz.Core.FileSelect.prototype.update = function(values){
 Toyz.Core.Dataframe = function(options){
     this.data = options.data;
     this.columns = [];
-    this.index = [];
+    this.index_cols = [];
     this.update(options);
 };
 // Update any field in the dataframe
 Toyz.Core.Dataframe.prototype.update = function(update){
-    console.log('update', update);
     for(var u in update){
-        console.log(u, update[u]);
         this[u] = update[u];
     };
+    
     // If the row index columns are updated, make sure they are all valid names
     if(update.hasOwnProperty('index')){
+        this.index_cols=[];
         for(var i=0; i<update.index.length; i++){
             if(Toyz.Core.is_string(update.index[i])){
                 var row_idx = this.columns.indexOf(update.index[i]);
@@ -464,7 +464,7 @@ Toyz.Core.Dataframe.prototype.update = function(update){
                                 "' not found in columns"
                     );
                 }else{
-                    update.index[i] = row_idx;
+                    this.index_cols.push(row_idx);
                 }
             };
         };
@@ -484,24 +484,24 @@ Toyz.Core.Dataframe.prototype.get_col = function(col_id){
 // If a name is passed to row_id, get the number of the row matching that index
 Toyz.Core.Dataframe.prototype.get_row_indices = function(row_ids){
     var row_indices = [];
-    if(!this.hasOwnProperty('index')){
-        throw Error("To access a row you must define the dataframe's 'index' ");
+    if(!this.hasOwnProperty('index_cols')){
+        throw Error("To access a row you must define the dataframe's 'index_cols' ");
     };
     if(Toyz.Core.is_string(row_ids)){
-        if(this.index.length>1){
+        if(this.index_cols.length>1){
             throw Error('You only passed one index, but the dataframe has multiple indices')
         }else{
             var new_row_ids = {};
-            new_row_ids[this.index[0]] = row_ids;
+            new_row_ids[this.index_cols[0]] = row_ids;
             row_ids = new_row_ids;
         };
     };
     var columns = {};
-    for(var i=0;i<this.index.length;i++){
-        if(row_ids.hasOwnProperty(this.index[i]) &&
-            row_ids[this.index[i]] !== undefined
+    for(var i=0;i<this.index_cols.length;i++){
+        if(row_ids.hasOwnProperty(this.index_cols[i]) &&
+            row_ids[this.index_cols[i]] !== undefined
         ){
-            columns[this.index[i]] = this.get_col(this.index[i]);
+            columns[this.index_cols[i]] = this.get_col(this.index_cols[i]);
         };
     };
     for(var i=0; i<this.data.length; i++){
@@ -570,7 +570,7 @@ Toyz.Core.Dataframe.prototype.add_row = function(row){
         var new_row = [];
         for(var i=0; i<this.columns.length; i++){
             if(!row.hasOwnProperty(this.columns[i])){
-                if(this.index.indexOf(this.columns[i])>-1){
+                if(this.index_cols.indexOf(this.columns[i])>-1){
                     throw Error("New row is missing index column "+this.columns[i]);
                 }else{
                     new_row.push(undefined);
