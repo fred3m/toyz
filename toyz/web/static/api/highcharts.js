@@ -323,7 +323,11 @@ Toyz.API.Highcharts.Gui.prototype.update_columns = function(event){
     var $y_input = params.y_div.params.y.$input;
     $x_input.empty();
     $y_input.empty();
-    for(var col in this.workspace.sources[data_source].data){
+    console.log('data source', data_source);
+    console.log('workspace', this.workspace);
+    cols = Object.keys(this.workspace.sources[data_source].data).sort();
+    for(var i=0; i<cols.length; i++){
+        var col = cols[i];
         var x_opt = $('<option/>').val(col).html(col);
         var y_opt = $('<option/>').val(col).html(col);
         $x_input.append(x_opt);
@@ -438,10 +442,13 @@ Toyz.API.Highcharts.Contents.prototype.rx_info = function(options){
         this.create_chart(this.settings);
     }else if(options.info_type=='data update'){
         console.log('updating');
-        var data_source = this.workspace.sources[from];
-        var params = this.gui_div.gui.params.series.items[idx].params;
+        // Check the first series to see if the source is present
+        // If it is, the data must have been updated
+        // If not, the source is new
+        var data_source = this.workspace.sources[options.source];
+        var params = this.gui_div.gui.params.series.items[0].params;
         // The source must have been updated, so update the chart
-        if(params.data_source.options.hasOwnProperty(data_source)){
+        if(params.data_source.options.hasOwnProperty(options.source)){
             for(var s in this.settings.series){
                 if(options.hasOwnProperty('source') && 
                     this.settings.series[s].data_source==options.source
@@ -505,8 +512,8 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
         console.log('x:',x,'y:',y);
         for(var j=0; j<data[x].length; j++){
             this_data.push({
-                x:data[x][j], 
-                y:data[y][j]
+                x:parseFloat(data[x][j]), 
+                y:parseFloat(data[y][j])
             });
         };
         
@@ -535,6 +542,7 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
             var new_data = result.idx.map(function(v, i){
                 return this_data[v];
             });
+            
             this_data = new_data;
             this.settings.series[i].argsort = {
                 idx: result.idx,
@@ -565,6 +573,11 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
             y_lbls.push(y_lbl);
         };
         
+        // Highcharts doesn't like NaN values, so convert them to null
+        this_data = this_data.map(function(v,i){
+            return (isNaN(v.x) || isNaN(v.y)) ? {x:null, y:null} : v;
+        });
+        
         var this_series = {
             type: this.settings.series[i].chart_type,
             name: this.settings.series[i].series_name,
@@ -589,7 +602,7 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
             };
         };
         chart_params.series.push(this_series);
-        
+        console.log('chart_params series', chart_params.series);
         // Change the selection behavior of a point so that it updates other points
         chart_params.plotOptions = {
             series: {
@@ -734,7 +747,7 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
         }
     };
     
-    //console.log('chart_params', chart_params);
+    console.log('chart_params', chart_params);
     this.$tile_div.highcharts(chart_params);
 };
 Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
