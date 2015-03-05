@@ -82,9 +82,10 @@ ul {
 }
 
 .ws-inner-div {
-    height: 100%;
-    width: 100%;
-    background-color: white;
+    height: 95%;
+    width: 95%;
+    background-color: #EEEEEE;
+    position: absolute;
 }
 
 .workspace-div {

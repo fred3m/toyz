@@ -1140,22 +1140,25 @@ Toyz.Viewer.Contents.prototype.init_controls = function(options){
         params: {}
     };
     for(var div in options.groups){
+        //console.log('group', div);
         var this_div = {
             type: 'div',
             legend: div,
             params: {}
         };
         for(var i=0; i<options.groups[div].length; i++){
+            //console.log('control:', options.groups[div][i]);
             this_div.params[options.groups[div][i]] = controls[options.groups[div][i]];
         };
         gui.params[div] = this_div;
     };
+    //console.log('controls', controls);
+    //console.log('gui', gui);
     var $div = $('<div/>');
     gui = new Toyz.Gui.Gui({
         params: gui,
         $parent: $div
     });
-    //this.$tile_div.append($div);
     $('body').append($div);
     var ctrl_panel = {
         gui: gui,
@@ -1290,6 +1293,17 @@ Toyz.Viewer.Contents.prototype.get_coords = function(x, y, img_info){
     };
     return [x,y];
 };
+Toyz.Viewer.Contents.prototype.get_viewer_coords = function(x, y, img_info){
+    y = y*img_info.scale;
+    x = x*img_info.scale;
+    if(img_info.invert_y===true){
+        y = img_info.height*img_info.scale-y;
+    };
+    if(img_info.invert_x===true){
+        x = img_info.width*img_info.scale-x;
+    };
+    return [x,y];
+};
 Toyz.Viewer.Contents.prototype.change_active_tool = function(new_tool, new_btn){
     if(!(this.tools.$active_btn===undefined)){
         this.tools.$active_btn.css('background-color', '#DEDEDE');
@@ -1297,42 +1311,48 @@ Toyz.Viewer.Contents.prototype.change_active_tool = function(new_tool, new_btn){
     this.tools.$active_btn = $(new_btn);
     this.tools.$active_btn.css('background-color', '#AAAAAA');
     this.tools.active_tool = new_tool;
-}
+};
 Toyz.Viewer.DrawingTools = {
-    draw_circle: function($div, x, y, radius, css, group){
-        var style = $.extend(true, {
-            border: "1px solid red",
-            width: 2*radius,
-            height: 2*radius,
-            left: x+'px',
-            top: y+'px',
-            'border-radius': '50%',
-            position: 'absolute'
-        }, css);
+    draw_circle: function($div, x, y, radius, options){
+        options = $.extend(true, {
+            css: {
+                border: "1px solid red",
+                width: 2*radius,
+                height: 2*radius,
+                left: x+'px',
+                top: y+'px',
+                'border-radius': '50%',
+                position: 'absolute',
+            },
+            classes: []
+        }, options);
         var $circle = $('<div/>')
             .addClass('viewer-circle-div')
-            .css(style);
-        if(!(group===undefined)){
-            $circle.addClass(group);
+            .css(options.css);
+        for(var cls in options.classes){
+            $circle.addClass(cls);
         };
         $div.append($circle);
         return $circle;
     },
-    draw_rect: function($div, x, y, width, height, css, group){
-        var style = $.extend(true, {
-            border: "2px solid red",
-            width: width,
-            height: height,
-            left: x+'px',
-            top: y+'px',
-            position: 'absolute'
-        }, css);
+    // Allow the user to specify classes to attach to the rectangle
+    draw_rect: function($div, x, y, width, height, options){
+        options = $.extend(true, {
+            css: {
+                border: "2px solid red",
+                width: width,
+                height: height,
+                left: x+'px',
+                top: y+'px',
+                position: 'absolute'
+            },
+            classes: []
+        }, options);
         var $rect = $('<div/>')
             .addClass('viewer-rect-div')
-            .addClass('')
-            .css(style);
-        if(!(group===undefined)){
-            $rect.addClass(group);
+            .css(options.css);
+        for(var cls in options.classes){
+            $rect.addClass(cls);
         };
         $div.append($rect);
         return $rect;

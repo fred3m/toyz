@@ -406,8 +406,8 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
             height = int(kwargs['height']/2)
         x0 = max(0, kwargs['x']-width)
         y0 = max(0, kwargs['y']-height)
-        xf = min(data.shape[1], kwargs['x']+width-1)
-        yf = min(data.shape[0], kwargs['y']+height-1)
+        xf = min(data.shape[1], kwargs['x']+width)
+        yf = min(data.shape[0], kwargs['y']+height)
         if 'scale' in kwargs:
             tile_data = {
                 'x0_idx': x0,

@@ -509,6 +509,8 @@ def run_job(toyz_settings, pipe, job):
     """
     # TODO: Eventually a job should be added to the jobs dictionary and removed after the response has been sent
     import traceback
+    from toyz.web import session_vars
+    session_vars.pipe = pipe
     response={}
     try:
         try:
@@ -520,7 +522,7 @@ def run_job(toyz_settings, pipe, job):
             ToyzJobError(job['module']+" not found in " + 
                 job['id']['user_id']+"'s approved modules")
         task = getattr(toyz_module, job["task"])
-        response = task(toyz_settings, pipe, job['id'], job['parameters'])
+        response = task(toyz_settings, job['id'], job['parameters'])
     except ToyzJobError as error:
         response = {
             'id':"ERROR",
@@ -545,6 +547,13 @@ def run_job(toyz_settings, pipe, job):
     
     #logging.info("sent message:%r",response['id'])
     return result
+
+def progress_log(msg):
+    notification = {
+        'id': 'notification',
+        'msg': msg
+    }
+    session_vars.send(notification)
 
 class ToyzClass:
     """

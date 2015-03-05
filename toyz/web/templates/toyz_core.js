@@ -91,8 +91,8 @@ Toyz.Core.Websocket = function(options){
         return true;
     };
     this.notify = function(result){
-        alert(result.msg);
-        console.log('notification:', result);
+        //alert(result.msg);
+        console.log('notification:', result.msg);
         return true;
     };
     this.warn = function(result){
@@ -589,6 +589,7 @@ Toyz.Core.Dataframe.prototype.delete_row = function(row_ids){
     }else if(row_indices.length>1){
         throw Error('Multiple rows found matching the given indices')
     };
+    console.log('row indices', row_indices);
     this.data = this.data.splice(row_indices[0],1);
 };
 
