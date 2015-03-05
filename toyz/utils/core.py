@@ -549,11 +549,14 @@ def run_job(toyz_settings, pipe, job):
     return result
 
 def progress_log(msg):
-    notification = {
-        'id': 'notification',
-        'msg': msg
-    }
-    session_vars.send(notification)
+    from toyz.web import session_vars
+    print(msg)
+    if hasattr(session_vars, 'pipe'):
+        notification = {
+            'id': 'notification',
+            'msg': msg
+        }
+        session_vars.pipe.send(notification)
 
 class ToyzClass:
     """
