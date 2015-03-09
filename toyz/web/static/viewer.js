@@ -629,6 +629,20 @@ Toyz.Viewer.FileDialog = function(tile_contents){
             filepath: {
                 lbl: 'filename',
                 file_dialog: true
+            },
+            invert_x: {
+                lbl: 'invert x axis',
+                prop: {
+                    type: 'checkbox',
+                    checked: false
+                }
+            },
+            invert_y: {
+                lbl: 'invert y axis',
+                prop: {
+                    type: 'checkbox',
+                    checked: false
+                }
             }
         }
     };
@@ -653,6 +667,7 @@ Toyz.Viewer.FileDialog = function(tile_contents){
         buttons: {
             Open: function(tile_contents){
                 var file_info = this.gui.get();
+                console.log('file info to load', file_info);
                 delete file_info.conditional;
                 tile_contents.load_img({file_info:file_info}, tile_contents.viewer_frame);
                 this.$div.dialog('close');

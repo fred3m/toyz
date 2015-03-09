@@ -664,6 +664,7 @@ Toyz.Workspace.Workspace.prototype.new_tile = function(key, options, my_idx){
     my_idx = my_idx.toString();
     var inner_id = 'tile-'+my_idx;
     var my_id = 'tile-div'+my_idx;
+    
     var $inner_div = $('<div/>')
         .prop('id',inner_id)
         .addClass('ws-inner-div context-menu-tile box menu-injected');
@@ -686,9 +687,16 @@ Toyz.Workspace.Workspace.prototype.new_tile = function(key, options, my_idx){
             position: 'absolute',
             top: Math.floor(window.innerHeight/2),
             left: Math.floor(window.innerWidth/2),
-        });
+        })
+        .resize(function($inner_div, $div, event){
+            var $div = $(event.originalElement);
+            $inner_div.width($div.width());
+            $inner_div.height($div.height());
+        }.bind(this, $inner_div));
     $div.append($inner_div);
     this.$div.append($div);
+    $inner_div.width($div.width());
+    $inner_div.height($div.height());
     this.tiles[inner_id] = new Toyz.Workspace.Tile(this, {
         id: inner_id,
         $div: $div,

@@ -77,6 +77,13 @@ Toyz.API.Highcharts.Gui = function(params){
                     'y': 'y zoom',
                 }
             },
+            remove_nan: {
+                lbl: 'remove NaN (will not connect to other plot windows)',
+                prop: {
+                    type: 'checkbox',
+                    checked: false
+                }
+            },
             series_div: {
                 type: 'div',
                 legend: 'Series',
@@ -511,10 +518,15 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
         var this_data = [];
         console.log('x:',x,'y:',y);
         for(var j=0; j<data[x].length; j++){
-            this_data.push({
+            var point = {
                 x:parseFloat(data[x][j]), 
                 y:parseFloat(data[y][j])
-            });
+            };
+            if(!this.settings.remove_nan || (!isNaN(point.x) && !isNaN(point.y)) ){
+                this_data.push(point);
+            }else{
+                console.log('removed', point);
+            };
         };
         
         // sort the data (if sorted)

@@ -152,10 +152,6 @@ def get_img_info(file_info, img_info):
             if not file_info['colormap']['set_bounds']:
                 img_info['colormap']['px_min'] = float(data.min())
                 img_info['colormap']['px_max'] = float(data.max())
-        
-        #TODO: For now I always invert the y-axis for fits files. Change this in the future
-        # to allow the user to specify
-        img_info['invert_y'] = True
     else:
         # For non-FITS formats, only a single large image is loaded, which 
         try:
@@ -193,7 +189,10 @@ def get_img_info(file_info, img_info):
     }
     for default in img_defaults:
         if default not in img_info:
-            img_info[default] = img_defaults[default]
+            if default in file_info:
+                img_info[default] = file_info[default]
+            else:
+                img_info[default] = img_defaults[default]
     
     #print('img_info:', img_info)
     return img_info
@@ -217,7 +216,8 @@ def get_tile_info(file_info, img_info):
     all_tiles = []
     new_tiles = {}
     if img_info['invert_x']:
-        pass
+        xmin = img_info['width']*img_info['scale'] - img_info['viewer']['right']
+        xmax = img_info['width']*img_info['scale'] - img_info['viewer']['left']
     else:
         xmin = img_info['viewer']['left']
         xmax = img_info['viewer']['right']
