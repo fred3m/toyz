@@ -222,12 +222,25 @@ class AuthLogoutHandler(tornado.web.RequestHandler):
 class ToyzWorkspaceHandler(ToyzHandler, tornado.web.RequestHandler):
     def initialize(self, ):
         self.template_path = os.path.join(core.ROOT_DIR, 'web', 'templates')
-    def get(self, workspace):
+    def get(self, path):
         """
         Load the workspace
         """
-        print('workspace:', workspace)
-        self.render('workspace.html')
+        print('workspace path:', path)
+        ws_options = {
+            'user_theme': self.get_user_theme(),
+            'user_id':'',
+            'work_id': ''
+        }
+        path_split = path.split('/')
+        print('path_split', path_split)
+        print('path length', len(path_split))
+        if len(path_split)>2:
+            raise ToyzWebError('Workspace path must be host/workspace/user_id/workspace_name')
+        elif len(path_split)==2:
+            ws_options['user_id'] = path_split[0]
+            ws_options['work_id'] = path_split[1]
+        self.render('workspace.html', **ws_options)
     
     def get_template_path(self):
         return self.template_path

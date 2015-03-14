@@ -365,6 +365,15 @@ Toyz.Workspace.Workspace = function(params){
         //logger:new Toyz.Core.Logger(document.getElementById("logger")),
     });
     
+    this.$loader = $('<div/>').append('<label>Loading</label>');
+    this.$loader.dialog({
+        resizable: false,
+        draggable: true,
+        autoOpen: true,
+        modal: true,
+        buttons: {}
+    });
+    
     for(var param in params){
         this[param] = params[param];
     };
@@ -379,15 +388,6 @@ Toyz.Workspace.Workspace = function(params){
 };
 Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
     console.log('all_dependencies_loaded', this);
-    
-    this.$loader = $('<div/>').append('<label>Loading</label>');
-    this.$loader.dialog({
-        resizable: false,
-        draggable: true,
-        autoOpen: true,
-        modal: true,
-        buttons: {}
-    });
     
     this.websocket.send_task({
         task: {
@@ -436,6 +436,19 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
             });
             for(var error in result.import_error){
                 console.log('WARNING: ', result.import_error[error])
+            };
+            if(this.hasOwnProperty('work_id')){
+                this.websocket.send_task({
+                    task: {
+                        module: 'toyz.web.tasks',
+                        task: 'load_workspace',
+                        parameters: {
+                            user_id: this.user_id,
+                            work_id: this.work_id
+                        }
+                    },
+                    callback: this.update_workspace.bind(this)
+                });
             };
         }.bind(this)
     });
