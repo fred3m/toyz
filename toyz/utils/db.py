@@ -93,7 +93,23 @@ param_formats = {
         'required': ['user_id', 'user_type'],
         'format': 'dict',
         'json': ['work_settings']
-    }
+    },
+    'ws_share_user': {
+        'get': ['work_id','users'],
+        'update': 'ws_share_user',
+        'tbl': 'ws_share_user',
+        'required': ['user_id'],
+        'format': 'list',
+        'json': ['users']
+    },
+    'ws_share_group': {
+        'get': ['work_id','groups'],
+        'update': 'ws_share_group',
+        'tbl': 'ws_share_group',
+        'required': ['user_id'],
+        'format': 'dict',
+        'json': ['groups']
+    },
 }
 
 def check_chars(err_flag, *lists):
@@ -180,6 +196,29 @@ def get_path_info(db_settings, path):
     db_module = importlib.import_module(db_settings.interface_name)
     return db_module.get_path_info(db_settings, path)
 
+def get_table_names(db_settings):
+    """
+    Get the names of tables in the database (this can be useful when the user has
+    changed versions)
+    """
+    db_module = importlib.import_module(db_settings.interface_name)
+    return db_module.get_table_names(db_settings)
+
+def get_db_info(db_settings):
+    """
+    Get the info for the database, including the version it was created with,
+    updates made, and the latest version of toyz it was configured for
+    """
+    db_module = importlib.import_module(db_settings.interface_name)
+    return db_module.get_db_info(db_settings)
+
+def update_version(db_settings, params):
+    """
+    It may be necessary to update a database when the Toyz version changes. This function
+    will be unique to each DB and describe how to implement a given version change
+    """
+    db_module = importlib.import_module(db_settings.interface_name)
+    return db_module.update_version(db_settings, version, verstion_params)
 
 def db_func(db_settings, func, **params):
     """

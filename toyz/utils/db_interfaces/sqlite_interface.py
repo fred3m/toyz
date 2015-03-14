@@ -234,17 +234,34 @@ def create_toyz_database(db_settings):
     
     See :py:mod:`toyz.utils.db` for more info.
     """
+    from datetime import datetime
+    from toyz.utils import core
     if os.path.isfile(db_settings.path):
-        raise ToyzDbError("Database already exists")
+        overwrite = core.get_bool("Database already exists, overwrite? ")
+        if overwrite:
+            overwrite = core.get_bool(
+                "This will remove all user and group settings and workspaces for this "
+                "Toyz instance (it may be a good idea to copy your current DB before)"
+                "you proceed. Are you sure you want to overwrite the current DB? ")
+        if overwrite:
+            os.remove(db_settings.path)
+        else:
+            return
     db = sqlite3.connect(db_settings.path)
     
-    # TODO: Implement version control
-    #from toyz import version
-    #version = version.version
-    #db.execute("create table db_info (info_key text not null, info_value text not null);")
-    #db.execute("create unique index db_info_idx on db_info (info_key);")
-    #db.execute("insert into db_info (info_key, info_value) values ('version',?)",(version,))
+    # Keep track of the version of Toyz and version of the database
+    from toyz import version
+    timestamp = datetime.now().__str__()
+    db.execute("""create table db_info (
+        key text not null, 
+        value text not null,
+        timestamp text not null);""")
+    db.execute("insert into db_info (key, value, timestamp) values ('created',?,?)",
+        (version.version, timestamp))
+    db.execute("insert into db_info (key, value, timestamp) values ('current',?,?)",
+        (version.version, timestamp))
     
+    # Create the rest of the tables for the database
     db.execute("create table users ("
         "user_id text not null, "
         "user_type text not null, "
@@ -288,6 +305,22 @@ def create_toyz_database(db_settings):
         "work_settings text not null);")
     db.execute("create unique index workspaces_idx on workspaces (user_id, user_type, work_id);")
     
+    db.execute("""
+        create table ws_share_user (
+        user_id text not null,
+        work_id text not null,
+        users text not null
+        );""")
+    db.execute("create unique index user_share on ws_share_user (user_id, work_id);")
+    
+    db.execute("""
+        create table ws_share_group (
+        user_id text not null,
+        work_id text not null,
+        groups text not null
+        );""")
+    db.execute("create unique index group_share on ws_share_group (user_id, work_id);")
+    
     db.commit()
     db.close()
     print("New toyz database created at '{0}'".format(db_settings.path))
@@ -319,14 +352,9 @@ def get_path_info(db_settings, path):
     group_info = {p[0]:p[1] for p in all_info if p[2]=='group_id'}
     return {'users': user_info, 'groups':group_info}
 
-########################################################
-# Non API Functions
-########################################################
-
 def get_table_names(db_settings):
     """
-    Get a list of all tables in the database. This is not a required part of the API but
-    can be very useful for debugging purposes.
+    Get a list of all tables in the database.
     
     Parameters
         - db_settings (*object( ): Database settings
@@ -342,3 +370,30 @@ def get_table_names(db_settings):
     except:
         raise ToyzDbError('Error loading table names from database: {0}'.format(db_settings.path))
     return tables
+
+def get_db_info(db_settings):
+    """
+    Get db_info for the database (includes the Toyz version that created the DB, any
+    updates made, and the current version of Toyz that the DB is configured for)
+    """
+    db = sqlite3.connect(db_settings.path)
+    cursor = db.execute('select key, value, timestamp from db_info;')
+    meta = cursor.fetchall()
+    print('meta', meta)
+    db_info = {info[0]:{
+        'value': info[1],
+        'timestamp': info[2]
+    } for info in meta}
+    return db_info
+
+def update_version(db_settings, params):
+    """
+    Update the database when a Toyz version changes (if necessary). At the time params
+    is a dictionary that requires the keys 'toyz_version' and 'db_version', the versions
+    of the Toyz instance and database respectively. In the future, updates to the DB may
+    require other parameters.
+    """
+    toyz_version = params['toyz_version']
+    db_version = params['db_version']
+    # Code here to update to future versions
+    print('No updates needed') # for now

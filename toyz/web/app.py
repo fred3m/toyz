@@ -413,6 +413,11 @@ class ToyzWebApp(tornado.web.Application):
         
         self.root_path = root_path
         self.toyz_settings = core.ToyzSettings(root_path)
+        
+        # Check that the database is up to date with the current version of Toyz
+        core.check_version(self.toyz_settings.db)
+        
+        # If the user has specified a port, use it
         if tornado.options.options.port is not None:
             self.toyz_settings.web.port = tornado.options.options.port
         

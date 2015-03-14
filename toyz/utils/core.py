@@ -676,6 +676,22 @@ class ToyzSettings:
         self.save_settings()
         print("\nFirst Time Setup completed")
 
+def check_version(db_settings):
+    """
+    Since version changes may update the API or the database, check that the current version
+    is compatible with the users configuration and database
+    """
+    from toyz.version import version as toyz_version
+    db_info = db_utils.get_db_info(db_settings)
+    print('db_info:', db_info)
+    db_version = db_info['current']['value']
+    if toyz_version!=db_version:
+        print('New version of toyz, checking for database upgrades')
+        db.update_version(db_settings, {
+            'toyz_version': toyz_version,
+            'db_version': db_version
+        })
+
 class Toy:
     """
     A toy built on the toyz framework.
