@@ -379,9 +379,15 @@ Toyz.Workspace.Workspace = function(params){
 };
 Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
     console.log('all_dependencies_loaded', this);
-    /*file_dialog = new Toyz.Core.FileDialog({
-        websocket: this.websocket
-    });*/
+    
+    this.$loader = $('<div/>').append('<label>Loading</label>');
+    this.$loader.dialog({
+        resizable: false,
+        draggable: true,
+        autoOpen: true,
+        modal: true,
+        buttons: {}
+    });
     
     this.websocket.send_task({
         task: {
@@ -390,6 +396,7 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
             parameters: {}
         },
         callback: function(result){
+            this.$loader.dialog('close');
             console.log('msg received:', result);
             var param_div = $.extend(true,{},result.io_info);
             console.log('param_div', param_div);
