@@ -719,7 +719,7 @@ Toyz.Gui.Gui = function(options){
     if(options.hasOwnProperty('default')){
         this.set_params({values:options.default});
     };
-    console.log('Toyz.Gui.Gui', this);
+    //console.log('Toyz.Gui.Gui', this);
 };
 // Parse a parameter (param) to see if it is a div containing a subset of parameters
 // param: parameter JSON object

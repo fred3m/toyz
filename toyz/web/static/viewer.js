@@ -521,7 +521,7 @@ Toyz.Viewer.Controls = function(options){
                     height: 200,
                     scale: true
                 };
-                this.workspace.websocket.send_task({
+                websocket.send_task({
                     task: {
                         module: 'toyz.web.tasks',
                         task: 'get_img_data',
@@ -936,7 +936,7 @@ Toyz.Viewer.Contents.prototype.load_img = function(settings, viewer_frame){
                 }
             }
         };
-        this.workspace.websocket.send_task({
+        websocket.send_task({
             task: {
                 module: 'toyz.web.tasks',
                 task: 'get_file_info',
@@ -982,7 +982,7 @@ Toyz.Viewer.Contents.prototype.get_img_info = function(viewer_frame, file_frame)
         img_info.viewer = viewer;
     };
     //console.log('img_info', img_info);
-    this.workspace.websocket.send_task({
+    websocket.send_task({
         task: {
             module: 'toyz.web.tasks',
             task: 'get_img_info',
@@ -1022,7 +1022,7 @@ Toyz.Viewer.Contents.prototype.get_tile_map = function(viewer_frame, file_frame)
     var file_info = $.extend(true, {}, this.frames[viewer_frame].file_info);
     //console.log('viewer frame in get_tile_map', viewer_frame,file_info);
     delete file_info['images'];
-    this.workspace.websocket.send_task({
+    websocket.send_task({
         task: {
             module: 'toyz.web.tasks',
             task: 'get_tile_info',
@@ -1058,7 +1058,7 @@ Toyz.Viewer.Contents.prototype.get_img_tiles = function(viewer_frame, file_frame
     for(var tile_idx in tiles){
         if(tiles.hasOwnProperty(tile_idx)){
             //console.log('tile', tiles[tile_idx]);
-            this.workspace.websocket.send_task({
+            websocket.send_task({
                 task: {
                     module: 'toyz.web.tasks',
                     task: 'get_img_tile',
@@ -1117,7 +1117,7 @@ Toyz.Viewer.Contents.prototype.onmousemove = function(event){
             var xy = this.extract_coords(event, img_info);
             var x = Math.round(xy[0]/img_info.scale);
             var y = Math.round(xy[1]/img_info.scale);
-            this.workspace.websocket.send_task({
+            websocket.send_task({
                 task: {
                     module: 'toyz.web.tasks',
                     task: 'get_img_data',

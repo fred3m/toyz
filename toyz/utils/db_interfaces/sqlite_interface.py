@@ -78,7 +78,13 @@ def update_param(db_settings, param_type, **params):
                 params[update] = {json.dumps(p):v for p,v in params[update].items()}
             if param_format['get'][1] in param_format['json']:
                 params[update] = {p: json.dumps(v) for p,v in params[update].items()}
-    
+    # Make sure all required fields are passed to the function
+    if not all([key in params for key in cols]):
+        missing = []
+        for key in param_format['required']:
+            if key not in params:
+                missing.append(key)
+        raise ToyzDbError("Reuired fields {0} missing in update".format(','.join(missing)))
     values = [params[key] for key in required]
     if param_format['format'] == 'single':
         cols.append(update)
@@ -100,6 +106,8 @@ def update_param(db_settings, param_type, **params):
         for val in params[update]:
             lvalues = values + [val]
             db.execute(sql,tuple(lvalues))
+    else:
+        raise ToyzDbError("Invalid format")
     
     total_changes = db.total_changes
     db.commit()
@@ -148,6 +156,8 @@ def update_all_params(db_settings, param_type, **params):
                 deleted += delete_param(db_settings, param_type, **param_dict)
         # Total updates is the number of records deleted + the number of rows updated
         return update_param(db_settings, param_type, **params) + deleted
+    else:
+        raise ToyzDbError("Invalid format")
 
 def get_param(db_settings, param_type, wildcards=False, **params):
     """
@@ -306,20 +316,18 @@ def create_toyz_database(db_settings):
     db.execute("create unique index workspaces_idx on workspaces (user_id, user_type, work_id);")
     
     db.execute("""
-        create table ws_share_user (
+        create table shared_workspaces (
         user_id text not null,
         work_id text not null,
-        users text not null
+        share_id text not null,
+        share_id_type text not null,
+        view boolean not null,
+        modify boolean not null,
+        share boolean not null
         );""")
-    db.execute("create unique index user_share on ws_share_user (user_id, work_id);")
-    
     db.execute("""
-        create table ws_share_group (
-        user_id text not null,
-        work_id text not null,
-        groups text not null
-        );""")
-    db.execute("create unique index group_share on ws_share_group (user_id, work_id);")
+        create unique index shared_workspaces_idx on shared_workspaces 
+        (user_id, work_id, share_id, share_id_type);""")
     
     db.commit()
     db.close()
@@ -379,7 +387,6 @@ def get_db_info(db_settings):
     db = sqlite3.connect(db_settings.path)
     cursor = db.execute('select key, value, timestamp from db_info;')
     meta = cursor.fetchall()
-    print('meta', meta)
     db_info = {info[0]:{
         'value': info[1],
         'timestamp': info[2]
@@ -397,3 +404,61 @@ def update_version(db_settings, params):
     db_version = params['db_version']
     # Code here to update to future versions
     print('No updates needed') # for now
+
+def insert_ws_row(db, user_id, work_id, row):
+    row['user_id'] = user_id
+    row['work_id'] = work_id
+    cols = row.keys()
+    vals = ','.join(['?' for i in range(len(cols))])
+    sql = "insert into shared_workspaces ({0}) values ({1})".format(
+        ','.join(cols), vals)
+    row_vals = tuple([row[col] for col in cols])
+    db.execute(sql, row_vals)
+
+def get_workspace_sharing(db_settings, **kwargs):
+    """
+    Get shared workspace information
+    """
+    db = sqlite3.connect(db_settings.path)
+    keys = kwargs.keys()
+    query = ' and '.join([key+'=?' for key in keys])
+    sql = 'select * from shared_workspaces where ({0});'.format(query)
+    print('kwargs', kwargs)
+    print('keys', keys)
+    print('sql', sql)
+    print('tuple', tuple([kwargs[k] for k in keys]))
+    cursor = db.execute(sql, tuple([kwargs[k] for k in keys]))
+    results = cursor.fetchall()
+    columns = [col[0] for col in cursor.description]
+    result = [{columns[n]: val for n, val in enumerate(row)} for row in results]
+    return result
+
+def update_workspace(db_settings, user_id, work_id, update_all=True, **kwargs):
+    """
+    Update sharing for a workspace
+    """
+    db = sqlite3.connect(db_settings.path)
+    if update_all is True:
+        sql = "delete from 'shared_workspaces' where user_id=? and work_id=?;"
+        db.execute(sql, (user_id, work_id))
+    if 'shared_users' in kwargs:
+        for row in kwargs['shared_users']:
+            row['share_id_type'] = 'user_id'
+            insert_ws_row(db, user_id, work_id, row)
+    if 'shared_groups' in kwargs:
+        for row in kwargs['shared_groups']:
+            row['share_id_type'] = 'group_id'
+            insert_ws_row(db, user_id, work_id, row)
+    db.commit()
+    db.close()
+
+def delete_workspace(db_settings, user_id, work_id):
+    db = sqlite3.connect(db_settings.path)
+    # Delete shared workspace permissions
+    sql = "delete from shared_workspaces where user_id=? and work_id=?;"
+    db.execute(sql, (user_id, work_id))
+    # Delete workspace
+    sql = "delete from workspaces where user_id=? and work_id=? and user_type='user_id';"
+    db.execute(sql, (user_id, work_id))
+    db.commit()
+    db.close()

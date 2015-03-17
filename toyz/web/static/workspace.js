@@ -349,6 +349,10 @@ Toyz.Workspace.LoadSrcDialog.prototype.open = function(data_src){
 };
 
 Toyz.Workspace.Workspace = function(params){
+    if(typeof websocket == 'undefined'){
+        websocket = new Toyz.Core.Websocket({
+        });
+    };
     if(!(params.hasOwnProperty('$parent'))){
         throw "ERROR: You must initialize a workspace with a $'parent' div"
     };
@@ -361,9 +365,6 @@ Toyz.Workspace.Workspace = function(params){
     this.tiles = {};
     this.tile_index = 0;
     this.params = $.extend(true,{},params);
-    this.websocket = new Toyz.Core.Websocket({
-        //logger:new Toyz.Core.Logger(document.getElementById("logger")),
-    });
     
     this.$loader = $('<div/>').append('<label>Loading</label>');
     this.$loader.dialog({
@@ -389,7 +390,7 @@ Toyz.Workspace.Workspace = function(params){
 Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
     console.log('all_dependencies_loaded', this);
     
-    this.websocket.send_task({
+    websocket.send_task({
         task: {
             module: 'toyz.web.tasks',
             task: 'get_workspace_info',
@@ -438,7 +439,7 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
                 console.log('WARNING: ', result.import_error[error])
             };
             if(this.hasOwnProperty('work_id')){
-                this.websocket.send_task({
+                websocket.send_task({
                     task: {
                         module: 'toyz.web.tasks',
                         task: 'load_workspace',
@@ -472,7 +473,7 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
         buttons: {
             Load: function(){
                 work_id = this.$ws_dropdown_input.val();
-                this.websocket.send_task({
+                websocket.send_task({
                     task: {
                         module: 'toyz.web.tasks',
                         task: 'load_workspace',
@@ -503,9 +504,12 @@ Toyz.Workspace.Workspace.prototype.save_workspace = function(params){
         ws_dict.workspaces[this.name] = {
             sources: sources,
             tiles: this.save_tiles()
-        }
+        };
         params = $.extend(true, ws_dict, params);
-        this.websocket.send_task({
+        if(this.hasOwnProperty('user_id')){
+            params['user_id'] = this.user_id;
+        };
+        websocket.send_task({
             task: {
                 module: 'toyz.web.tasks',
                 task: 'save_workspace',
@@ -528,23 +532,25 @@ Toyz.Workspace.Workspace.prototype.save_ws_as = function(){
     };
 };
 Toyz.Workspace.Workspace.prototype.load_workspace = function(){
-    this.websocket.send_task({
+    websocket.send_task({
         task: {
             module: 'toyz.web.tasks',
             task: 'load_user_info',
             parameters:{
-                user_id: this.websocket.user_id,
+                user_id: websocket.user_id,
                 user_attr: ['workspaces'],
             }
         },
         callback: function(result){
             this.$ws_dropdown_input.empty();
-            for(var key in result.workspaces){
+            var workspaces = Object.keys(result.workspaces).sort();
+            for(var i=0; i<workspaces.length; i++){
+                var key = workspaces[i];
                 var opt = $('<option/>')
                     .val(key)
                     .text(key);
                 this.$ws_dropdown_input.append(opt);
-            }
+            };
             this.$ws_dropdown_div.dialog('open');
         }.bind(this)
     });
@@ -593,7 +599,7 @@ Toyz.Workspace.Workspace.prototype.load_src = function(callback, data_src){
     delete src_params['conditions']
     console.log('source params', src_params);
     console.log('file_type', file_type);
-    this.websocket.send_task({
+    websocket.send_task({
         task: {
             module: 'toyz.web.tasks',
             task: 'load_data_file',

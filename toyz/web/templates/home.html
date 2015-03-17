@@ -40,31 +40,25 @@
                 var account_info = {
                     user_id: websocket.user_id,
                     pwd_gui: pwd_gui,
+                    $parent: $('#account-settings-div'),
+                    default: result,
+                    params: {},
+                    workspaces: Object.keys(result.workspaces)
                 };
-                
-                var paths = new Array();
-                var toyz = new Array();
-                
-                var my_params = Toyz.Console.Settings.getAccountSettings(account_info);
-                
                 if(result.hasOwnProperty('modules')){
-                    my_params.params.approved_modules = Toyz.Console.Settings.getModuleSettings({
-                        legend: 'Toyz Modules',
-                        param_name: 'modules'
+                    account_info.params.approved_modules = 
+                        Toyz.Console.Settings.getModuleSettings({
+                            legend: 'Toyz Modules',
+                            param_name: 'modules'
                     });
                 };
                 if(result.hasOwnProperty('toyz')){
-                    my_params.params.approved_toyz = Toyz.Console.Settings.getToyzSettings({
+                    account_info.params.approved_toyz = Toyz.Console.Settings.getToyzSettings({
                         legend: 'Toyz Paths',
                         param_name: 'toyz',
                     });
                 };
-                console.log('my params', my_params);
-                account_settings = new Toyz.Gui.Gui({
-                    params: my_params,
-                    $parent: $('#account-settings-div'),
-                    default: result
-                });
+                account_settings = new Toyz.Console.Settings.AccountSettings(account_info);
                 //console.log('account_settings:',account_settings);
                 
                 // If the user is in the admin group, also load the
@@ -262,10 +256,12 @@
             init_new_user_gui();
             init_new_group_gui();
             $('#submit-account-settings').click(function(){
-                var params = account_settings.get();
+                var params = account_settings.gui.get();
                 params['user_id'] = websocket.user_id;
                 delete params['account'];
                 delete params['logout'];
+                delete params['workspace'];
+                delete params['ws_users'];
                 websocket.send_task({
                     task: {
                         module: 'toyz.web.tasks',

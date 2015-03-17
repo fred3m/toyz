@@ -51,11 +51,16 @@ def load_user_settings(toyz_settings, tid, params):
     dbs = toyz_settings.db
     old_shortcuts = db_utils.get_param(dbs, 'shortcuts', user_id=tid['user_id'])
     shortcuts = core.check_user_shortcuts(toyz_settings, tid['user_id'], old_shortcuts)
+    workspaces = db_utils.get_param(dbs, 'workspaces', user_id=tid['user_id'])
+    
     response = {
         'id':'user_settings',
         'shortcuts': shortcuts,
-        'workspaces': db_utils.get_param(dbs, 'workspaces', user_id=tid['user_id'])
+        'workspaces': workspaces
     }
+    # set the default workspace sharing options
+    if len(workspaces)>0:
+        response['workspace'] = sorted(workspaces.keys())[0]
     
     groups = db_utils.get_param(toyz_settings.db, 'groups', user_id=tid['user_id'])
     
@@ -115,24 +120,13 @@ def load_user_info(toyz_settings, tid, params):
           response
     """
     user = core.get_user_type(params)
-    
-    #if 'user_id' in user:
-    #    fields = ['groups', 'paths', 'modules', 'toyz']
-    #else:
-    #    fields = ['users', 'paths', 'modules', 'toyz']
-    
     fields = params['user_attr']
-    
     response = {
         'id': 'user_info'
     }
     for field in fields:
-        #print('module update in {0}:'.format(field), db_utils.param_formats['modules']['update'])
         if field in params['user_attr']:
             response[field] = db_utils.get_param(toyz_settings.db, field, **user)
-    
-    #print('response:', response)
-    
     return response
 
 def save_user_info(toyz_settings, tid, params):
@@ -170,16 +164,16 @@ def save_user_info(toyz_settings, tid, params):
         del params['conditions']
     
     user = core.get_user_type(params)
-    update_fields = dict(params)
-    if 'user_id' in params:
-        del update_fields['user_id']
-    elif 'group_id' in params:
-        del update_fields['group_id']
-    for field in update_fields:
-        field_dict = {field: params[field]}
-        field_dict.update(user)
-        print('field:', field)
-        db_utils.update_all_params(toyz_settings.db, field, **field_dict)
+    #update_fields = dict(params)
+    #if 'user_id' in params:
+    #    del update_fields['user_id']
+    #elif 'group_id' in params:
+    #   del update_fields['group_id']
+    for field in params:
+        if field in db_utils.param_formats:
+            field_dict = {field: params[field]}
+            field_dict.update(user)
+            db_utils.update_all_params(toyz_settings.db, field, **field_dict)
     
     if 'user_id' in user:
         msg = params['user_id']
@@ -443,6 +437,27 @@ def create_paths(toyz_settings, tid, params):
     }
     return response
 
+def load_data_file(toyz_settings, tid, params):
+    """
+    Load a data file given a set of parameters from the browser, initialized by
+    ``get_io_info``.
+    """
+    import toyz.utils.io as io
+    
+    columns, data, meta = io.load_data_file(
+        params['io_module'],
+        params['file_type'], 
+        params['file_options'])
+    
+    response = {
+        'id': 'data_file',
+        'columns': columns,
+        'data': data,
+        'data_type': 'columns',
+        'meta': meta
+    }
+    return response
+
 def get_workspace_info(toyz_settings, tid, params):
     """
     Get I/O settings for different packages (pure python, numpy, pandas, etc) and
@@ -493,7 +508,6 @@ def get_workspace_info(toyz_settings, tid, params):
     tiles = {}
     import_error = {}
     modules = db_utils.get_param(toyz_settings.db, 'modules', user_id=tid['user_id'])
-    print('modules',modules)
     for module in modules:
         try:
             config = importlib.import_module(module+'.config')
@@ -510,28 +524,6 @@ def get_workspace_info(toyz_settings, tid, params):
     
     return response
 
-def load_data_file(toyz_settings, tid, params):
-    """
-    Load a data file given a set of parameters from the browser, initialized by
-    ``get_io_info``.
-    """
-    import toyz.utils.io as io
-    
-    columns, data, meta = io.load_data_file(
-        params['io_module'],
-        params['file_type'], 
-        params['file_options'])
-    
-    response = {
-        'id': 'data_file',
-        'columns': columns,
-        'data': data,
-        'data_type': 'columns',
-        'meta': meta
-    }
-    #print('response', response)
-    return response
-
 def save_workspace(toyz_settings, tid, params):
     """
     Save a workspace for later use
@@ -545,8 +537,18 @@ def save_workspace(toyz_settings, tid, params):
             'func': 'save_workspace'
         }
     else:
+        user_id = tid['user_id']
+        if 'user_id' in params and params['user_id']!=tid['user_id']:
+            params['work_id'] = work_id
+            permissions = core.get_workspace_permissions(toyz_settings, tid, params)
+            if permissions['modify']:
+                user_id = params['user_id']
+            else:
+                raise ToyzJobError(
+                    "You do not have permission to save {0}".format(params['work_id']))
+            
         db_utils.update_param(toyz_settings.db, 'workspaces', 
-            workspaces=params['workspaces'], user_id=tid['user_id'])
+            workspaces=params['workspaces'], user_id=user_id)
         response = {
             'id': 'notification',
             'msg': 'Workspace saved successfully',
@@ -560,16 +562,76 @@ def load_workspace(toyz_settings, tid, params):
     Load a workspace
     """
     core.check4keys(params, ['work_id'])
-    workspaces = db_utils.get_param(toyz_settings.db, 'workspaces', user_id=tid['user_id'])
-    if params['work_id'] not in workspaces:
-        raise ToyzJobError("{0} not found in workspaces".format(params['work_id']))
+    user_id = tid['user_id']
+    if 'user_id' in params and params['user_id']!=tid['user_id']:
+        permissions = core.get_workspace_permissions(toyz_settings, tid, params)
+        print('permissions', permissions)
+        if permissions['view']:
+            user_id = params['user_id']
+        else:
+            raise ToyzJobError("You do not have permission to load {0}".format(params['work_id']))
     
+    workspaces = db_utils.get_param(toyz_settings.db, 'workspaces', user_id=user_id)
+    if params['work_id'] not in workspaces:
+        raise ToyzJobError("{0} not found in your workspaces".format(params['work_id']))
     response = {
         'id': 'workspace',
         'work_id': params['work_id'],
         'settings': workspaces[params['work_id']]
     }
+    return response
+
+def get_workspace_sharing(toyz_settings, tid, params):
+    """
+    Get shared workspace settings for users and groups
     
+    Params
+        - work_id ( *string* ): name of the workspace
+    """
+    core.check4keys(params, ['work_id'])
+    shared_workspaces = db_utils.get_workspace_sharing(
+        toyz_settings.db, user_id=tid['user_id'], work_id=params['work_id'])
+    ws_users = [row for row in shared_workspaces if row['share_id_type']=='user_id']
+    ws_groups = [row for row in shared_workspaces if row['share_id_type']=='group_id']
+    
+    response = {
+        'id': 'get_workspace_sharing',
+        'ws_users': ws_users,
+        'ws_groups': ws_groups
+    }
+    return response
+
+def update_workspace(toyz_settings, tid, params):
+    """
+    Update user permissions or delete a workspace
+    
+    Params
+        - work_id ( *string* ): name of the workspace
+        - type ( *string* ): type of update
+            - Can be ``update`` to update user permissions or ``delete`` to remove the workspace
+        - users ( *dict*, optional ):
+            - Dict of permissions for other users
+            - Required if the update type is ``update``
+        - groups ( *dict*, optional ):
+            - Dict of permissions for other groups
+            - Required if the update type is ``update``
+    
+    Response
+        - id: 'notification'
+        - status: 'success' (if the update is successfully saved in the database)
+    """
+    params['user_id'] = tid['user_id']
+    if params['type'] == 'delete':
+        db_utils.delete_workspace(toyz_settings.db, tid['user_id'], params['work_id'])
+    elif params['type'] == 'update':
+        del params['type']
+        db_utils.update_workspace(toyz_settings.db, **params)
+    
+    response = {
+        'id': 'notification',
+        'func': 'update_workspace',
+        'msg': 'success'
+    }
     return response
 
 def get_file_info(toyz_settings, tid, params):
@@ -580,8 +642,8 @@ def get_file_info(toyz_settings, tid, params):
     core.check4keys(params, ['file_info', 'img_info'])
     if tid['user_id']!='admin':
         permissions = file_access.get_parent_permissions(
-            toyz_settings.db, params['filepath'], user_id=tid['user_id'])
-        if 'r' not in permissions:
+            toyz_settings.db, params['file_info']['filepath'], user_id=tid['user_id'])
+        if permissions is None or 'r' not in permissions:
             raise ToyzJobError(
                 'You do not have permission to view the requested file.'
                 'Please contact your network administrator if you believe this is an error.')
@@ -611,7 +673,7 @@ def get_img_info(toyz_settings, tid, params):
     core.check4keys(params, ['img_info', 'file_info'])
     if tid['user_id']!='admin':
         permissions = file_access.get_parent_permissions(
-            toyz.db, params['file_info']['filepath'], user_id=tid['user_id'])
+            toyz_settings.db, params['file_info']['filepath'], user_id=tid['user_id'])
         if 'r' not in permissions:
             raise ToyzJobError(
                 'You do not have permission to view the requested file.'
@@ -643,7 +705,7 @@ def get_tile_info(toyz_settings, tid, params):
     core.check4keys(params, ['img_info', 'file_info'])
     if tid['user_id']!='admin':
         permissions = file_access.get_parent_permissions(
-            toyz.db, params['filepath'], user_id=tid['user_id'])
+            toyz_settings.db, params['file_info']['filepath'], user_id=tid['user_id'])
         if 'r' not in permissions:
             raise ToyzJobError(
                 'You do not have permission to view the requested file.'
@@ -669,7 +731,7 @@ def get_img_tile(toyz_settings, tid, params):
     core.check4keys(params, ['img_info', 'file_info', 'tile_info'])
     if tid['user_id']!='admin':
         permissions = file_access.get_parent_permissions(
-            toyz.db, params['filepath'], user_id=tid['user_id'])
+            toyz_settings.db, params['file_info']['filepath'], user_id=tid['user_id'])
         if 'r' not in permissions:
             raise ToyzJobError(
                 'You do not have permission to view the requested file.'

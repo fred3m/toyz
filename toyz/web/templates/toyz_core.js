@@ -257,13 +257,6 @@ Toyz.Core.FileDialog = function(options){
         $div: $new_folder,
         $input: $('<input/>').prop('size',80).appendTo($new_folder)
     };
-    // Attach websocket to file dialog
-    if(!options.hasOwnProperty('websocket')){
-        this.websocket = new Toyz.Core.Websocket({rx_action: function(){}});
-    }else{
-        this.websocket = options.websocket;
-        delete options.websocket;
-    };
     // Function to execute when the user clicks "open" after file is chosen
     this.click_open = function(){};
     this.default_buttons = {
@@ -324,7 +317,7 @@ Toyz.Core.FileDialog = function(options){
             Create: function(){
                 if(this.new_folder.$input.val()!=null && this.new_folder.$input.val()!=''){
                     this.new_folder.$div.dialog('close');
-                    this.websocket.send_task({
+                    websocket.send_task({
                         task: {
                             module: 'toyz.web.tasks',
                             task: 'create_paths',
@@ -368,7 +361,7 @@ Toyz.Core.FileDialog.prototype.load_directory = function(options){
     this.$div.dialog({
         buttons:this.default_buttons
     });
-    this.websocket.send_task({
+    websocket.send_task({
         task: {
             module:"toyz.web.tasks",
             task:"load_directory",

@@ -81,8 +81,14 @@ def get_file_permissions(db_settings, path, **user):
     for user_type, user_id in user.items():
         if user_id == 'admin':
             return 'frwx'
+        elif 'user_id' in user:
+            groups = db_utils.get_param(db_settings, 'groups', **user)
+            print('groups', groups)
+            if 'admin' in groups:
+                return 'frwx'
     permissions = None
     path_info = db_utils.get_path_info(db_settings, path)
+    
     if path_info is not None:
         # Find permissions for the user or group (if there are any)
         if 'user_id' in user:
@@ -90,12 +96,10 @@ def get_file_permissions(db_settings, path, **user):
             # Otherwise check for the most stringent group permissions
             if user['user_id'] in path_info['users']:
                 permissions = path_info['users'][user['user_id']]
+                print('permissions in user', permissions)
             else:
                 # Combine all group permissions to take the most permissive
                 # permissions of the combined groups
-                groups = db_utils.get_param(db_settings, 'groups', **user)
-                if 'admin' in groups:
-                    return 'frwx'
                 group_permissions = ''.join([p for g,p in path_info['groups'].items() 
                     if g in groups])
                 permissions = ''.join(set(group_permissions))
@@ -127,7 +131,9 @@ def get_parent_permissions(db_settings, path, **user):
     if parents[0] != path:
         parents.insert(0,path)
     for parent in parents:
+        print('parent', parent)
         permissions = get_file_permissions(db_settings, parent, **user)
+        print('permissions', permissions)
         #print('permissions for {0}: {1}'.format(path,permissions))
         if permissions != None:
             return permissions

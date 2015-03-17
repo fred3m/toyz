@@ -34,6 +34,11 @@ html, body
     font-size: 200%;
 }
 
+.ws-user-div {
+    display: inline;
+    padding: 2px;
+}
+
 ul {
     list-style:none;
     padding-left:0;
