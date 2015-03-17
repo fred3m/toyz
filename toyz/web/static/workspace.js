@@ -715,14 +715,14 @@ Toyz.Workspace.Workspace.prototype.new_tile = function(key, options, my_idx){
             left: Math.floor(window.innerWidth/2),
         })
         .resize(function($inner_div, $div, event){
-            //var $div = $(event.originalElement);
-            //$inner_div.width($div.width());
-            //$inner_div.height($div.height());
+            var $div = $(event.originalElement);
+            $inner_div.width($div.width());
+            $inner_div.height($div.height());
         }.bind(this, $inner_div));
     $div.append($inner_div);
     this.$div.append($div);
-    //$inner_div.width($div.width());
-    //$inner_div.height($div.height());
+    $inner_div.width($div.width());
+    $inner_div.height($div.height());
     this.tiles[inner_id] = new Toyz.Workspace.Tile(this, {
         id: inner_id,
         $div: $div,

@@ -706,6 +706,8 @@ Toyz.Viewer.Contents = function(params){
         .removeClass('context-menu-tile')
         .addClass('context-menu-viewer')
         .addClass('viewer-main-div');
+    this.$tile_div.width(this.tile.$div.width());
+    this.$tile_div.height(this.tile.$div.height());
     this.workspace = params.workspace;
     this.settings = {};
     //create tile context menu

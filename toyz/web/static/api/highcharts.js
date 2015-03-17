@@ -346,6 +346,8 @@ Toyz.API.Highcharts.Contents = function(params){
     this.type = 'highcharts';
     this.tile = params.tile;
     this.$tile_div = params.$tile_div;
+    this.$tile_div.width(this.tile.$div.width());
+    this.$tile_div.height(this.tile.$div.height());
     this.$tile_div
         .removeClass('context-menu-tile')
         .addClass('context-menu-highcharts');
