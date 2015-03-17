@@ -420,7 +420,6 @@ class ToyzWebApp(tornado.web.Application):
         else:
             root_path = tornado.options.options.root_path
         
-        self.root_path = root_path
         self.toyz_settings = core.ToyzSettings(root_path)
         
         # Check that the database is up to date with the current version of Toyz
@@ -567,7 +566,7 @@ class ToyzWebApp(tornado.web.Application):
               only **toyz_settings** is supported
         """
         if attr == 'toyz_settings':
-            self.toyz_settings = core.ToyzSettings(self.root_path)
+            self.toyz_settings = core.ToyzSettings(self.toyz_settings.root_path)
 
 def init_web_app():
     """
@@ -585,7 +584,7 @@ def init_web_app():
     
     # Initialize the tornado web application
     toyz_app = ToyzWebApp()
-    print("Application root directory:", toyz_app.root_path)
+    print("Application root directory:", toyz_app.toyz_settings.root_path)
     
     # Continuous loop to wait for incomming connections
     print("Server is running on port", toyz_app.toyz_settings.web.port)

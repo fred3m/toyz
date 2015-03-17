@@ -592,6 +592,7 @@ class ToyzSettings:
             self.first_time_setup(config_root_path)
         else:
             self.load_settings(config_path)
+        self.root_path = config_root_path
     
     def save_settings(self, security_key=None):
         """
