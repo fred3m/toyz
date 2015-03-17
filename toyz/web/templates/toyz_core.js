@@ -138,8 +138,6 @@ Toyz.Core.Websocket.prototype.send_task = function(request){
         };
     }else{
         //The connection hasn't opened yet, add the task to the queue
-        //console.log('readyState:',
-        //        this.ws.readyState, 'session_id', this.session_id)
         console.log('stored task in queue:', request);
         this.queue.push(request);
     };

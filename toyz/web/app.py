@@ -291,11 +291,12 @@ class AuthToyz3rdPartyHandler(AuthHandler, Toyz3rdPartyHandler):
     def get(self, path):
         Toyz3rdPartyHandler.get(self, path)
 
-def job_process(pipe):
+def job_process(session_id, pipe, websocket_pipe):
     """
     Process created for the websocket. When a job is received from the Toyz
     Application it is run in this process and a response is sent.
     """
+    websocket_pipe.close()
     while True:
         try:
             msg = pipe.recv()    # Read from the output pipe and do nothing
@@ -305,7 +306,7 @@ def job_process(pipe):
             pipe.send(result)
         except EOFError:
             break
-    print('job_process finished')
+    print('job_process {0} finished'.format(session_id))
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     """
@@ -519,8 +520,9 @@ class ToyzWebApp(tornado.web.Application):
         #initialize process for session jobs
         websocket.job_pipe, remote_pipe = multiprocessing.Pipe()
         websocket.process = multiprocessing.Process(
-            target = job_process, args=(remote_pipe,))
+            target = job_process, args=(session_id, remote_pipe, websocket.job_pipe))
         websocket.process.start()
+        remote_pipe.close()
         process_events = (tornado.ioloop.IOLoop.READ | tornado.ioloop.IOLoop.ERROR)
         tornado.ioloop.IOLoop.current().add_handler(
             websocket.job_pipe, websocket.send_response, process_events)
@@ -539,14 +541,19 @@ class ToyzWebApp(tornado.web.Application):
         his/her **temp** directory is also deleted.
         """
         shutil.rmtree(session['path'])
+        # Close process for current session
+        tornado.ioloop.IOLoop.current().remove_handler(
+            self.user_sessions[session['user_id']][session['session_id']].job_pipe)
+        self.user_sessions[session['user_id']][session['session_id']].job_pipe.close()
+        # Delete the current session
         del self.user_sessions[session['user_id']][session['session_id']]
+        # If all of the users sessions have completed, delete the users temp directory
         if len(self.user_sessions[session['user_id']])==0:
             shortcuts = db_utils.get_param(self.toyz_settings.db, 'shortcuts', 
                 user_id=session['user_id'])
             shutil.rmtree(shortcuts['temp'])
             del self.user_sessions[session['user_id']]
-        
-        print('active users remaining:', self.user_sessions.keys())
+        #print('active users remaining:', self.user_sessions.keys())
     
     def update(self, attr):
         """
