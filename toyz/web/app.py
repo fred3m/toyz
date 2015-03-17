@@ -312,15 +312,23 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     Websocket that handles jobs sent to the server from clients
     """
     
-    def open(self, *args):
+    def open(self, session_id=None):
         """
         Called when a new websocket is opened
         
         Parameters
             *args: Currently no arguments are passed to this function
         """
+        settings = {
+            'websocket': self,
+        }
+        if session_id=='':
+            print('New session')
+        else:
+            settings['session_id'] = session_id
+            
         user_id = self.get_secure_cookie('user').strip('"')
-        self.application.new_session(user_id, websocket=self)
+        self.application.new_session(user_id, **settings)
 
     def on_close(self):
         """
@@ -460,7 +468,7 @@ class ToyzWebApp(tornado.web.Application):
             (r"/toyz/templates/(.*)", toyz_template_handler),
             (r"/toyz_core.js", core_handler),
             (r"/third_party/(.*)", third_party_handler, {'path':core.ROOT_DIR}),
-            (r"/job", WebSocketHandler),
+            (r"/session/(.*)", WebSocketHandler),
         ]
         
         settings={
@@ -481,7 +489,7 @@ class ToyzWebApp(tornado.web.Application):
             open_port = self.find_open_port(port+1)
         return open_port
     
-    def new_session(self, user_id, websocket):
+    def new_session(self, user_id, websocket, session_id=None):
         """
         Open a new websocket session for a given user
         
@@ -494,8 +502,9 @@ class ToyzWebApp(tornado.web.Application):
             self.user_sessions[user_id] = {}
             print("Users logged in:", self.user_sessions.keys())
         
-        session_id = str(
-            datetime.datetime.now()).replace(' ','__').replace('.','-').replace(':','_')
+        if session_id is None:
+            session_id = str(
+                datetime.datetime.now()).replace(' ','__').replace('.','-').replace(':','_')
         self.user_sessions[user_id][session_id] = websocket
         shortcuts = db_utils.get_param(self.toyz_settings.db, 'shortcuts', 
             user_id=user_id)
@@ -535,6 +544,7 @@ class ToyzWebApp(tornado.web.Application):
             shortcuts = db_utils.get_param(self.toyz_settings.db, 'shortcuts', 
                 user_id=session['user_id'])
             shutil.rmtree(shortcuts['temp'])
+            del self.user_sessions[session['user_id']]
         
         print('active users remaining:', self.user_sessions.keys())
     
