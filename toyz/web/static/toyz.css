@@ -67,13 +67,14 @@ ul {
     display:inline-block;
     height:100%;
     width:100%;
-    overflow:scroll;
+    overflow:auto;
     float:left;
 }
 
 .file-dialog-select {
     height: 90%;
     width: 100%;
+    overflow:auto;
 }
 
 /******************** workspace styles ********************/
