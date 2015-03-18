@@ -260,3 +260,12 @@ ul {
     padding: 2px;
     position: absolute;
 }
+
+/******************** other styles ********************/
+.logger-textarea {
+    width: 100%;
+    height: 100%;
+    overflow:auto;
+    font-size:12px;
+    resize:none;
+}

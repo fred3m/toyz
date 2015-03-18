@@ -87,17 +87,26 @@ Toyz.Core.Websocket = function(options){
     // Default functions for receiving errors, notifications, and warnings
     this.rx_error = function(error){
         alert('ERROR: '+error.error);
+        if(this.logger){
+            this.logger.log(error.traceback + '\n' + error.error, true);
+        };
         console.log('Error',error);
         return true;
     };
     this.notify = function(result){
         //alert(result.msg);
         console.log('notification:', result.msg);
+        if(this.logger){
+            this.logger.log(result.msg, true);
+        };
         return true;
     };
     this.warn = function(result){
         alert(result.warning);
         console.log('warning:', result);
+        if(this.logger){
+            this.logger.log(result.warning, true);
+        };
         return true;
     };
     // Update the websocket with any options sent on initialization
@@ -644,16 +653,22 @@ Toyz.Core.Debug = function(groups){
 };
 
 // Object to log server data to the user
-// element: an HTML textarea element on the webpage
-Toyz.Core.Logger=function(element){
-    this.element=element;
-    this.log=function(text,useTimestamp){
-        if(useTimestamp){
-            var timestamp=new Date()
-            element.value=element.value+timestamp+"\n";
+Toyz.Core.Logger=function(options){
+    this.$parent = options.$parent;
+    this.$textarea = $('<textarea disabled/>')
+        .addClass('logger-textarea');
+    this.$parent.append(this.$textarea);
+    this.$parent.height('200px');
+    this.log=function(text, use_timestamp){
+        var current_log = this.$textarea.val();
+        new_log = current_log + '*************************************\n';
+        if(use_timestamp){
+            var timestamp=new Date();
+            new_log = new_log+timestamp+"\n";
         };
-        element.value=element.value+text+"\n\n";
-        $(element).scrollTop(element.scrollHeight);
+        new_log = new_log + text+"\n\n";
+        this.$textarea.val(new_log);
+        this.$textarea.scrollTop(this.$textarea.prop('scrollHeight'));
     };
 };
 

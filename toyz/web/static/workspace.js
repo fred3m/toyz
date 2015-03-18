@@ -47,6 +47,9 @@ Toyz.Workspace.contextMenu_items = function(workspace){
             this.save_ws_as();
         }.bind(workspace)},
         "share_workspace": {name: "Share Workspace"},
+        "show_logger": {name: "Show Logger", callback: function(){
+            this.$logger.dialog('open');
+        }.bind(workspace)},
         "logout": {name: "Logout", callback: function(){
             window.location = '/auth/logout/';
         }}
@@ -350,7 +353,21 @@ Toyz.Workspace.LoadSrcDialog.prototype.open = function(data_src){
 
 Toyz.Workspace.Workspace = function(params){
     if(typeof websocket == 'undefined'){
+        this.$logger = $('<div/>').css({
+            overflow: 'hidden'
+        });
+        this.$logger.dialog({
+            title: 'Logger',
+            resizable: true,
+            draggable: true,
+            autoOpen: false,
+            modal: false,
+            buttons: {}
+        }).css('font-size', '12px');
         websocket = new Toyz.Core.Websocket({
+            logger: new Toyz.Core.Logger({
+                $parent: this.$logger
+            })
         });
     };
     if(!(params.hasOwnProperty('$parent'))){
