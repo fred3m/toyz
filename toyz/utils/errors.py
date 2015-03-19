@@ -50,6 +50,12 @@ class ToyzIoError(ToyzError):
     """
     pass
 
+class ToyzDataError(ToyzError):
+    """
+    Class for Toyz DataSource Errors
+    """
+    pass
+
 class ToyzWarning:
     """
     Class for warnings
