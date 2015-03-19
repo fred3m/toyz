@@ -80,24 +80,33 @@ Toyz.Core.Websocket = function(options){
     this.session_id = "";
     this.queue = [];
     this.close_warning = false;
-    this.job_url = "/job";
+    this.job_url = "/session/";
     this.rx_action = function(){};
     this.current_request = 0;
     this.requests = {};
     // Default functions for receiving errors, notifications, and warnings
     this.rx_error = function(error){
         alert('ERROR: '+error.error);
+        if(this.logger){
+            this.logger.log(error.traceback + '\n' + error.error, true);
+        };
         console.log('Error',error);
         return true;
     };
     this.notify = function(result){
         //alert(result.msg);
         console.log('notification:', result.msg);
+        if(this.logger){
+            this.logger.log(result.msg, true);
+        };
         return true;
     };
     this.warn = function(result){
         alert(result.warning);
         console.log('warning:', result);
+        if(this.logger){
+            this.logger.log(result.warning, true);
+        };
         return true;
     };
     // Update the websocket with any options sent on initialization
@@ -105,11 +114,53 @@ Toyz.Core.Websocket = function(options){
         this[opt] = options[opt];
     };
     // Initialize the websocket
+    this.connect_ws();
+};
+Toyz.Core.Websocket.prototype.send_task = function(request){
+    var task = request.task;
+    if(this.ws.readyState==1 && this.session_id!=""){
+        task.id={
+            user_id: this.user_id,
+            session_id: this.session_id,
+            request_id: this.current_request++
+        };
+        // In case there are multiple request_id increments before reaching this line
+        // we make sure to reset the counter with enough space to avoid duplicate id's
+        if(this.current_request>Toyz.Core.MAX_ID){
+            this.current_request=(this.current_request-Toyz.Core.xMAX_ID)*10;
+        };
+        // send_task options can specify functions to execute when responses are
+        // recieved from the server such as a callback, rx_error, notify, warn, etc.
+        this.requests[task.id.request_id.toString()]=request;
+        //console.log('sending', task);
+        this.ws.send(JSON.stringify(task));
+    }else if(this.ws.readyState>1){
+        // TODO: Warn user connection was lost and give the option to reconnect
+        if(this.logger){
+            this.logger.log("Attempted to send "
+                    +task.task+" but connection is closed",true);
+        };
+        // Websocket is closed, warn user the first time
+        if(!this.close_warning){
+            this.close_warning=true;
+            alert("Websocket to server was disconnected, could not send task. ");
+        };
+    }else{
+        //The connection hasn't opened yet, add the task to the queue
+        console.log('stored task in queue:', request);
+        this.queue.push(request);
+    };
+};
+Toyz.Core.Websocket.prototype.connect_ws = function(options){
+    options = $.extend(true, {}, options);
     var url="ws://"+location.host+this.job_url;
-    this.ws=new WebSocket(url);
+    if(options.hasOwnProperty('session_id')){
+        url = url + options.session_id
+    };
+    this.ws = new WebSocket(url);
+        
     if(this.hasOwnProperty('onopen')){
         this.ws.onopen = this.onopen;
-        delete this.onopen;
     }else{
         this.ws.onopen=function(){
             if(this.logger){
@@ -121,7 +172,35 @@ Toyz.Core.Websocket = function(options){
         if(this.logger){
             this.logger.log("Connection to server lost",true);
         };
+        if(this.ws.readyState==3){
+            // Connection error, prompt user to retry connection
+            var reconnect = confirm(
+                "Websocket unable to connect to server, try again?");
+            if(reconnect){
+                var options = {};
+                if(this.session_id!=''){
+                    options.session_id = this.session_id;
+                };
+                this.connect_ws(options);
+                return;
+            }
+        }
     }.bind(this);
+    this.ws.onerror = function(){
+        if(this.ws.readyState==3){
+            // Connection error, prompt user to retry connection
+            var reconnect = confirm(
+                "Websocket unable to connect to server, try again?");
+            if(reconnect){
+                var options = {};
+                if(this.session_id!=''){
+                    options.session_id = this.session_id;
+                };
+                this.connect_ws(options);
+                return
+            }
+        }
+    }
 	this.ws.onmessage=function(event){
         //console.log('event', event);
 		var result = JSON.parse(event.data);
@@ -161,44 +240,6 @@ Toyz.Core.Websocket = function(options){
             delete this.requests[result.request_id];
         };
 	}.bind(this);
-};
-Toyz.Core.Websocket.prototype.send_task = function(request){
-    var task = request.task;
-    if(this.ws.readyState==1 && this.session_id!=""){
-        task.id={
-            user_id: this.user_id,
-            session_id: this.session_id,
-            request_id: this.current_request++
-        };
-        // In case there are multiple requestId increments before reaching this line
-        // we make sure to reset the counter with enough space to avoid duplicate id's
-        if(this.current_request>Toyz.Core.MAX_ID){
-            this.current_request=(this.current_request-Toyz.Core.xMAX_ID)*10;
-        };
-        // send_task options can specify functions to execute when responses are
-        // recieved from the server such as a callback, rx_error, notify, warn, etc.
-        this.requests[task.id.request_id.toString()]=request;
-        //console.log('sending', task);
-        this.ws.send(JSON.stringify(task));
-    }else if(this.ws.readyState>1){
-        // TODO: Warn user connection was lost and give the option to reconnect
-        if(this.logger){
-            this.logger.log("Attempted to send "
-                    +task.task+" but connection is closed",true);
-        };
-        // Websocket is closed, warn user the first time
-        if(!this.close_warning){
-            this.close_warning=true;
-            alert("Websocket to server was disconnected, could not send task");
-            throw Error("Websocket to server was disconnected, could not send task");
-        };
-    }else{
-        //The connection hasn't opened yet, add the task to the queue
-        //console.log('readyState:',
-        //        this.ws.readyState, 'session_id', this.session_id)
-        console.log('stored task in queue:', request);
-        this.queue.push(request);
-    };
 };
 Toyz.Core.Websocket.prototype.init_ws = function(result){
     this.user_id = result.user_id;
@@ -256,13 +297,6 @@ Toyz.Core.FileDialog = function(options){
     this.new_folder = {
         $div: $new_folder,
         $input: $('<input/>').prop('size',80).appendTo($new_folder)
-    };
-    // Attach websocket to file dialog
-    if(!options.hasOwnProperty('websocket')){
-        this.websocket = new Toyz.Core.Websocket({rx_action: function(){}});
-    }else{
-        this.websocket = options.websocket;
-        delete options.websocket;
     };
     // Function to execute when the user clicks "open" after file is chosen
     this.click_open = function(){};
@@ -324,7 +358,7 @@ Toyz.Core.FileDialog = function(options){
             Create: function(){
                 if(this.new_folder.$input.val()!=null && this.new_folder.$input.val()!=''){
                     this.new_folder.$div.dialog('close');
-                    this.websocket.send_task({
+                    websocket.send_task({
                         task: {
                             module: 'toyz.web.tasks',
                             task: 'create_paths',
@@ -368,7 +402,7 @@ Toyz.Core.FileDialog.prototype.load_directory = function(options){
     this.$div.dialog({
         buttons:this.default_buttons
     });
-    this.websocket.send_task({
+    websocket.send_task({
         task: {
             module:"toyz.web.tasks",
             task:"load_directory",
@@ -619,16 +653,22 @@ Toyz.Core.Debug = function(groups){
 };
 
 // Object to log server data to the user
-// element: an HTML textarea element on the webpage
-Toyz.Core.Logger=function(element){
-    this.element=element;
-    this.log=function(text,useTimestamp){
-        if(useTimestamp){
-            var timestamp=new Date()
-            element.value=element.value+timestamp+"\n";
+Toyz.Core.Logger=function(options){
+    this.$parent = options.$parent;
+    this.$textarea = $('<textarea disabled/>')
+        .addClass('logger-textarea');
+    this.$parent.append(this.$textarea);
+    this.$parent.height('200px');
+    this.log=function(text, use_timestamp){
+        var current_log = this.$textarea.val();
+        new_log = current_log + '*************************************\n';
+        if(use_timestamp){
+            var timestamp=new Date();
+            new_log = new_log+timestamp+"\n";
         };
-        element.value=element.value+text+"\n\n";
-        $(element).scrollTop(element.scrollHeight);
+        new_log = new_log + text+"\n\n";
+        this.$textarea.val(new_log);
+        this.$textarea.scrollTop(this.$textarea.prop('scrollHeight'));
     };
 };
 

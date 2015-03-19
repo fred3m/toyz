@@ -89,7 +89,7 @@ Toyz.Console.Settings.UserSettings = function(params){
             type: 'select',
             options: params.users,
             func: {
-                change: function(websocket){
+                change: function(){
                     websocket.send_task({
                         task: {
                             module: 'toyz.web.tasks',
@@ -107,7 +107,7 @@ Toyz.Console.Settings.UserSettings = function(params){
                             });
                         }.bind(this)
                     })
-                }.bind(this, params.websocket)
+                }.bind(this)
             }
         },
         groups_div: {
@@ -167,7 +167,7 @@ Toyz.Console.Settings.UserSettings = function(params){
                 innerHTML: 'reset password'
             },
             func: {
-                click: function(websocket){
+                click: function(){
                     websocket.send_task({
                         task: {
                             module: 'toyz.web.tasks',
@@ -177,7 +177,7 @@ Toyz.Console.Settings.UserSettings = function(params){
                             }
                         }
                     })
-                }.bind(this, params.websocket)
+                }.bind(this)
             }
         },
         delete_user: {
@@ -208,7 +208,7 @@ Toyz.Console.Settings.UserSettings = function(params){
                 innerHTML: 'save user'
             },
             func: {
-                click: function(websocket){
+                click: function(){
                     var params = this.gui.get();
                     delete params.conditions;
                     console.log('params before save', params);
@@ -219,7 +219,7 @@ Toyz.Console.Settings.UserSettings = function(params){
                             parameters: params
                         }
                     });
-                }.bind(this, params.websocket)
+                }.bind(this)
             }
         }
     };
@@ -246,7 +246,7 @@ Toyz.Console.Settings.GroupSettings = function(params){
             type: 'select',
             options: params.groups,
             func: {
-                change: function(websocket){
+                change: function(){
                     websocket.send_task({
                         task: {
                             module: 'toyz.web.tasks',
@@ -264,7 +264,7 @@ Toyz.Console.Settings.GroupSettings = function(params){
                             });
                         }.bind(this)
                     });
-                }.bind(this, params.websocket)
+                }.bind(this)
             }
         },
         users_div: {
@@ -354,7 +354,7 @@ Toyz.Console.Settings.GroupSettings = function(params){
                             parameters: this.gui.get()
                         }
                     })
-                }.bind(this, params.websocket)
+                }.bind(this)
             }
         }
     };
@@ -487,7 +487,7 @@ Toyz.Console.Settings.getAdminSettings = function(params, $admin_div){
     // submit button for admin div
     var $submit = $('<button/>')
         .html("Submit")
-        .click(function(websocket){
+        .click(function(){
             var settings = {
                 config: this.config.get(),
                 db: this.db.get(),
@@ -504,20 +504,20 @@ Toyz.Console.Settings.getAdminSettings = function(params, $admin_div){
                     parameters: settings
                 }
             });
-        }.bind(admin_settings, params.websocket));
+        }.bind(admin_settings));
     $admin_div.append($submit);
     
     return admin_settings;
 };
 
-Toyz.Console.Settings.getAccountSettings = function(params){
+Toyz.Console.Settings.AccountSettings = function(options){
     var account_settings = {
         type: 'div',
-        params: {
+        params: $.extend(true, {
             account: {
                 type: 'label',
                 prop: {
-                    innerHTML: 'You are Logged in as <font color="red">'+params.user_id+'</font>'
+                    innerHTML: 'You are Logged in as <font color="red">'+options.user_id+'</font>'
                 }
             },
             logout: {
@@ -535,7 +535,7 @@ Toyz.Console.Settings.getAccountSettings = function(params){
                 func:{
                     click: function(){
                         this.root.$div.dialog('open');
-                    }.bind(params.pwd_gui)
+                    }.bind(options.pwd_gui)
                 }
             },
             shortcuts_div: {
@@ -563,9 +563,203 @@ Toyz.Console.Settings.getAccountSettings = function(params){
                     }
                 }
             },
-        }
+            workspaces_div: {
+                type: 'div',
+                legend: 'Workspaces',
+                css: {
+                    'width': 900
+                },
+                params: {
+                    workspace: {
+                        type: 'select',
+                        lbl: 'workspace',
+                        options: options.workspaces.sort(),
+                        func: {
+                            change: function(event){
+                                console.log('workspace', event.currentTarget.value);
+                                websocket.send_task({
+                                    task: {
+                                        module: 'toyz.web.tasks',
+                                        task: 'get_workspace_sharing',
+                                        parameters: {
+                                            work_id: event.currentTarget.value
+                                        }
+                                    },
+                                    callback: function(result){
+                                        console.log('result', result)
+                                        this.gui.set_params({
+                                            values: result,
+                                        });
+                                    }.bind(this)
+                                })
+                            }.bind(this)
+                        }
+                    },
+                    ws_users_div: {
+                        type: 'div',
+                        legend: 'Users',
+                        params: {
+                            ws_users: {
+                                type: 'list',
+                                format: 'list',
+                                new_item: {
+                                    type: 'div',
+                                    params: {
+                                        share_id: {
+                                            lbl:'user id',
+                                            div_class: 'ws-user-div'
+                                        },
+                                        view: {
+                                            lbl: 'view',
+                                            div_class: 'ws-user-div',
+                                            prop: {
+                                                type: 'checkbox',
+                                                checked: true
+                                            }
+                                        },
+                                        modify: {
+                                            lbl: 'modify',
+                                            div_class: 'ws-user-div',
+                                            prop: {
+                                                type: 'checkbox',
+                                                checked: false
+                                            }
+                                        },
+                                        share: {
+                                            lbl: 'share',
+                                            div_class: 'ws-user-div',
+                                            prop: {
+                                                type: 'checkbox',
+                                                checked: false
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    ws_groups_div: {
+                        type: 'div',
+                        legend: 'Groups',
+                        params: {
+                            ws_groups: {
+                                type: 'list',
+                                format: 'list',
+                                new_item: {
+                                    type: 'div',
+                                    params: {
+                                        share_id: {
+                                            lbl:'group id',
+                                            div_class: 'ws-user-div'
+                                        },
+                                        view: {
+                                            lbl: 'view',
+                                            div_class: 'ws-user-div',
+                                            prop: {
+                                                type: 'checkbox',
+                                                checked: true
+                                            }
+                                        },
+                                        modify: {
+                                            lbl: 'modify',
+                                            div_class: 'ws-user-div',
+                                            prop: {
+                                                type: 'checkbox',
+                                                checked: false
+                                            }
+                                        },
+                                        share: {
+                                            lbl: 'share',
+                                            div_class: 'ws-user-div',
+                                            prop: {
+                                                type: 'checkbox',
+                                                checked: false
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    ws_delete: {
+                        type: 'button',
+                        prop: {
+                            innerHTML: 'Delete',
+                        },
+                        func: {
+                            click: function(event){
+                                var delete_ws = confirm(
+                                    'Are you sure you want to delete this workspace'
+                                );
+                                if(delete_ws){
+                                    var settings = this.gui.get();
+                                    websocket.send_task({
+                                        task: {
+                                            module: 'toyz.web.tasks',
+                                            task: 'update_workspace',
+                                            parameters: {
+                                                type: 'delete',
+                                                work_id: settings.workspace,
+                                            }
+                                        },
+                                        callback: function(result){
+                                            if(result.status=='success'){
+                                                alert('Workspace removed successfully');
+                                            };
+                                        }.bind(this)
+                                    })
+                                };
+                            }.bind(this)
+                        }
+                    },
+                    ws_submit: {
+                        type: 'button',
+                        prop: {
+                            innerHTML: 'Submit',
+                            title: 'submit user/group workspace permissions'
+                        },
+                        func: {
+                            click: function(event){
+                                var settings = this.gui.get();
+                                console.log('settings', settings);
+                                var shared_users = settings.ws_users;
+                                for(var i=0; i<shared_users.length;i++){
+                                    delete shared_users[i].conditions;
+                                };
+                                var shared_groups = settings.ws_groups;
+                                for(var i=0; i<shared_groups.length;i++){
+                                    delete shared_groups[i].conditions;
+                                };
+                                websocket.send_task({
+                                    task: {
+                                        module: 'toyz.web.tasks',
+                                        task: 'update_workspace',
+                                        parameters: {
+                                            type: 'update',
+                                            work_id: settings.workspace,
+                                            shared_users: shared_users,
+                                            shared_groups: shared_groups,
+                                        }
+                                    },
+                                    callback: function(result){
+                                        if(result.msg=='success'){
+                                            alert('Workspace added successfully');
+                                        };
+                                    }.bind(this)
+                                })
+                            }.bind(this)
+                        }
+                    }
+                }
+            }
+        }, options.params)
     };
-    return account_settings;
+    
+    this.gui = new Toyz.Gui.Gui({
+        params: account_settings,
+        $parent: options.$parent,
+        default: options.default
+    });
 };
 
 console.log('settings.js loaded');

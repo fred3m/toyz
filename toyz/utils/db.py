@@ -36,6 +36,46 @@ user_fields = ['pwd', 'groups', 'paths', 'modules', 'toyz', 'shortcuts', 'worksp
 group_fields = ['pwd', 'users', 'paths', 'modules', 'toyz', 'workspaces']
 
 # Formats for get/update/delete parameters functions
+"""
+toyz.utils.db.param_formats is a dictionary that sets a standard for getting and updating
+rows in the toyz database. Each param format has the following keys:
+
+    - tbl ( *string* ):
+        - Name of the table
+    - required ( *string* ):
+        - Required parameters to get a row (or rows) from the table
+    - get ( *string* or *list* ):
+        - When a user calls a ``get_param`` command, the ``get`` columns (along with the
+          ``required`` columns) are loaded from the table
+    - format ( *string* ):
+        - The type of object to be added to the table. This can be ``single``, ``dict``, or 
+          ``list``.
+    - update ( *string* ):
+        - Name of key to use when updating the table (see below for different formats)
+            - ``single``:
+                - Only a single value can be store/retrieved
+                - ``update`` is just the same as the ``get`` column name
+            - ``list``:
+                - A list of values can be stored or retrieved, but the table only has a
+                  single non-required column
+                - ``update`` is the variable name of the list that needs to be
+                  added to the table
+            - ``dict``:
+                - A dictionary is stored in the table
+                - ``get`` is a list where the first variable is the key of the dictionary 
+                  and the second is the value
+                - ``update`` is the variable name of the dictionary that is being added
+                  to the table
+            - ``rows``:
+                - Some tables have multiple columns that may be stored/retrieved in different ways
+                - Tables with ``format='rows'`` cannot make user of the get/update/delete_param
+                  methods
+                - The keywords of the dictionary are the columns of the table
+                - ``columns`` is a list of column names in the table
+    - json ( *list*, optional):
+        - A list of any columns that need to be converted to/from a json string for 
+          storage/retrieval
+"""
 param_formats = {
     'pwd': {
         'get': 'pwd',
@@ -93,7 +133,12 @@ param_formats = {
         'required': ['user_id', 'user_type'],
         'format': 'dict',
         'json': ['work_settings']
-    }
+    },
+    'shared_workspaces': {
+        'columns': ['user_id','work_id', 'share_id', 'share_id_type', 'view', 'modify', 'share'],
+        'tbl': 'shared_workspaces',
+        'format': 'rows'
+    },
 }
 
 def check_chars(err_flag, *lists):
@@ -180,6 +225,50 @@ def get_path_info(db_settings, path):
     db_module = importlib.import_module(db_settings.interface_name)
     return db_module.get_path_info(db_settings, path)
 
+def get_table_names(db_settings):
+    """
+    Get the names of tables in the database (this can be useful when the user has
+    changed versions)
+    """
+    db_module = importlib.import_module(db_settings.interface_name)
+    return db_module.get_table_names(db_settings)
+
+def get_db_info(db_settings):
+    """
+    Get the info for the database, including the version it was created with,
+    updates made, and the latest version of toyz it was configured for
+    """
+    db_module = importlib.import_module(db_settings.interface_name)
+    return db_module.get_db_info(db_settings)
+
+def update_version(db_settings, params):
+    """
+    It may be necessary to update a database when the Toyz version changes. This function
+    will be unique to each DB and describe how to implement a given version change
+    """
+    db_module = importlib.import_module(db_settings.interface_name)
+    return db_module.update_version(db_settings, version, verstion_params)
+
+def get_workspace_sharing(db_settings, **params):
+    """
+    Get sharing permissions for a users workspaces
+    """
+    db_module = importlib.import_module(db_settings.interface_name)
+    return db_module.get_workspace_sharing(db_settings, **params)
+
+def update_workspace(db_settings, user_id, work_id, **kwargs):
+    """
+    Update sharing for a workspace
+    """
+    db_module = importlib.import_module(db_settings.interface_name)
+    return db_module.update_workspace(db_settings, user_id, work_id, **kwargs)
+
+def delete_workspace(db_settings, user_id, work_id):
+    """
+    Delete a workspace
+    """
+    db_module = importlib.import_module(db_settings.interface_name)
+    return db_module.delete_workspace(db_settings, user_id, work_id)
 
 def db_func(db_settings, func, **params):
     """

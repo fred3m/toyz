@@ -592,6 +592,7 @@ class ToyzSettings:
             self.first_time_setup(config_root_path)
         else:
             self.load_settings(config_path)
+        self.root_path = config_root_path
     
     def save_settings(self, security_key=None):
         """
@@ -675,6 +676,46 @@ class ToyzSettings:
         
         self.save_settings()
         print("\nFirst Time Setup completed")
+
+def check_version(db_settings):
+    """
+    Since version changes may update the API or the database, check that the current version
+    is compatible with the users configuration and database
+    """
+    from toyz.version import version as toyz_version
+    db_info = db_utils.get_db_info(db_settings)
+    db_version = db_info['current']['value']
+    if toyz_version!=db_version:
+        print('New version of toyz, checking for database upgrades')
+        db.update_version(db_settings, {
+            'toyz_version': toyz_version,
+            'db_version': db_version
+        })
+
+def get_workspace_permissions(toyz_settings, tid, params):
+    groups = db_utils.get_param(toyz_settings.db, 'groups', user_id=tid['user_id'])
+    shared_workspaces = db_utils.get_workspace_sharing(
+        toyz_settings.db, user_id=params['user_id'], work_id=params['work_id'])
+    permissions = {
+        'view': False,
+        'modify': False,
+        'share': False
+    }
+    if tid['user_id']=='admin' or 'admin' in groups:
+        for p in permissions:
+            permissions[p] = True
+    else:
+        if len(shared_workspaces)>0:
+            for shared_user in shared_workspaces:
+                if (shared_user['share_id_type']=='user_id' and 
+                        shared_user['share_id']==tid['user_id']):
+                    for p in permissions:
+                        permissions[p] = permissions[p] or shared_user[p]
+                elif (shared_user['share_id_type']=='group_id' and
+                        shared_user['share_id'] in groups):
+                    for p in permissions:
+                        permissions[p] = permissions[p] or shared_user[p]
+    return permissions
 
 class Toy:
     """

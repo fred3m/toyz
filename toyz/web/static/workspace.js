@@ -47,6 +47,9 @@ Toyz.Workspace.contextMenu_items = function(workspace){
             this.save_ws_as();
         }.bind(workspace)},
         "share_workspace": {name: "Share Workspace"},
+        "show_logger": {name: "Show Logger", callback: function(){
+            this.$logger.dialog('open');
+        }.bind(workspace)},
         "logout": {name: "Logout", callback: function(){
             window.location = '/auth/logout/';
         }}
@@ -349,6 +352,24 @@ Toyz.Workspace.LoadSrcDialog.prototype.open = function(data_src){
 };
 
 Toyz.Workspace.Workspace = function(params){
+    if(typeof websocket == 'undefined'){
+        this.$logger = $('<div/>').css({
+            overflow: 'hidden'
+        });
+        this.$logger.dialog({
+            title: 'Logger',
+            resizable: true,
+            draggable: true,
+            autoOpen: false,
+            modal: false,
+            buttons: {}
+        }).css('font-size', '12px');
+        websocket = new Toyz.Core.Websocket({
+            logger: new Toyz.Core.Logger({
+                $parent: this.$logger
+            })
+        });
+    };
     if(!(params.hasOwnProperty('$parent'))){
         throw "ERROR: You must initialize a workspace with a $'parent' div"
     };
@@ -361,8 +382,14 @@ Toyz.Workspace.Workspace = function(params){
     this.tiles = {};
     this.tile_index = 0;
     this.params = $.extend(true,{},params);
-    this.websocket = new Toyz.Core.Websocket({
-        //logger:new Toyz.Core.Logger(document.getElementById("logger")),
+    
+    this.$loader = $('<div/>').append('<label>Loading</label>');
+    this.$loader.dialog({
+        resizable: false,
+        draggable: true,
+        autoOpen: true,
+        modal: true,
+        buttons: {}
     });
     
     for(var param in params){
@@ -380,16 +407,7 @@ Toyz.Workspace.Workspace = function(params){
 Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
     console.log('all_dependencies_loaded', this);
     
-    this.$loader = $('<div/>').append('<label>Loading</label>');
-    this.$loader.dialog({
-        resizable: false,
-        draggable: true,
-        autoOpen: true,
-        modal: true,
-        buttons: {}
-    });
-    
-    this.websocket.send_task({
+    websocket.send_task({
         task: {
             module: 'toyz.web.tasks',
             task: 'get_workspace_info',
@@ -437,6 +455,19 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
             for(var error in result.import_error){
                 console.log('WARNING: ', result.import_error[error])
             };
+            if(this.hasOwnProperty('work_id')){
+                websocket.send_task({
+                    task: {
+                        module: 'toyz.web.tasks',
+                        task: 'load_workspace',
+                        parameters: {
+                            user_id: this.user_id,
+                            work_id: this.work_id
+                        }
+                    },
+                    callback: this.update_workspace.bind(this)
+                });
+            };
         }.bind(this)
     });
     
@@ -459,7 +490,7 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
         buttons: {
             Load: function(){
                 work_id = this.$ws_dropdown_input.val();
-                this.websocket.send_task({
+                websocket.send_task({
                     task: {
                         module: 'toyz.web.tasks',
                         task: 'load_workspace',
@@ -490,9 +521,12 @@ Toyz.Workspace.Workspace.prototype.save_workspace = function(params){
         ws_dict.workspaces[this.name] = {
             sources: sources,
             tiles: this.save_tiles()
-        }
+        };
         params = $.extend(true, ws_dict, params);
-        this.websocket.send_task({
+        if(this.hasOwnProperty('user_id')){
+            params['user_id'] = this.user_id;
+        };
+        websocket.send_task({
             task: {
                 module: 'toyz.web.tasks',
                 task: 'save_workspace',
@@ -515,23 +549,25 @@ Toyz.Workspace.Workspace.prototype.save_ws_as = function(){
     };
 };
 Toyz.Workspace.Workspace.prototype.load_workspace = function(){
-    this.websocket.send_task({
+    websocket.send_task({
         task: {
             module: 'toyz.web.tasks',
             task: 'load_user_info',
             parameters:{
-                user_id: this.websocket.user_id,
+                user_id: websocket.user_id,
                 user_attr: ['workspaces'],
             }
         },
         callback: function(result){
             this.$ws_dropdown_input.empty();
-            for(var key in result.workspaces){
+            var workspaces = Object.keys(result.workspaces).sort();
+            for(var i=0; i<workspaces.length; i++){
+                var key = workspaces[i];
                 var opt = $('<option/>')
                     .val(key)
                     .text(key);
                 this.$ws_dropdown_input.append(opt);
-            }
+            };
             this.$ws_dropdown_div.dialog('open');
         }.bind(this)
     });
@@ -580,7 +616,7 @@ Toyz.Workspace.Workspace.prototype.load_src = function(callback, data_src){
     delete src_params['conditions']
     console.log('source params', src_params);
     console.log('file_type', file_type);
-    this.websocket.send_task({
+    websocket.send_task({
         task: {
             module: 'toyz.web.tasks',
             task: 'load_data_file',
@@ -696,14 +732,14 @@ Toyz.Workspace.Workspace.prototype.new_tile = function(key, options, my_idx){
             left: Math.floor(window.innerWidth/2),
         })
         .resize(function($inner_div, $div, event){
-            //var $div = $(event.originalElement);
-            //$inner_div.width($div.width());
-            //$inner_div.height($div.height());
+            var $div = $(event.originalElement);
+            $inner_div.width($div.width());
+            $inner_div.height($div.height());
         }.bind(this, $inner_div));
     $div.append($inner_div);
     this.$div.append($div);
-    //$inner_div.width($div.width());
-    //$inner_div.height($div.height());
+    $inner_div.width($div.width());
+    $inner_div.height($div.height());
     this.tiles[inner_id] = new Toyz.Workspace.Tile(this, {
         id: inner_id,
         $div: $div,

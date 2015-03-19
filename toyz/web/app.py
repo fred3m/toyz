@@ -12,7 +12,6 @@ import shutil
 import importlib
 import socket
 import multiprocessing
-#from futures import ProcessPoolExecutor
 
 import tornado.ioloop
 import tornado.options
@@ -222,12 +221,25 @@ class AuthLogoutHandler(tornado.web.RequestHandler):
 class ToyzWorkspaceHandler(ToyzHandler, tornado.web.RequestHandler):
     def initialize(self, ):
         self.template_path = os.path.join(core.ROOT_DIR, 'web', 'templates')
-    def get(self, workspace):
+    def get(self, path):
         """
         Load the workspace
         """
-        print('workspace:', workspace)
-        self.render('workspace.html')
+        print('workspace path:', path)
+        ws_options = {
+            'user_theme': self.get_user_theme(),
+            'user_id':'',
+            'work_id': ''
+        }
+        path_split = path.split('/')
+        print('path_split', path_split)
+        print('path length', len(path_split))
+        if len(path_split)>2:
+            raise ToyzWebError('Workspace path must be host/workspace/user_id/workspace_name')
+        elif len(path_split)==2:
+            ws_options['user_id'] = path_split[0]
+            ws_options['work_id'] = path_split[1]
+        self.render('workspace.html', **ws_options)
     
     def get_template_path(self):
         return self.template_path
@@ -278,11 +290,12 @@ class AuthToyz3rdPartyHandler(AuthHandler, Toyz3rdPartyHandler):
     def get(self, path):
         Toyz3rdPartyHandler.get(self, path)
 
-def job_process(pipe):
+def job_process(session_id, pipe, websocket_pipe):
     """
     Process created for the websocket. When a job is received from the Toyz
     Application it is run in this process and a response is sent.
     """
+    websocket_pipe.close()
     while True:
         try:
             msg = pipe.recv()    # Read from the output pipe and do nothing
@@ -292,22 +305,30 @@ def job_process(pipe):
             pipe.send(result)
         except EOFError:
             break
-    print('job_process finished')
+    print('job_process {0} finished'.format(session_id))
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     """
     Websocket that handles jobs sent to the server from clients
     """
     
-    def open(self, *args):
+    def open(self, session_id=None):
         """
         Called when a new websocket is opened
         
         Parameters
             *args: Currently no arguments are passed to this function
         """
+        settings = {
+            'websocket': self,
+        }
+        if session_id=='':
+            print('New session')
+        else:
+            settings['session_id'] = session_id
+            
         user_id = self.get_secure_cookie('user').strip('"')
-        self.application.new_session(user_id, websocket=self)
+        self.application.new_session(user_id, **settings)
 
     def on_close(self):
         """
@@ -398,8 +419,12 @@ class ToyzWebApp(tornado.web.Application):
         else:
             root_path = tornado.options.options.root_path
         
-        self.root_path = root_path
         self.toyz_settings = core.ToyzSettings(root_path)
+        
+        # Check that the database is up to date with the current version of Toyz
+        core.check_version(self.toyz_settings.db)
+        
+        # If the user has specified a port, use it
         if tornado.options.options.port is not None:
             self.toyz_settings.web.port = tornado.options.options.port
         
@@ -442,7 +467,7 @@ class ToyzWebApp(tornado.web.Application):
             (r"/toyz/templates/(.*)", toyz_template_handler),
             (r"/toyz_core.js", core_handler),
             (r"/third_party/(.*)", third_party_handler, {'path':core.ROOT_DIR}),
-            (r"/job", WebSocketHandler),
+            (r"/session/(.*)", WebSocketHandler),
         ]
         
         settings={
@@ -463,7 +488,7 @@ class ToyzWebApp(tornado.web.Application):
             open_port = self.find_open_port(port+1)
         return open_port
     
-    def new_session(self, user_id, websocket):
+    def new_session(self, user_id, websocket, session_id=None):
         """
         Open a new websocket session for a given user
         
@@ -476,8 +501,9 @@ class ToyzWebApp(tornado.web.Application):
             self.user_sessions[user_id] = {}
             print("Users logged in:", self.user_sessions.keys())
         
-        session_id = str(
-            datetime.datetime.now()).replace(' ','__').replace('.','-').replace(':','_')
+        if session_id is None:
+            session_id = str(
+                datetime.datetime.now()).replace(' ','__').replace('.','-').replace(':','_')
         self.user_sessions[user_id][session_id] = websocket
         shortcuts = db_utils.get_param(self.toyz_settings.db, 'shortcuts', 
             user_id=user_id)
@@ -492,8 +518,9 @@ class ToyzWebApp(tornado.web.Application):
         #initialize process for session jobs
         websocket.job_pipe, remote_pipe = multiprocessing.Pipe()
         websocket.process = multiprocessing.Process(
-            target = job_process, args=(remote_pipe,))
+            target = job_process, args=(session_id, remote_pipe, websocket.job_pipe))
         websocket.process.start()
+        remote_pipe.close()
         process_events = (tornado.ioloop.IOLoop.READ | tornado.ioloop.IOLoop.ERROR)
         tornado.ioloop.IOLoop.current().add_handler(
             websocket.job_pipe, websocket.send_response, process_events)
@@ -512,13 +539,19 @@ class ToyzWebApp(tornado.web.Application):
         his/her **temp** directory is also deleted.
         """
         shutil.rmtree(session['path'])
+        # Close process for current session
+        tornado.ioloop.IOLoop.current().remove_handler(
+            self.user_sessions[session['user_id']][session['session_id']].job_pipe)
+        self.user_sessions[session['user_id']][session['session_id']].job_pipe.close()
+        # Delete the current session
         del self.user_sessions[session['user_id']][session['session_id']]
+        # If all of the users sessions have completed, delete the users temp directory
         if len(self.user_sessions[session['user_id']])==0:
             shortcuts = db_utils.get_param(self.toyz_settings.db, 'shortcuts', 
                 user_id=session['user_id'])
             shutil.rmtree(shortcuts['temp'])
-        
-        print('active users remaining:', self.user_sessions.keys())
+            del self.user_sessions[session['user_id']]
+        #print('active users remaining:', self.user_sessions.keys())
     
     def update(self, attr):
         """
@@ -532,7 +565,7 @@ class ToyzWebApp(tornado.web.Application):
               only **toyz_settings** is supported
         """
         if attr == 'toyz_settings':
-            self.toyz_settings = core.ToyzSettings(self.root_path)
+            self.toyz_settings = core.ToyzSettings(self.toyz_settings.root_path)
 
 def init_web_app():
     """
@@ -550,7 +583,7 @@ def init_web_app():
     
     # Initialize the tornado web application
     toyz_app = ToyzWebApp()
-    print("Application root directory:", toyz_app.root_path)
+    print("Application root directory:", toyz_app.toyz_settings.root_path)
     
     # Continuous loop to wait for incomming connections
     print("Server is running on port", toyz_app.toyz_settings.web.port)

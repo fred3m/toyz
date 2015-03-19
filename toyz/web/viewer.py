@@ -64,6 +64,13 @@ def get_file(file_info):
             pyfits = import_fits()
             img_file = pyfits.open(file_info['filepath'])
         else:
+            try:
+                from PIL import Image
+            except ImportError:
+                raise ToyzJobError(
+                    "You must have PIL (Python Imaging Library) installed to "
+                    "open files of this type"
+                )
             img_file = Image.open(file_info['filepath'])
         session_vars.filepath = file_info['filepath']
         session_vars.img_file = img_file
