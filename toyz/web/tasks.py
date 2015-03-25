@@ -464,60 +464,63 @@ def get_workspace_info(toyz_settings, tid, params):
     other settings for the current users workspaces
     """
     import toyz.utils.io as io
+    import toyz.utils.sources as sources
     
-    param_sets = {}
-    for key, val in io.io_modules.items():
-        param_sets[key] = {
-            'type': 'div',
-            'params': {
-                'all': {
-                    'type': 'div',
-                    'params': val['all']
-                },
-                'file_types': {
-                    'type': 'conditional',
-                    'selector': {
-                        'file_type': {
-                            'lbl': 'file type',
-                            'type': 'select',
-                            'options': val['file_types'].keys()
-                        }
-                    },
-                    'param_sets': val['file_types']
-                }
-            }
-        }
-    
-    info = {
-        'type': 'div',
-        'params': {
-            'io_info': {
-                'type': 'conditional',
-                'selector': {
-                    'io_module': {
-                        'type': 'select',
-                        'lbl': 'I/O module to use',
-                        'options': io.io_modules.keys()
-                    }
-                },
-                'param_sets': param_sets
-            }
-        }
+    src_types = sources.src_types.keys()
+    data_types = sources.data_types
+    image_types = sources.image_types
+    toyz_modules = {
+        'toyz': dict(io.io_modules)
     }
     
+    # Get workspace info from other Toyz modules
     tiles = {}
     import_error = {}
     modules = db_utils.get_param(toyz_settings.db, 'modules', user_id=tid['user_id'])
     for module in modules:
         try:
             config = importlib.import_module(module+'.config')
-            tiles.update(config.workspace_tiles)
         except ImportError:
             import_error[module] = 'could not import' + module+'.config'
+        if hasattr(config, 'workspace_tiles'):
+            tiles.update(config.workspace_tiles)
+        if hasattr(config, 'data_types'):
+            data_types += config.data_types
+        if hasattr(config, 'image_types'):
+            image_types += config.image_types
+        if hasattr(config, 'io_modules'):
+            toyz_modules.update({
+                module: config.io_modules
+            })
+        if hasattr(config, 'src_types'):
+            src_types += config.src_types.keys()
+    
+    load_src = io.build_gui(toyz_modules, 'load')
+    load_src.update({
+        'optional': {
+            'src_type': {
+                'lbl': 'Data Source Type',
+                'type': 'select',
+                'options': sorted(src_types),
+                'default_val': 'DataSource'
+            },
+            'data_type': {
+                'lbl': 'data type',
+                'type': 'select',
+                'options': sorted(data_types)
+            },
+            'image_type': {
+                'lbl': 'image_type',
+                'type': 'select',
+                'options': sorted(image_types)
+            }
+        }
+    })
+    save_src = io.build_gui(toyz_modules, 'save')
     
     response = {
         'id': 'workspace_info',
-        'io_info': info,
+        'io_info': load_src,
         'tiles': tiles,
         'import_error': import_error
     }

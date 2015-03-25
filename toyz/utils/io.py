@@ -3,7 +3,7 @@
 """
 Tools to read/write files
 """
-
+from __future__ import print_function, division
 from toyz.utils import core
 from toyz.utils.errors import ToyzIoError
 
@@ -41,7 +41,7 @@ io_modules = {
                             'value' : ','
                         }
                     },
-                    'columns': {
+                    'use_cols': {
                         'lbl': 'use first row as column names',
                         'prop': {
                             'type': 'checkbox',
@@ -69,15 +69,30 @@ io_modules = {
                         }
                     }
                 },
+                'optional': {
+                    'col_div': {
+                        'type': 'div',
+                        'legend': 'columns',
+                        'params': {
+                            'columns': {
+                                'type': 'list',
+                                'format': 'list',
+                                'new_item': {
+                                    'lbl': 'column name'
+                                }
+                            }
+                        }
+                    }
+                }
             },
             'load2save': {
-                #'ignore': ['columns'],
+                #'ignore': ['use_cols'],
                 'remove': [],
-                'warn': {}
+                'warn': {},
                 'convert': {}
             },
             'save2load': {
-                #'ignore': [],
+                #'ignore': ['columns'],
                 'remove': [],
                 'warn': {},
                 'convert': {}
@@ -97,7 +112,7 @@ io_modules = {
                         'file_dialog': True
                     }
                 }
-            }
+            },
             'save': {
                 'type':'div', 
                 'params':{
@@ -333,7 +348,7 @@ io_modules = {
                     'compression': "You loaded your data from a compressed file. At this time"
                         "pandas does not support saving in that compressed format. Are you "
                         "sure you want to save over that file?",
-                }
+                },
                 'convert': {
                     'filepath_or_buffer': 'path_or_buf',
                     'lineterminator': 'line_terminator',
@@ -446,14 +461,14 @@ io_modules = {
                             "data, are you sure you want to save over your original data?",
                     'columns': "You specified a limited number of columns when you loaded the"
                             "data, are you sure you want to save over your original data?",
-                }
-                'conversion': {}
+                },
+                'convert': {}
             },
             'save2load': {
                 #'ignore': ['format', 'mode', 'append', 'complib', 'complevel', 'fletcher32'],
                 'remove': [],
                 'warn': {},
-                'conversion': {}
+                'convert': {}
             }
         },
         'sql': {
@@ -526,38 +541,41 @@ io_modules = {
                     'columns': "You specified a limited number of columns when you loaded the"
                             "data, are you sure you want to save over your original data?",
                 },
-                'conversion': {}
+                'convert': {}
             },
             'save2load': {
                 #'ignore': ['schema', 'if_exists','index', 'index_label'],
                 'remove': [],
                 'warn': {},
-                'conversion': {}
+                'convert': {}
             }
         }
     }
 }
 
-def load2save(io_module, file_type, file_options):
+def convert_options(toyz_module, io_module, file_type, file_options, conversion, warning=True):
     """
-    For most python modules, loading and saving data often use slightly different parameters,
-    so this function exists to convert load parameters to save parameters.
+    Convert a file option parameters from ``conversion='load2save'`` or 
+    ``conversion='save2load'``.
     """
-    save_options = core.merge_dict({}, file_options)
-    if io_module == 'python':
-        if 'column' in save_options:
-            del save_options['columns']
-    elif io_module == 'numpy':
-        pass
-    elif io_module == 'pandas':
-        if file_type == 'csv':
-            remove_fields = 
-
-def save2load(io_module, file_type, file_options, warned=False):
-    """
-    For most python modules, loading and saving data often use slightly different parameters,
-    so this function exists to convert save parameters to load parameters.
-    """
+    if toyz_module=='toyz':
+        module = io_modules[io_module]
+    else:
+        import importlib
+        try:
+            module = importlib.import_module(toyz_module)
+        except ImportError:
+            raise ToyzIoError("Could not import module '"+toyz_module+"'")
+        module = module.config.io_modules[io_module]
+    remove = module[file_type][conversion]['remove']
+    warn = module[file_type][conversion]['warn']
+    # Check for any warning conditions and notify the user
+    if warning and not all([w not in file_options for w in warn]):
+        for w in file_options:
+            if w in warn:
+                return warn[w]
+    file_options = {k:v for k,v in file_options.items() if k not in remove}
+    return file_options
 
 def load_dict(dict_str, str_ok=False):
     """
@@ -612,7 +630,7 @@ def load_unknown(str_in, single_ok=False):
     
     return val_out
 
-def load_data_file(io_module, file_type, file_options, io_func=None):
+def load_data(toyz_module, io_module, file_type, file_options):
     """
     Loads a data file using a specified python module and a set of options. Currently
     only *numpy* and *pandas* are fully supported
@@ -633,113 +651,174 @@ def load_data_file(io_module, file_type, file_options, io_func=None):
     meta = ''
     # Make a copy of the file_options to use
     file_options = core.merge_dict({}, file_options)
-    if io_module == 'python':
-        sep = file_options['sep']
-        del file_options['sep']
-        use_cols = file_options['columns']
-        del file_options['columns']
-        f = open(**file_options)
-        data = []
-        if file_type == 'csv-like':
-            for line in f:
-                no_cr = line.split('\n')[0]
-                data.append(no_cr.split(sep))
-        else:
-            raise ToyzIoError("Invalid file type '{0}' for python open file".format(file_type))
-    elif io_module == 'numpy':
-        import numpy as np
-        data = np.load(**file_options)
-        #data = raw_data.astype(object).fillna(fillna)
-    elif io_module == 'pandas':
-        import pandas as pd
-        if file_type == 'csv':
-            if 'dtype' in file_options:
-                file_options['dtype'] = load_dict(file_options['dtype'], True)
-            if 'header' in file_options:
-                file_options['header'] = load_list(file_options['header'], True)
-            if 'skiprows' in file_options:
-                file_options['skiprows'] = load_list(file_options['skiprows'], True)
-            if 'names' in file_options:
-                file_options['names'] = load_list(file_options['names'], False)
-            if 'na_values' in file_options:
-                file_options['na_values'] = load_unknown(file_options['na_values'], False)
-            if 'true_values' in file_options:
-                file_options['true_values'] = load_list(file_options['true_values'], False)
-            if 'false_values' in file_options:
-                file_options['false_values'] = load_list(file_options['false_values'], False)
-            if 'date_parser' in file_options:
-                module = file_options['date_parser'].split('.')[0]
-                func = file_options['date_parser'].split('.')[1:]
-                import importlib
-                module = importlib.import_module(module)
-                file_options['date_parser'] = getattr(module, func)
-            if 'usecols' in file_options:
-                file_options['usecols'] = load_list(file_options['usecols'], False)
-            df = pd.read_csv(**file_options)
-        elif file_type == 'hdf':
-            if 'columns' in file_options:
-                file_options['columns'] = load_list(file_options['columns'], False)
-            df = pd.read_hdf(**file_options)
-        elif file_type == 'sql':
-            from sqlalchemy import create_engine
-            engine = create_engine(file_options['connection'])
-            sql = file_options['sql']
-            del file_options['connection']
-            del file_options['sql']
-            df = pd.read_sql(sql, engine, **file_options)
-        else:
-            raise ToyzIoError("File type is not yet supported")
-        #df = df.astype(object).fillna(fillna)
-        data = df
-    elif io_func is not None:
+    if toyz_module == 'toyz':
+        print("in toyz")
+        if io_module == 'python':
+            print('in python')
+            sep = file_options['sep']
+            del file_options['sep']
+            use_cols = file_options['use_cols']
+            del file_options['use_cols']
+            f = open(**file_options)
+            data = []
+            if file_type == 'csv':
+                for line in f:
+                    no_cr = line.split('\n')[0]
+                    data.append(no_cr.split(sep))
+            else:
+                raise ToyzIoError("Invalid file type '{0}' for python open file".format(file_type))
+        elif io_module == 'numpy':
+            import numpy as np
+            data = np.load(**file_options)
+            #data = raw_data.astype(object).fillna(fillna)
+        elif io_module == 'pandas':
+            import pandas as pd
+            if file_type == 'csv':
+                if 'dtype' in file_options:
+                    file_options['dtype'] = load_dict(file_options['dtype'], True)
+                if 'header' in file_options:
+                    file_options['header'] = load_list(file_options['header'], True)
+                if 'skiprows' in file_options:
+                    file_options['skiprows'] = load_list(file_options['skiprows'], True)
+                if 'names' in file_options:
+                    file_options['names'] = load_list(file_options['names'], False)
+                if 'na_values' in file_options:
+                    file_options['na_values'] = load_unknown(file_options['na_values'], False)
+                if 'true_values' in file_options:
+                    file_options['true_values'] = load_list(file_options['true_values'], False)
+                if 'false_values' in file_options:
+                    file_options['false_values'] = load_list(file_options['false_values'], False)
+                if 'date_parser' in file_options:
+                    module = file_options['date_parser'].split('.')[0]
+                    func = file_options['date_parser'].split('.')[1:]
+                    import importlib
+                    module = importlib.import_module(module)
+                    file_options['date_parser'] = getattr(module, func)
+                if 'usecols' in file_options:
+                    file_options['usecols'] = load_list(file_options['usecols'], False)
+                df = pd.read_csv(**file_options)
+            elif file_type == 'hdf':
+                if 'columns' in file_options:
+                    file_options['columns'] = load_list(file_options['columns'], False)
+                df = pd.read_hdf(**file_options)
+            elif file_type == 'sql':
+                from sqlalchemy import create_engine
+                engine = create_engine(file_options['connection'])
+                sql = file_options['sql']
+                del file_options['connection']
+                del file_options['sql']
+                df = pd.read_sql(sql, engine, **file_options)
+            else:
+                raise ToyzIoError("File type is not yet supported")
+            #df = df.astype(object).fillna(fillna)
+            data = df
+    else:
         import importlib
         try:
-            module = importlib.import_module(io_module)
+            module = importlib.import_module(toyz_module)
         except ImportError:
-            raise ToyzIoError("Could not import module '"+io_module+"'")
+            raise ToyzIoError("Could not import module '"+toyz_module+"'")
         try:
-            data = getattr(module, io_func)(**file_options)
-        except AttributeError:
-            raise ToyzIoError(io_module+" did not have function '"+io_func+"'")
-    else:
-        raise ToyzIoError(
-            "io_module not found in toyz.utils.io.load_modules.\n"
-            "Please specify a set of alternative io_modules or check your module name")
+            load_fn = module.config.io_modules[io_module][file_type]['load_fn']
+            data = module.config.load_functions[load_fn](file_type, **file_options)
+        except KeyError:
+            raise ToyzIoError("Could not find "+io_module+" in "+toyz_module+" load_functions")
     return data
 
-def save_file_data(data, io_module, file_type, file_options, io_func=None, columns=None):
+def save_data(data, toyz_module, io_module, file_type, file_options):
     """
     Save data to a file
     """
-    if io_module=='python':
-        if '+' not in file_options['mode'] and 'w' not in file_options['mode']:
-            file_options['mode'] = file_options['mode']+'+'
-        f = open(**file_options)
-        if columns is not None:
-            f.write(columns)
-        f.write(data)
-        f.close()
-    elif io_module=='numpy':
-        import numpy as np
-        np.save(file_options['file'], data)
-    elif io_module=='pandas':
-        if file_type=='csv':
+    if toyz_module == 'toyz':
+        if io_module=='python':
+            if '+' not in file_options['mode'] and 'w' not in file_options['mode']:
+                file_options['mode'] = file_options['mode']+'+'
             if 'columns' in file_options:
-                file_options['columns'] = load_list(file_options['columns'], False)
-            data.to_csv(**file_options)
-        elif file_type=='hdf':
-            data.to_hdf(**file_options)
-        elif file_type=='sql':
-            data.to_sql(**file_options)
-    elif io_func is not None:
+                columns = file_options['columns']
+                save_options = core.merge_dict({}, file_options)
+                del save_options['columns']
+            else:
+                columns = None
+                save_options = file_options
+            f = open(**save_options)
+            if columns is not None:
+                f.write(columns)
+            f.write(data)
+            f.close()
+        elif io_module=='numpy':
+            import numpy as np
+            np.save(file_options['file'], data)
+        elif io_module=='pandas':
+            if file_type=='csv':
+                if 'columns' in file_options:
+                    file_options['columns'] = load_list(file_options['columns'], False)
+                data.to_csv(**file_options)
+            elif file_type=='hdf':
+                data.to_hdf(**file_options)
+            elif file_type=='sql':
+                data.to_sql(**file_options)
+        else:
+            raise ToyzIoError(
+                "'"+io_module+"' is not currently supported by Toyz. "
+                "You may need to import an affiliated module")
+    else:
         import importlib
         try:
-            module = importlib.import_module(io_module)
+            module = importlib.import_module(toyz_module)
         except ImportError:
-            raise ToyzIoError("Could not import module '"+io_module+"'")
+            raise ToyzIoError("Could not import module '"+toyz_module+"'")
         try:
-            getattr(module, io_func)(**file_options)
-        except AttributeError:
-            raise ToyzIoError(io_module+" did not have function '"+io_func+"'")
-    else:
-        raise ToyzIoError('IO_Module is not yet supported')
+            save_fn = module.config.io_modules[io_module][file_type]['save_fn']
+            module.config.save_functions[save_fn](data, file_type, **file_options)
+        except KeyError:
+            raise ToyzIoError("Could not find "+io_module+" in "+toyz_module+" save_functions")
+
+def build_gui(toyz_modules, gui_type):
+    gui = {
+        'type': 'div',
+        'params': {
+            'load_info': {
+                'type': 'conditional',
+                'selector': {
+                    'toyz_module': {
+                        'lbl': 'Toyz Module',
+                        'type': 'select',
+                        'options': sorted(toyz_modules.keys()),
+                        'default_val': 'toyz'
+                    }
+                },
+                'param_sets': {
+                    toy: {
+                        'type': 'conditional',
+                        'selector': {
+                            'io_module': {
+                                'lbl': 'io module',
+                                'type': 'select',
+                                'options': sorted(toy_dict.keys())
+                            }
+                        },
+                        'param_sets': {
+                            io_module: {
+                                'type': 'conditional',
+                                'selector': {
+                                    'file_type': {
+                                        'lbl': 'file type',
+                                        'type': 'select',
+                                        'options': sorted(io_dict.keys())
+                                    }
+                                },
+                                'param_sets': {
+                                    file_type: ft_dict[gui_type]
+                                    for file_type, ft_dict in io_dict.items()
+                                }
+                            }
+                            for io_module, io_dict in toy_dict.items()
+                        }
+                    }
+                    for toy, toy_dict in toyz_modules.items()
+                }
+            }
+        }
+    }
+    
+    return gui
