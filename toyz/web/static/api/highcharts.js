@@ -445,10 +445,13 @@ Toyz.API.Highcharts.Contents.prototype.rx_info = function(options){
         // The source must have been updated, so update the chart
         if(params.data_source.options.hasOwnProperty(options.source)){
             for(var s in this.settings.series){
-                if(options.hasOwnProperty('source') && 
-                    this.settings.series[s].data_source==options.source
-                ){
-                    this.create_chart(this.settings);
+                var plt_series = this.settings.series[s];
+                if(options.hasOwnProperty('source') && plt_series.data_source==options.source){
+                    if(options.hasOwnProperty('columns') &&
+                            (options.columns.indexOf(plt_series.x)>-1 ||
+                            options.columns.indexOf(plt_series.y)>-1)){
+                        this.create_chart(this.settings);
+                    }
                 };
             };
             if(params.data_source.options[data_source] != data_source.name){
