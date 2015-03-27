@@ -443,18 +443,43 @@ def load_data_file(toyz_settings, tid, params):
     ``get_io_info``.
     """
     import toyz.utils.io as io
+    import toyz.utils.sources as sources
     
-    columns, data, meta = io.load_data_file(
-        params['io_module'],
-        params['file_type'], 
-        params['file_options'])
+    src_types = sources.src_types
+    modules = db_utils.get_param(toyz_settings.db, 'modules', user_id=tid['user_id'])
+    for module in modules:
+        try:
+            config = importlib.import_module(module+'.config')
+        except ImportError:
+            import_error[module] = 'could not import' + module+'.config'
+        if hasattr(config, 'src_types'):
+            src_types.update(config.src_types)
+    
+    # If this is the first data source, define variable to keep track of data sources
+    if not hasattr(session_vars, 'data_sources'):
+        session_vars.data_sources = {}
+    
+    # Load the data into a data object
+    src_id = params['src_id']
+    src_name = params['src_name']
+    
+    if 'src_type' in params:
+        src_type = params['src_type']
+    else:
+        src_type = 'DataSource'
+    if 'data_type' in params:
+        data_type = params['data_type']
+    else:
+        data_type = None
+    
+    session_vars.data_sources[src_id] = src_types[src_type](
+        user_id=tid['user_id'], data_type=data_type, paths=params['paths'])
+    session_vars.data_sources[src_id].src_id = src_id
+    session_vars.data_sources[src_id].name = src_id
     
     response = {
         'id': 'data_file',
-        'columns': columns,
-        'data': data,
-        'data_type': 'columns',
-        'meta': meta
+        'columns': session_vars.data_sources[src_id].columns,
     }
     return response
 
@@ -520,7 +545,8 @@ def get_workspace_info(toyz_settings, tid, params):
     
     response = {
         'id': 'workspace_info',
-        'io_info': load_src,
+        'load_src_info': load_src,
+        'save_src_info': save_src,
         'tiles': tiles,
         'import_error': import_error
     }
@@ -634,6 +660,27 @@ def update_workspace(toyz_settings, tid, params):
         'id': 'notification',
         'func': 'update_workspace',
         'msg': 'success'
+    }
+    return response
+
+def get_src_columns(toyz_settings, tid, params):
+    """
+    Get column information from multiple sources and return to a workspace
+    """
+    sources = {}
+    for src_id, src in params.items():
+        if not hasattr(session_vars, 'data_sources') or src_id not in session_vars.data_sources:
+            print('loading data source')
+            load_data_file(toyz_settings, tid, params['params'])
+        if len(src['columns'])>0:
+            sources[src_id] = {
+                'data_type': 'columns',
+                'data': {}
+            }
+            sources[src_id]['data'] = session_vars.data_sources[src_id].to_dict(src['columns'])
+    response = {
+        'id': 'src_columns',
+        'sources': sources
     }
     return response
 

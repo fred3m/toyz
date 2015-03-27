@@ -131,13 +131,6 @@ Toyz.API.Highcharts.Gui = function(params){
                                                 type: 'checkbox',
                                                 checked: false
                                             }
-                                        },
-                                        x_sort: {
-                                            lbl: 'sort by x-axis',
-                                            prop: {
-                                                type: 'checkbox',
-                                                checked: false
-                                            }
                                         }
                                     },
                                     optional: {
@@ -154,13 +147,6 @@ Toyz.API.Highcharts.Gui = function(params){
                                         },
                                         y_reverse: {
                                             lbl: 'reverse y-axis',
-                                            prop: {
-                                                type: 'checkbox',
-                                                checked: false
-                                            }
-                                        },
-                                        y_sort: {
-                                            lbl: 'sort by y-axis',
                                             prop: {
                                                 type: 'checkbox',
                                                 checked: false
@@ -332,7 +318,7 @@ Toyz.API.Highcharts.Gui.prototype.update_columns = function(event){
     $y_input.empty();
     console.log('data source', data_source);
     console.log('workspace', this.workspace);
-    cols = Object.keys(this.workspace.sources[data_source].data).sort();
+    cols = this.workspace.sources[data_source].columns.sort();
     for(var i=0; i<cols.length; i++){
         var col = cols[i];
         var x_opt = $('<option/>').val(col).html(col);
@@ -384,8 +370,8 @@ Toyz.API.Highcharts.Contents = function(params){
         },
         buttons: {
             Set: function(){
-                console.log('gui',this.gui_div.gui);
-                this.set_tile(this.gui_div.gui.get());
+                var gui = this.gui_div.gui.get();
+                this.set_tile(gui);
                 this.$div.dialog('close');
             }.bind(this),
             Cancel: function(){
@@ -517,22 +503,24 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
         // Add data points to chart
         var x = this.settings.series[i].x;
         var y = this.settings.series[i].y;
-        var this_data = [];
-        console.log('x:',x,'y:',y);
+        var this_data = Array(data[x].length);
+        var nan_pt = Array(data[x].length);
         for(var j=0; j<data[x].length; j++){
             var point = {
                 x:parseFloat(data[x][j]), 
                 y:parseFloat(data[y][j])
             };
-            if(!this.settings.remove_nan || (!isNaN(point.x) && !isNaN(point.y)) ){
-                this_data.push(point);
+            //console.log('point', j, point);
+            this_data[j] = point;
+            if(isNaN(point.x) || isNaN(point.y)){
+                nan_pt[j] = true;
             }else{
-                console.log('removed', point);
+                nan_pt[j] = false;
             };
         };
         
-        // sort the data (if sorted)
-        function get_sort_idx(data, idx){
+        // sort the data by the current column
+        function old_get_sort_idx(data, idx){
             var sort_idx = data.map(function(v, i){return i});
             sort_idx.sort(function(a,b){
                 return data[a][idx]-data[b][idx];
@@ -540,32 +528,45 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
             var sort_inv = sort_idx.map(function(v,i){return i});
             sort_inv.sort(function(a,b){
                 return sort_idx[a]-sort_idx[b];
-            })
+            });
             return {
                 idx: sort_idx,
                 inv: sort_inv
             }
         };
-        if(this.settings.series[i].x_sort || this.settings.series[i].y_sort){
-            this.sorted_series = true;
-            var idx = 'y';
-            if(this.settings.series[i].x_sort){
-                idx = 'x';
-            };
-            var result = get_sort_idx(this_data, idx);
-            var new_data = result.idx.map(function(v, i){
-                return this_data[v];
+        
+        function get_sort_idx(data, nan_pt, idx){
+            var series2src = data.map(function(v, i){return i});
+            // Highcharts doesn't plot a dataset if the first value is a Nan,
+            // so move all the NaN values to the back of the series
+            series2src.sort(function(a,b){
+                if(nan_pt[a]){
+                    return 1;
+                }else{
+                    return data[a][idx]-data[b][idx];
+                };
             });
-            
-            this_data = new_data;
-            this.settings.series[i].argsort = {
-                idx: result.idx,
-                inv: result.inv
-            };
-            this.settings.series[i].sorted=true;
-        }else{
-            this.settings.series[i].sorted=false;
+            var src2series = series2src.map(function(v,i){return i});
+            src2series.sort(function(a,b){
+                return series2src[a]-series2src[b];
+            });
+            return {
+                idx: series2src,
+                inv: src2series
+            }
         };
+        
+        var result = get_sort_idx(this_data, nan_pt, 'x');
+        var new_data = result.idx.map(function(v, i){
+            return this_data[v];
+        });
+        
+        this_data = new_data;
+        this.settings.series[i].argsort = {
+            idx: result.idx,
+            inv: result.inv
+        };
+        this.settings.series[i].sorted=true;
         
         // Label Axes
         var x_lbl = x;
@@ -766,7 +767,74 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
 };
 Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
     console.log('Highcharts settings', settings);
-    this.create_chart(settings);
+    var params = {};
+    var load_columns = false;
+    this.$div.dialog('close');
+    // Make sure that all of the columns in the chart have been loaded locally into the
+    // DataSource object
+    for(var i=0; i<settings.series.length; i++){
+        var ds_name = settings.series[i].data_source;
+        var data_source = this.workspace.sources[ds_name];
+        if(!params.hasOwnProperty(ds_name)){
+            // Load source params in case connection to server was lost
+            // and the source needs to be reloaded
+            var src_params = $.extend(true, {}, data_source.params);
+            var toyz_module = src_params['conditions'].toyz_module;
+            var io_module = src_params['conditions'].io_module;
+            var file_type = src_params['conditions'].file_type;
+            delete src_params['conditions']
+            params[ds_name] = {
+                columns: [],
+                params: {
+                    paths: {
+                        data: {
+                            toyz_module: toyz_module,
+                            io_module: io_module,
+                            file_type: file_type,
+                            file_options: src_params
+                        }
+                    },
+                    src_id: data_source.id,
+                    src_name: data_source.name
+                }
+            };
+        };
+        if(!data_source.data.hasOwnProperty(settings.series[i].x)){
+            console.log('columns', Object.keys(data_source));
+            console.log('data_source', data_source);
+            console.log('need to load', settings.series[i].x);
+            params[ds_name].columns.push(settings.series[i].x)
+            load_columns = true;
+        };
+        if(!data_source.data.hasOwnProperty(settings.series[i].y)){
+            console.log('need to load', settings.series[i].y);
+            load_columns = true;
+            params[ds_name].columns.push(settings.series[i].y)
+        };
+    };
+    console.log('load_columns', load_columns);
+    if(load_columns){
+        console.log('LOADING COLUMNS');
+        this.workspace.$loader.dialog('open');
+        websocket.send_task({
+            task: {
+                module: 'toyz.web.tasks',
+                task: 'get_src_columns',
+                parameters: params
+            },
+            callback: function(settings, result){
+                this.workspace.$loader.dialog('close');
+                for(var src in result.sources){
+                    this.workspace.sources[src].update(result.sources[src]);
+                };
+                this.create_chart(settings);
+            }.bind(this, settings)
+        })
+    }else{
+        console.log('CREATING CHART');
+        this.create_chart(settings);
+    };
+    
     this.gui_div.gui.set_params({
         values: settings,
         set_all: false
