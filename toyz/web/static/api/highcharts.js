@@ -77,13 +77,6 @@ Toyz.API.Highcharts.Gui = function(params){
                     'y': 'y zoom',
                 }
             },
-            remove_nan: {
-                lbl: 'remove NaN (will not connect to other plot windows)',
-                prop: {
-                    type: 'checkbox',
-                    checked: false
-                }
-            },
             series_div: {
                 type: 'div',
                 legend: 'Series',
@@ -520,22 +513,6 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
             }else{
                 nan_pt[j] = false;
             };
-        };
-        
-        // sort the data by the current column
-        function old_get_sort_idx(data, idx){
-            var sort_idx = data.map(function(v, i){return i});
-            sort_idx.sort(function(a,b){
-                return data[a][idx]-data[b][idx];
-            });
-            var sort_inv = sort_idx.map(function(v,i){return i});
-            sort_inv.sort(function(a,b){
-                return sort_idx[a]-sort_idx[b];
-            });
-            return {
-                idx: sort_idx,
-                inv: sort_inv
-            }
         };
         
         function get_sort_idx(data, nan_pt, idx){
