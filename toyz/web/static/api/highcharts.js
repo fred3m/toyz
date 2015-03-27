@@ -418,11 +418,15 @@ Toyz.API.Highcharts.Contents.prototype.rx_info = function(options){
                 };
                 for(var p=0;p<points.length;p++){
                     this.current_point = points[p];
-                    if(options.info_type=='select datapoints'){
-                        chart.series[s].data[points[p]].select(true, true);
-                    }else{
-                        chart.series[s].data[points[p]].select(false, true);
-                    }
+                    // If one of the series columns is null or NaN, this point will
+                    // be undefined. Only select the point if it is not undefined
+                    if(points[p]!==undefined){
+                        if(options.info_type=='select datapoints'){
+                            chart.series[s].data[points[p]].select(true, true);
+                        }else{
+                            chart.series[s].data[points[p]].select(false, true);
+                        }
+                    };
                 };
             };
         };
@@ -494,57 +498,46 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
     for(var i=0; i<this.settings.series.length; i++){
         var data_source = this.settings.series[i].data_source;
         var data = this.workspace.sources[data_source].data;
-        console.log('source', data_source, 'data:', data);
         
         // Add data points to chart
         var x = this.settings.series[i].x;
         var y = this.settings.series[i].y;
-        var this_data = Array(data[x].length);
-        var nan_pt = Array(data[x].length);
+        var this_data = new Array(data[x].length);
+        var series2src = [];
         for(var j=0; j<data[x].length; j++){
             var point = {
                 x:parseFloat(data[x][j]), 
                 y:parseFloat(data[y][j])
             };
-            //console.log('point', j, point);
             this_data[j] = point;
             if(isNaN(point.x) || isNaN(point.y)){
-                nan_pt[j] = true;
+                //console.log('remove point', point);
             }else{
-                nan_pt[j] = false;
+                series2src.push(j);
             };
         };
         
-        function get_sort_idx(data, nan_pt, idx){
-            var series2src = data.map(function(v, i){return i});
-            // Highcharts doesn't plot a dataset if the first value is a Nan,
-            // so move all the NaN values to the back of the series
-            series2src.sort(function(a,b){
-                if(nan_pt[a]){
-                    return 1;
-                }else{
-                    return data[a][idx]-data[b][idx];
-                };
-            });
-            var src2series = series2src.map(function(v,i){return i});
-            src2series.sort(function(a,b){
-                return series2src[a]-series2src[b];
-            });
-            return {
-                series2src: series2src,
-                src2series: src2series
-            }
+        // Sort series data and create index to and from data_source
+        series2src.sort(function(a,b){
+            return this_data[a]['x']-this_data[b]['x'];
+        });
+        // Create the map from the data source to the series data
+        // Note that for NaN values the index will be undefined. This is
+        // necessary because Highcharts doesn't plot any points if there are
+        // a lot of NaN values.
+        var src2series = new Array(data[x].length);
+        for(var j=0; j<series2src.length; j++){
+            src2series[series2src[j]] = j;
         };
         
-        var result = get_sort_idx(this_data, nan_pt, 'x');
-        var new_data = result.series2src.map(function(v, i){
+        var new_data = series2src.map(function(v, i){
             return this_data[v];
         });
         
         this_data = new_data;
         this.settings.series[i].argsort = {
-            series2src: result.series2src,
-            src2series: result.src2series
+            series2src: series2src,
+            src2series: src2series
         };
         this.settings.series[i].sorted=true;
         
@@ -567,11 +560,6 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
         if(y_lbls.indexOf(y_lbl)==-1){
             y_lbls.push(y_lbl);
         };
-        
-        // Highcharts doesn't like NaN values, so convert them to null
-        this_data = this_data.map(function(v,i){
-            return (isNaN(v.x) || isNaN(v.y)) ? {x:null, y:null} : v;
-        });
         
         var this_series = {
             type: this.settings.series[i].chart_type,
