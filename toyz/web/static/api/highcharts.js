@@ -420,7 +420,7 @@ Toyz.API.Highcharts.Contents.prototype.rx_info = function(options){
                 var points = options.info.points;
                 if(this.settings.series[s].sorted){
                     points = options.info.points.map(function(v, idx){
-                        return this.settings.series[s].argsort.inv[v];
+                        return this.settings.series[s].argsort.src2series[v];
                     }.bind(this));
                 };
                 for(var p=0;p<points.length;p++){
@@ -551,20 +551,20 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
                 return series2src[a]-series2src[b];
             });
             return {
-                idx: series2src,
-                inv: src2series
+                series2src: series2src,
+                src2series: src2series
             }
         };
         
         var result = get_sort_idx(this_data, nan_pt, 'x');
-        var new_data = result.idx.map(function(v, i){
+        var new_data = result.series2src.map(function(v, i){
             return this_data[v];
         });
         
         this_data = new_data;
         this.settings.series[i].argsort = {
-            idx: result.idx,
-            inv: result.inv
+            series2src: result.series2src,
+            src2series: result.src2series
         };
         this.settings.series[i].sorted=true;
         
@@ -631,7 +631,8 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
                             if(this.current_point!=point_idx){
                                 if(this.settings.series[series_idx].sorted){
                                     point_idx = 
-                                        this.settings.series[series_idx].argsort.idx[point_idx];
+                                        this.settings.series[series_idx]
+                                                .argsort.series2src[point_idx];
                                 };
                                 this.update_selected(
                                     series_idx, 
@@ -648,7 +649,8 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
                             if(this.current_point!=point_idx){
                                 if(this.settings.series[series_idx].sorted){
                                     point_idx = 
-                                        this.settings.series[series_idx].argsort.idx[point_idx];
+                                        this.settings.series[series_idx]
+                                                .argsort.series2src[point_idx];
                                 };
                                 this.update_selected(
                                     series_idx, 
@@ -864,7 +866,7 @@ Toyz.API.Highcharts.Contents.prototype.remove_points = function(){
     };
     if(this.settings.series[0].sorted){
         pts = pts.map(function(v,i){
-            return this.settings.series[0].argsort.idx[v];
+            return this.settings.series[0].argsort.series2src[v];
         }.bind(this));
         pts.sort(function(a,b){return a-b});
     };
