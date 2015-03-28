@@ -843,7 +843,7 @@ Toyz.API.Highcharts.Contents.prototype.remove_points = function(){
         from: '',
         info_type: 'remove datapoints',
         info: {
-            points: pts,
+            points: pts
         }
     });
 }

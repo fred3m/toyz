@@ -684,6 +684,18 @@ def get_src_columns(toyz_settings, tid, params):
     }
     return response
 
+def remove_datapoints(toyz_settings, tid, params):
+    """
+    Remove a point from a data source
+    """
+    src = session_vars.data_sources[params['src_id']]
+    src.remove_rows(params['points'])
+    response = {
+        'id': 'notification',
+        'msg': 'Successfully removed data points'
+    }
+    return response
+
 def get_file_info(toyz_settings, tid, params):
     """
     Get information about an image file

@@ -189,6 +189,20 @@ class DataSource:
                     save_info = dict(file_info)
                 toyz.utils.io.save_file_data(save_info['iomodule'], save_info['file_type'],
                     save_info['file_options'])
+    
+    def remove_rows(self, points):
+        if self.data_type=='pandas.core.frame.DataFrame':
+            import numpy as np
+            self.data.drop(self.data.index[points], inplace=True)
+        elif self.data_type=='numpy.ndarray':
+            import numpy as np
+            np.delete(self.data, np.array(points))
+        elif self.data_type=='list':
+            for p in points:
+                del self.data[p]
+        else:
+            data_dict = self.data_module.data_types[self.data_type].remove_data_points(
+                self.data, points)
 
 class ImageSource:
     pass

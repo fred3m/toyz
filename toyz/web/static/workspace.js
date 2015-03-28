@@ -225,7 +225,18 @@ Toyz.Workspace.DataSource.prototype.rx_info = function(options){
             for(var i=options.info.points.length-1; i>=0; i--){
                 this.data[col].splice(options.info.points[i], 1);
             }
-        }
+        };
+        websocket.send_task({
+            task: {
+                module: 'toyz.web.tasks',
+                task: 'remove_datapoints',
+                parameters: {
+                    src_id: this.id,
+                    points: options.info.points
+                }
+            },
+            callback:function(result){}
+        })
     };
     // Update tiles with the new information
     options = $.extend(true, options, {
