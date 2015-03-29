@@ -443,18 +443,89 @@ def load_data_file(toyz_settings, tid, params):
     ``get_io_info``.
     """
     import toyz.utils.io as io
+    import toyz.utils.sources as sources
     
-    columns, data, meta = io.load_data_file(
-        params['io_module'],
-        params['file_type'], 
-        params['file_options'])
+    src_types = sources.src_types
+    modules = db_utils.get_param(toyz_settings.db, 'modules', user_id=tid['user_id'])
+    for module in modules:
+        try:
+            config = importlib.import_module(module+'.config')
+        except ImportError:
+            import_error[module] = 'could not import' + module+'.config'
+        if hasattr(config, 'src_types'):
+            src_types.update(config.src_types)
+    
+    # If this is the first data source, define variable to keep track of data sources
+    if not hasattr(session_vars, 'data_sources'):
+        session_vars.data_sources = {}
+    
+    # Load the data into a data object
+    src_id = params['src_id']
+    src_name = params['src_name']
+    
+    if 'src_type' in params:
+        src_type = params['src_type']
+    else:
+        src_type = 'DataSource'
+    if 'data_type' in params:
+        data_type = params['data_type']
+    else:
+        data_type = None
+    
+    session_vars.data_sources[src_id] = src_types[src_type](
+        user_id=tid['user_id'], data_type=data_type, paths=params['paths'])
+    session_vars.data_sources[src_id].src_id = src_id
+    session_vars.data_sources[src_id].name = src_id
     
     response = {
         'id': 'data_file',
-        'columns': columns,
-        'data': data,
-        'data_type': 'columns',
-        'meta': meta
+        'columns': session_vars.data_sources[src_id].columns,
+    }
+    return response
+
+def save_data_file(toyz_settings, tid ,params):
+    """
+    Save a data source.
+    """
+    src = session_vars.data_sources[params['src_id']]
+    new_file_options = src.save(params['save_paths'])
+    response = {
+        'id': 'save_data_file',
+        'status': 'success',
+        'new_file_options': new_file_options
+    }
+    return response
+    
+def get_src_columns(toyz_settings, tid, params):
+    """
+    Get column information from multiple sources and return to a workspace
+    """
+    sources = {}
+    for src_id, src in params.items():
+        if not hasattr(session_vars, 'data_sources') or src_id not in session_vars.data_sources:
+            print('loading data source')
+            load_data_file(toyz_settings, tid, params['params'])
+        if len(src['columns'])>0:
+            sources[src_id] = {
+                'data_type': 'columns',
+                'data': {}
+            }
+            sources[src_id]['data'] = session_vars.data_sources[src_id].to_dict(src['columns'])
+    response = {
+        'id': 'src_columns',
+        'sources': sources
+    }
+    return response
+
+def remove_datapoints(toyz_settings, tid, params):
+    """
+    Remove a point from a data source
+    """
+    src = session_vars.data_sources[params['src_id']]
+    src.remove_rows(params['points'])
+    response = {
+        'id': 'notification',
+        'msg': 'Successfully removed data points'
     }
     return response
 
@@ -464,60 +535,64 @@ def get_workspace_info(toyz_settings, tid, params):
     other settings for the current users workspaces
     """
     import toyz.utils.io as io
+    import toyz.utils.sources as sources
     
-    param_sets = {}
-    for key, val in io.io_modules.items():
-        param_sets[key] = {
-            'type': 'div',
-            'params': {
-                'all': {
-                    'type': 'div',
-                    'params': val['all']
-                },
-                'file_types': {
-                    'type': 'conditional',
-                    'selector': {
-                        'file_type': {
-                            'lbl': 'file type',
-                            'type': 'select',
-                            'options': val['file_types'].keys()
-                        }
-                    },
-                    'param_sets': val['file_types']
-                }
-            }
-        }
-    
-    info = {
-        'type': 'div',
-        'params': {
-            'io_info': {
-                'type': 'conditional',
-                'selector': {
-                    'io_module': {
-                        'type': 'select',
-                        'lbl': 'I/O module to use',
-                        'options': io.io_modules.keys()
-                    }
-                },
-                'param_sets': param_sets
-            }
-        }
+    src_types = sources.src_types.keys()
+    data_types = sources.data_types
+    image_types = sources.image_types
+    toyz_modules = {
+        'toyz': dict(io.io_modules)
     }
     
+    # Get workspace info from other Toyz modules
     tiles = {}
     import_error = {}
     modules = db_utils.get_param(toyz_settings.db, 'modules', user_id=tid['user_id'])
     for module in modules:
         try:
             config = importlib.import_module(module+'.config')
-            tiles.update(config.workspace_tiles)
         except ImportError:
             import_error[module] = 'could not import' + module+'.config'
+        if hasattr(config, 'workspace_tiles'):
+            tiles.update(config.workspace_tiles)
+        if hasattr(config, 'data_types'):
+            data_types += config.data_types
+        if hasattr(config, 'image_types'):
+            image_types += config.image_types
+        if hasattr(config, 'io_modules'):
+            toyz_modules.update({
+                module: config.io_modules
+            })
+        if hasattr(config, 'src_types'):
+            src_types += config.src_types.keys()
+    
+    load_src = io.build_gui(toyz_modules, 'load')
+    load_src.update({
+        'optional': {
+            'src_type': {
+                'lbl': 'Data Source Type',
+                'type': 'select',
+                'options': sorted(src_types),
+                'default_val': 'DataSource'
+            },
+            'data_type': {
+                'lbl': 'data type',
+                'type': 'select',
+                'options': sorted(data_types)
+            },
+            'image_type': {
+                'lbl': 'image_type',
+                'type': 'select',
+                'options': sorted(image_types)
+            }
+        }
+    })
+    save_src = io.build_gui(toyz_modules, 'save')
     
     response = {
         'id': 'workspace_info',
-        'io_info': info,
+        'load_src_info': load_src,
+        'save_src_info': save_src,
         'tiles': tiles,
         'import_error': import_error
     }

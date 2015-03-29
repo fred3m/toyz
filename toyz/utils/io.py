@@ -3,32 +3,65 @@
 """
 Tools to read/write files
 """
-
+from __future__ import print_function, division
 from toyz.utils import core
 from toyz.utils.errors import ToyzIoError
 
-# TODO: Finish creating the interface for pandas and astropy
-
-return_types = ['list', 'dict']
-
+# Modules and data types with API in Toyz to load data
+# The keys of ``io_modules`` are the different modules available 
+# (``python``, ``numpy``, ``pandas``).
+# Each module also has a set of keys for each different type of file (for example
+# ``csv``, ``hdf``, ``sql``, etc).
+# Each of those has a ``load`` dict, which describes the load parameters,
+# a ``save`` dict, which describes the save parameters,
+# a ``load2save`` dict, which describes which ``load`` parameters are dropped or changed
+# when saving a file, and
+# a ``save2load`` dict which describes which ``save`` parameters are dropped or changed
+# when the file is loaded again.
 io_modules = {
+    # Pure python load/save list (no external packages required)
     'python': {
         # https://docs.python.org/2/library/functions.html#open
-        'all': {
-            'name': {
-                'lbl': 'filename',
-                'file_dialog': True
-            },
-            'mode': {
-                'lbl': 'mode',
-                'type': 'select',
-                'options': ['r','r+','rb','w','w+','wb','a','a+','ab']
-            },
-        },
-        'file_types': {
-            'csv-like': {
+        'csv': {
+            'load': {
                 'type': 'div',
                 'params': {
+                    'name': {
+                        'lbl': 'filename',
+                        'file_dialog': True
+                    },
+                    'mode': {
+                        'lbl': 'mode',
+                        'type': 'select',
+                        'options': ['r','r+','rb','w','w+','wb','a','a+','ab']
+                    },
+                    'sep': {
+                        'lbl': 'separator',
+                        'prop': {
+                            'value' : ','
+                        }
+                    },
+                    'use_cols': {
+                        'lbl': 'use first row as column names',
+                        'prop': {
+                            'type': 'checkbox',
+                            'checked': True
+                        }
+                    }
+                },
+            },
+            'save': {
+                'type': 'div',
+                'params': {
+                    'name': {
+                        'lbl': 'filename',
+                        'file_dialog': True
+                    },
+                    'mode': {
+                        'lbl': 'mode',
+                        'type': 'select',
+                        'options': ['r','r+','rb','w','w+','wb','a','a+','ab']
+                    },
                     'sep': {
                         'lbl': 'separator',
                         'prop': {
@@ -36,33 +69,78 @@ io_modules = {
                         }
                     }
                 },
+                'optional': {
+                    'col_div': {
+                        'type': 'div',
+                        'legend': 'columns',
+                        'params': {
+                            'columns': {
+                                'type': 'list',
+                                'format': 'list',
+                                'new_item': {
+                                    'lbl': 'column name'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            'load2save': {
+                #'ignore': ['use_cols'],
+                'remove': [],
+                'warn': {},
+                'convert': {}
+            },
+            'save2load': {
+                #'ignore': ['columns'],
+                'remove': [],
+                'warn': {},
+                'convert': {}
             }
         }
     },
+    
+    # Numpy load/save ##################################################
     'numpy': {
         # "http://docs.scipy.org/doc/numpy/reference/generated/numpy.load.html#numpy.load"
-        'all': {
-            'file': {
-                'lbl': 'filename',
-                'file_dialog': True
+        'numpy': {
+            'load': {
+                'type':'div', 
+                'params':{
+                    'file': {
+                        'lbl': 'filename',
+                        'file_dialog': True
+                    }
+                }
             },
-            # mmap_mode should not be needed
-            #'mmap_mode': {
-            #    'lbl': 'mmap_mode',
-            #    'type': 'select',
-            #    'options': ['r','r+', 'w+', 'c']
-            #}
-        },
-        'file_types': {
-            'load': {'type':'div', 'params':{}}
+            'save': {
+                'type':'div', 
+                'params':{
+                    'file': {
+                        'lbl': 'filename',
+                        'file_dialog': True
+                    }
+                }
+            },
+            'load2save': {
+                #'ignore': [],
+                'remove': [],
+                'warn': {},
+                'convert': {}
+            },
+            'save2load': {
+                #'ignore': [],
+                'remove': [],
+                'warn': {},
+                'convert': {}
+            }
         }
     },
+    # Pandas load/save ##################################################
     'pandas': {
-        'all': {
-            # "http://pandas.pydata.org/pandas-docs/stable/io.html"
-        },
-        'file_types': {
-            'csv': {
+        'csv': {
+            # "http://pandas.pydata.org/pandas-docs/dev/generated/pandas.io.parsers.read_csv.html"
+            'load': {
                 'type': 'div',
                 'params': {
                     'filepath_or_buffer': {
@@ -72,7 +150,6 @@ io_modules = {
                 },
                 'optional': {
                     'sep': {'lbl':'sep'},
-                    'delimiter': {'lbl':'delimiter'},
                     'delim_whitespace': {
                         'lbl':'delim_whitespace',
                         'prop': {
@@ -130,15 +207,10 @@ io_modules = {
                         }
                     },
                     'thousands': {'lbl': 'thousands'},
+                    'decimal': {'lbl': 'decimal'},
                     'lineterminator': {'lbl':'lineterminator'},
                     'quotechar': {'lbl': 'quotechar'},
-                    'quoting': {
-                        'lbl':'quoting',
-                        'prop': {
-                            'type': 'Number',
-                            'value': 1
-                        }
-                    },
+                    'quoting': {'lbl':'quoting'},
                     'skipinitialspace': {
                         'lbl': 'skipinitialspace',
                         'prop': {
@@ -208,7 +280,97 @@ io_modules = {
                     }
                 }
             },
-            'hdf': {
+            # "http://pandas.pydata.org/pandas-docs/dev/generated/pandas.DataFrame.to_csv.html"
+            'save': {
+                'type': 'div',
+                'params': {
+                    'path_or_buf': {
+                        'lbl': 'filename',
+                        'file_dialog': True
+                    },
+                },
+                'optional': {
+                    'sep': {'lbl':'sep'},
+                    'na_rep': {'lbl': 'na_rep'},
+                    'float_format': {'lbl': 'float_format'},
+                    'columns':{'lbl': 'columns'},
+                    'header':{'lbl': 'header'},
+                    'index': {
+                        'lbl': 'write index to file',
+                        'prop': {
+                            'type': 'checkbox',
+                            'checked': False
+                        }
+                    },
+                    'index_label': {'lbl': 'index_label'},
+                    'encoding': {
+                        'lbl': 'encoding',
+                        'type': 'select',
+                        'options': ['ascii', 'utf-8']
+                    },
+                    'line_terminator': {'lbl': 'line_terminator'},
+                    'quoting': {'lbl': 'quoting'},
+                    'quotechar': {'lbl': 'quotechar'},
+                    'doublequote': {
+                        'lbl':'doublequote',
+                        'prop': {
+                            'type': 'checkbox',
+                            'checked': True
+                        }
+                    },
+                    'escapechar': {'lbl': 'escapechar'},
+                    'tupleize_cols': {
+                        'lbl': 'tupleize_cols',
+                        'prop': {
+                            'type': 'checkbox',
+                            'checked': False
+                        }
+                    },
+                    'date_format': {'lbl': 'date_format'},
+                    'decimal': {'lbl': 'decimal'}
+                }
+            },
+            'load2save': {
+                #'ignore': ['float_precision', 'iterator', 'names', 'thousands', 'verbose'],
+                'remove': [
+                    'comment','compression','date_parser', 'dayfirst', 'delim_whitespace',
+                    'delimiter', 'dialect', 'dtype', 'error_bad_lines', 'false_values',
+                    'keep_date_col', 'keep_default_na', 'mangle_dupe_cols',
+                    'nrows', 'parse_dates', 'skip_blank_lines', 'skip_footer', 
+                    'skipinitialspace', 'skiprows', 'true_values', 'use_cols'
+                ],
+                'warn': {
+                    'nrows': "You specified a limited number of rows when you loaded the"
+                            "data, are you sure you want to save over your original data?", 
+                    'use_cols': "You specified a limited number of columns when you loaded the"
+                            "data, are you sure you want to save over your original data?", 
+                    'compression': "You loaded your data from a compressed file. At this time"
+                        "pandas does not support saving in that compressed format. Are you "
+                        "sure you want to save over that file?",
+                },
+                'convert': {
+                    'filepath_or_buffer': 'path_or_buf',
+                    'lineterminator': 'line_terminator',
+                    'na_values': 'na_rep'
+                }
+            },
+            'save2load': {
+                #'ignore': ['date_format', 'doublequote', 'float_format', 'index', 'index_label'],
+                'remove': ['columns'],
+                'warn': {
+                    'columns': "You are only selecting a subset of columns to save, are you "
+                        "sure you want to save over your original file?"
+                },
+                'convert': {
+                    'path_or_buf': 'filepath_or_buffer',
+                    'line_terminator': 'lineterminator',
+                    'na_rep': 'na_values'
+                }
+            }
+        },
+        'hdf': {
+            # "http://pandas.pydata.org/pandas-docs/dev/generated/pandas.io.pytables.read_hdf.html"
+            'load': {
                 'type': 'div',
                 'params': {
                     'path_or_buf': {
@@ -237,17 +399,47 @@ io_modules = {
                     # 'chunksize': Not supported (or necessary)
                     # 'auto_close': Not supported (or necessary)
                     'where' : {'lbl': 'where'},
-                    #'mode': Not supported (or necessary)
-                    'complevel': {
-                        'lbl': 'complevel',
+                }
+            },
+            # "http://pandas.pydata.org/pandas-docs/dev/generated/pandas.DataFrame.to_hdf.html"
+            'save': {
+                'type': 'div',
+                'params': {
+                    'path_or_buf': {
+                        'lbl': 'path_or_buf',
+                        'file_dialog': True
+                    },
+                    'key': {
+                        'lbl': 'key',
+                    }
+                },
+                'optional': {
+                    'format': {
+                        'lbl': 'format',
+                        'type': 'select',
+                        'options': ['fixed', 'table']
+                    },
+                    'mode': {
+                        'lbl': 'mode',
+                        'type': 'select',
+                        'options': ['a', 'w', 'r', 'r+']
+                    },
+                    'append': {
+                        'lbl': 'append',
                         'prop': {
-                            'type': 'Number'
+                            'type': 'checkbox',
+                            'checked': False
                         }
                     },
                     'complib': {
                         'lbl': 'complib',
                         'type': 'select',
-                        'options': ['zlib', 'bzip2', 'lzo', 'blosc']
+                        'options': ['zlib', 'bzip2', 'izo', 'blosc']
+                    },
+                    'complevel': {
+                        'lbl': 'complevel',
+                        'type': 'select',
+                        'options': range(1,10)
                     },
                     'fletcher32': {
                         'lbl': 'fletcher32',
@@ -258,20 +450,144 @@ io_modules = {
                     }
                 }
             },
-            'sql': {
+            'load2save': {
+                #'ignore': [],
+                'remove': ['start', 'stop', 'columns', 'where'],
+                'warn': {
+                    'start': "You specified a limited number of rows when you loaded the"
+                            "data, are you sure you want to save over your original data?",
+                    'stop': "You specified a limited number of rows when you loaded the"
+                            "data, are you sure you want to save over your original data?",
+                    'columns': "You specified a limited number of columns when you loaded the"
+                            "data, are you sure you want to save over your original data?",
+                },
+                'convert': {}
+            },
+            'save2load': {
+                #'ignore': ['format', 'mode', 'append', 'complib', 'complevel', 'fletcher32'],
+                'remove': [],
+                'warn': {},
+                'convert': {}
+            }
+        },
+        'sql': {
+            # "http://pandas.pydata.org/pandas-docs/dev/generated/pandas.io.sql.read_sql.html"
+            'load': {
                 'type': 'div',
                 'params': {
-                    'connection': {'lbl': 'SQLalchemy connection string'},
+                    'con': {'lbl': 'SQLalchemy connection string'},
                     'sql': {
                         'lbl': 'SQL query or table name',
                         'db': True
                     },
+                },
+                'optional': {
+                    'index_col': {'lbl': 'index_col'},
+                    'coerce_float': {
+                        'lbl': 'coerce_float',
+                        'prop': {
+                            'type': 'checkbox',
+                            'checked': True
+                        }
+                    },
+                    'parse_dates': {'lbl': 'pares_dates'},
+                    'col_div': {
+                        'type': 'div',
+                        'legend': 'columns',
+                        'params': {
+                            'columns': {
+                                'type': 'list',
+                                'format': 'list',
+                                'new_item': {
+                                    'lbl': 'column name'
+                                }
+                            }
+                        }
+                    }
                 }
+            },
+            # "http://pandas.pydata.org/pandas-docs/dev/generated/pandas.DataFrame.to_sql.html"
+            'save': {
+                'type': 'div',
+                'params': {
+                    'con': {'lbl': 'SQLalchemy connection string'},
+                    'sql': {
+                        'lbl': 'SQL query or table name',
+                        'db': True
+                    },
+                },
+                'optional': {
+                    'schema': {'lbl': 'schema'},
+                    'if_exists': {
+                        'lbl': 'if_exists',
+                        'type': 'select',
+                        'options': ['fail', 'replace', 'append']
+                    },
+                    'index': {
+                        'lbl': 'index',
+                        'prop': {
+                            'type': 'checkbox',
+                            'checked': True
+                        }
+                    },
+                    'index_label': {'lbl': 'index_label'}
+                }
+            },
+            'load2save': {
+                #'ignore': ['index_col', 'coerce_float', 'parse_dates'],
+                'remove': ['columns'],
+                'warn': {
+                    'columns': "You specified a limited number of columns when you loaded the"
+                            "data, are you sure you want to save over your original data?",
+                },
+                'convert': {}
+            },
+            'save2load': {
+                #'ignore': ['schema', 'if_exists','index', 'index_label'],
+                'remove': [],
+                'warn': {},
+                'convert': {}
             }
         }
-    },
-    #'astropy': {}
+    }
 }
+
+def get_io_module(toyz_module, io_module):
+    """
+    Get the file options for a given set of io parameters
+    """
+    if toyz_module=='toyz':
+        module = io_modules[io_module]
+    else:
+        import importlib
+        try:
+            module = importlib.import_module(toyz_module)
+        except ImportError:
+            raise ToyzIoError("Could not import module '"+toyz_module+"'")
+        module = module.config.io_modules[io_module]
+    return module
+
+def convert_options(toyz_module, io_module, file_type, file_options, conversion, warning=True):
+    """
+    Convert a file option parameters from ``conversion='load2save'`` or 
+    ``conversion='save2load'``.
+    """
+    module = get_io_module(toyz_module, io_module)
+    remove = module[file_type][conversion]['remove']
+    warn = module[file_type][conversion]['warn']
+    convert = module[file_type][conversion]['convert']
+    # Check for any warning conditions and notify the user
+    if warning and not all([w not in file_options for w in warn]):
+        for w in file_options:
+            if w in warn:
+                return warn[w]
+    file_options = {k:v for k,v in file_options.items() if k not in remove}
+    # Convert any keys that are different
+    for old_key, new_key in convert.items():
+        if old_key in file_options:
+            file_options[new_key] = file_options[old_key]
+            del file_options[old_key]
+    return file_options
 
 def load_dict(dict_str, str_ok=False):
     """
@@ -326,8 +642,7 @@ def load_unknown(str_in, single_ok=False):
     
     return val_out
 
-def load_data_file(io_module, file_type, file_options, io_modules=None, 
-        io_func=None, format='dict', fillna='NaN'):
+def load_data(toyz_module, io_module, file_type, file_options):
     """
     Loads a data file using a specified python module and a set of options. Currently
     only *numpy* and *pandas* are fully supported
@@ -340,128 +655,198 @@ def load_data_file(io_module, file_type, file_options, io_modules=None,
             - *Note*: the ``file_type`` must be supported by the given ``io_module``
         file_options ( *dict* ): 
             - dictionary of options as specified in the ``io_module``s documentation
-        io_modules ( *dict* , optional): 
-            - Dictionary of custom io_modules not included in the toyz framework
-            - This is currently unsupported, but will eventually allow users to specify
-              their own i/o modules
         io_func ( *string* , optional):
             - name of custom i/o function
-            - This is currently unsupported, but will eventually allow users to specify
-              their own i/o functions
-        format ( *string* , optional):
-            - The default format is to return the data as a dictionary of columns
-            - If format is any other value, the raw data is returned for whatever
-              type of data was loaded (python list, numpy.array, pandas.DataFrame, etc)
-        fillna ( *string* ,optional):
-            - JSON does not encode NaN values, so they can be converted into strings or
-              some other value
-            - Toyz Workspaces use the default ``fillna='NaN'``
-            - To leave NaN values as such, use ``fillna=None``
-            - Note: If not using the ``dict`` format, NaN values are left alone and
-              this parameter is ignored
+            - This is used if the io_module is not one of the modules currently supported by Toyz
+              (for example, astropy.table.read)
     """
     meta = ''
-    if io_module == 'python':
-        sep = file_options['sep']
-        del file_options['sep']
-        f = open(**file_options)
-        raw_data = []
-        if file_type == 'csv-like':
-            for line in f:
-                no_cr = line.split('\n')[0]
-                raw_data.append(no_cr.split(sep))
-        else:
-            raise ToyzIoError("Invalid file type '{0}' for python open file".format(file_type))
-        columns = raw_data[0]
-        del raw_data[0]
-        if format=='dict':
-            data = {col: [raw_data[m][n] for m in range(len(raw_data))] 
-                for n,col in enumerate(columns)}
-        else:
-            data = raw_data
-    elif io_module == 'numpy':
-        import numpy as np
-        raw_data = np.load(**file_options)
-        if format=='dict':
-            if fillna is not None:
-                raw_data = raw_data.astype(object).fillna(fillna)
-            if len(raw_data.dtype) == 0:
-                columns = ['col-'+str(n) for n in range(raw_data.shape[1])]
-                data = {col: raw_data[:,n].tolist() for n,col in enumerate(columns)}
+    # Make a copy of the file_options to use
+    file_options = core.merge_dict({}, file_options)
+    # Ignore parameters for other functions like 'save'
+    module = get_io_module(toyz_module, io_module)
+    params = module[file_type]['load']
+    load_options = params['params'].keys()+params['optional'].keys()
+    file_options = {k:v for k,v in file_options.items() if k in load_options}
+    print('keys', module[file_type]['load'].keys())
+    print('file_options', file_options)
+    if toyz_module == 'toyz':
+        print("in toyz")
+        if io_module == 'python':
+            print('in python')
+            sep = file_options['sep']
+            del file_options['sep']
+            use_cols = file_options['use_cols']
+            del file_options['use_cols']
+            f = open(**file_options)
+            data = []
+            if file_type == 'csv':
+                for line in f:
+                    no_cr = line.split('\n')[0]
+                    data.append(no_cr.split(sep))
             else:
-                columns = raw_data.dtype.names
-                data = {col: raw_data[col].tolist() for col in columns}
-        else:
-            data = raw_data
-    elif io_module == 'pandas':
-        import pandas as pd
-        if file_type == 'csv':
-            if 'dtype' in file_options:
-                file_options['dtype'] = load_dict(file_options['dtype'], True)
-            if 'header' in file_options:
-                file_options['header'] = load_list(file_options['header'], True)
-            if 'skiprows' in file_options:
-                file_options['skiprows'] = load_list(file_options['skiprows'], True)
-            if 'names' in file_options:
-                file_options['names'] = load_list(file_options['names'], False)
-            if 'na_values' in file_options:
-                file_options['na_values'] = load_unknown(file_options['na_values'], False)
-            if 'true_values' in file_options:
-                file_options['true_values'] = load_list(file_options['true_values'], False)
-            if 'false_values' in file_options:
-                file_options['false_values'] = load_list(file_options['false_values'], False)
-            if 'date_parser' in file_options:
-                module = file_options['date_parser'].split('.')[0]
-                func = file_options['date_parser'].split('.')[1:]
-                import importlib
-                module = importlib.import_module(module)
-                file_options['date_parser'] = getattr(module, func)
-            if 'usecols' in file_options:
-                file_options['usecols'] = load_list(file_options['usecols'], False)
-            df = pd.read_csv(**file_options)
-        elif file_type == 'hdf':
-            if 'columns' in file_options:
-                file_options['columns'] = load_list(file_options['columns'], False)
-            df = pd.read_hdf(**file_options)
-        elif file_type == 'sql':
-            from sqlalchemy import create_engine
-            engine = create_engine(file_options['connection'])
-            sql = file_options['sql']
-            del file_options['connection']
-            del file_options['sql']
-            df = pd.read_sql(sql, engine, **file_options)
-        else:
-            raise ToyzIoError("File type is not yet supported")
-        if format=='dict':
-            if fillna is not None:
-                df = df.astype(object).fillna(fillna)
-            columns = df.columns.values.tolist()
-            data = {col: df[col].values.tolist() for col in columns}
-        else:
-            data = df
-        
-    elif io_module == 'astropy':
-        response = {
-            'id':'notification',
-            'func': '',
-            'msg': 'astropy file i/o not supported yet'
-        }
-                    
-    elif io_modules is not None:
-        if io_module not in io_modules:
-            raise ToyzIoError(
-                "io_module not found in toyz.utils.io.io_modules or in specified "
-                "io_modules.\n Please check your module name or io_modules")
-        else:
-            # Code here to load data from external module
-            pass
-    else:
-        raise ToyzIoError(
-            "io_module not found in toyz.utils.io.io_modules.\n"
-            "Please specify a set of alternative io_modules or check your module name")
-    
-    if format=='dict':
-        return columns, data, meta
-    else:
-        return data
+                raise ToyzIoError("Invalid file type '{0}' for python open file".format(file_type))
+        elif io_module == 'numpy':
+            import numpy as np
+            data = np.load(**file_options)
+        elif io_module == 'pandas':
+            import pandas as pd
+            if file_type == 'csv':
+                if 'dtype' in file_options:
+                    file_options['dtype'] = load_dict(file_options['dtype'], True)
+                if 'header' in file_options:
+                    file_options['header'] = load_list(file_options['header'], True)
+                if 'skiprows' in file_options:
+                    file_options['skiprows'] = load_list(file_options['skiprows'], True)
+                if 'names' in file_options:
+                    file_options['names'] = load_list(file_options['names'], False)
+                if 'na_values' in file_options:
+                    file_options['na_values'] = load_unknown(file_options['na_values'], False)
+                if 'true_values' in file_options:
+                    file_options['true_values'] = load_list(file_options['true_values'], False)
+                if 'false_values' in file_options:
+                    file_options['false_values'] = load_list(file_options['false_values'], False)
+                if 'date_parser' in file_options:
+                    module = file_options['date_parser'].split('.')[0]
+                    func = file_options['date_parser'].split('.')[1:]
+                    import importlib
+                    module = importlib.import_module(module)
+                    file_options['date_parser'] = getattr(module, func)
+                if 'usecols' in file_options:
+                    file_options['usecols'] = load_list(file_options['usecols'], False)
+                df = pd.read_csv(**file_options)
+            elif file_type == 'hdf':
+                if 'columns' in file_options:
+                    file_options['columns'] = load_list(file_options['columns'], False)
                 
+                df = pd.read_hdf(**file_options)
+            elif file_type == 'sql':
+                from sqlalchemy import create_engine
+                engine = create_engine(file_options['connection'])
+                sql = file_options['sql']
+                del file_options['connection']
+                del file_options['sql']
+                df = pd.read_sql(sql, engine, **file_options)
+            else:
+                raise ToyzIoError("File type is not yet supported")
+            data = df
+    else:
+        import importlib
+        try:
+            module = importlib.import_module(toyz_module)
+        except ImportError:
+            raise ToyzIoError("Could not import module '"+toyz_module+"'")
+        try:
+            load_fn = module.config.io_modules[io_module][file_type]['load_fn']
+            data = module.config.load_functions[load_fn](file_type, **file_options)
+        except KeyError:
+            raise ToyzIoError("Could not find "+io_module+" in "+toyz_module+" load_functions")
+    return data
+
+def save_data(data, toyz_module, io_module, file_type, file_options):
+    """
+    Save data to a file
+    """
+    # Ignore parameters for other functions like 'load'
+    module = get_io_module(toyz_module, io_module)
+    params = module[file_type]['save']
+    save_options = params['params'].keys()+params['optional'].keys()
+    file_options = {k:v for k,v in file_options.items() if k in save_options}
+    if toyz_module == 'toyz':
+        if io_module=='python':
+            if '+' not in file_options['mode'] and 'w' not in file_options['mode']:
+                file_options['mode'] = file_options['mode']+'+'
+            if 'columns' in file_options:
+                columns = file_options['columns']
+                save_options = core.merge_dict({}, file_options)
+                del save_options['columns']
+            else:
+                columns = None
+                save_options = file_options
+            f = open(**save_options)
+            if columns is not None:
+                f.write(columns)
+            f.write(data)
+            f.close()
+        elif io_module=='numpy':
+            import numpy as np
+            np.save(file_options['file'], data)
+        elif io_module=='pandas':
+            if file_type=='csv':
+                if 'columns' in file_options:
+                    file_options['columns'] = load_list(file_options['columns'], False)
+                print('saving', file_options)
+                print('data', data)
+                if 'index' not in file_options:
+                    file_options['index'] = False
+                data.to_csv(**file_options)
+            elif file_type=='hdf':
+                data.to_hdf(**file_options)
+            elif file_type=='sql':
+                data.to_sql(**file_options)
+        else:
+            raise ToyzIoError(
+                "'"+io_module+"' is not currently supported by Toyz. "
+                "You may need to import an affiliated module")
+    else:
+        import importlib
+        try:
+            module = importlib.import_module(toyz_module)
+        except ImportError:
+            raise ToyzIoError("Could not import module '"+toyz_module+"'")
+        try:
+            save_fn = module.config.io_modules[io_module][file_type]['save_fn']
+            module.config.save_functions[save_fn](data, file_type, **file_options)
+        except KeyError:
+            raise ToyzIoError("Could not find "+io_module+" in "+toyz_module+" save_functions")
+    return convert_options(toyz_module, io_module, file_type, file_options, 'save2load')
+
+def build_gui(toyz_modules, gui_type):
+    gui = {
+        'type': 'div',
+        'params': {
+            'load_info': {
+                'type': 'conditional',
+                'selector': {
+                    'toyz_module': {
+                        'lbl': 'Toyz Module',
+                        'type': 'select',
+                        'options': sorted(toyz_modules.keys()),
+                        'default_val': 'toyz'
+                    }
+                },
+                'param_sets': {
+                    toy: {
+                        'type': 'conditional',
+                        'selector': {
+                            'io_module': {
+                                'lbl': 'io module',
+                                'type': 'select',
+                                'options': sorted(toy_dict.keys())
+                            }
+                        },
+                        'param_sets': {
+                            io_module: {
+                                'type': 'conditional',
+                                'selector': {
+                                    'file_type': {
+                                        'lbl': 'file type',
+                                        'type': 'select',
+                                        'options': sorted(io_dict.keys())
+                                    }
+                                },
+                                'param_sets': {
+                                    file_type: ft_dict[gui_type]
+                                    for file_type, ft_dict in io_dict.items()
+                                }
+                            }
+                            for io_module, io_dict in toy_dict.items()
+                        }
+                    }
+                    for toy, toy_dict in toyz_modules.items()
+                }
+            }
+        }
+    }
+    
+    return gui

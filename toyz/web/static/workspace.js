@@ -96,8 +96,13 @@ Toyz.Workspace.DataSource = function(workspace, data, $parent, radio_group, info
     this.id = data.id;
     this.name = data.name;
     this.params = data.params;
-    //this.tiles = {};
+    this.columns = [];
     this.data = {};
+    if(data.hasOwnProperty('selected')){
+        this.selected = data.selected
+    }else{
+        this.selected = [];
+    };
     // Add an entry to a list of data sources
     if(!($parent===undefined)){
         this.$parent = $parent;
@@ -126,51 +131,64 @@ Toyz.Workspace.DataSource.prototype.update = function(info, info_val){
     // Allow user to either pass param_name, param_val to function or
     // dictionary with multiple parameters
     if(!(info_val===undefined)){
-        info = {info:info_val};
-    };
-    // Make sure the data_type is set first, since other parameters may depend on it
-    if(info.hasOwnProperty('data_type')){
-        this.data_type = info.data_type;
+        var temp = info;
+        info = {};
+        info[temp] = info_val;
     };
     for(var prop in info){
         if(prop=='data'){
             // Organize columns and data depending on the data_type received
             // If 'rows_no_heading' is received, an automatic list of column names is
             // created and the data_type is changed to 'rows'.
-            if(this.data_type=='columns'){
-                if(!(info.hasOwnProperty('columns'))){
-                    this.columns = Object.keys(info.data);
-                }
-                this.data = info.data;
-            }else if(this.data_type=='rows'){
-                if(!(info.hasOwnProperty('columns'))){
-                    this.columns = info.data[0];
+            update = {
+                from: {
+                    tile:'',
+                    series: 0
+                },
+                source: this.id, 
+                info_type:'data update',
+            };
+            if(info.data_type=='columns'){
+                for(var col in info.data){
+                    this.data[col] = info.data[col];
                 };
-                this.data = info.data.slice(1,info.data.length);
-            }else if(this.data_type=='rows_no_heading'){
-                if(!(info.hasOwnProperty('columns'))){
-                    this.columns = [];
-                    for(var i=0;i<data[0].length;i++){
-                        this.columns.push('col-'+i.toString());
+                update.columns = Object.keys(info.data);
+            }else if(info.data_type=='append'){
+                // If any new columns are being added, set the values of the
+                // columns for the existing rows to null
+                var len = this.data[Object.keys(this.data)[0]].length;
+                for(var col in info.data){
+                    if(!hasOwnProperty(this.data)){
+                        this.data[col] = new Array(len);
+                        for(var i; i<len; i++){
+                            this.data[col][i] = null
+                        };
+                        this.columns.push(col);
                     };
                 };
-                this.data = info.data;
-                this.data_type = 'rows';
+                // Append new rows to the data source and for any columns not included in the
+                // row information, add NaN
+                new_len = info.data[Object.keys(info.data)[0]].length;
+                for(var col in this.data){
+                    if(info.data.hasOwnProperty('col')){
+                        for(var i=0; i<new_len; i++){
+                            this.data[col].push(info.data[col][i]);
+                        };
+                    }else{
+                        for(var i=0; i<new_len; i++){
+                            this.data[col].push(null);
+                        };
+                    }
+                };
+                update.columns = this.data.columns;
             }else{
                 var error = "You must initialize a data source with a data_type of "
-                    + "'rows', 'columns' or 'rows_no_heading'";
+                    + "'columns' or 'append'";
                 throw error;
             };
             // Update tiles with the new data
             for(var tile_id in this.workspace.tiles){
-                this.workspace.tiles[tile_id].contents.rx_info({
-                    from: {
-                        tile:'',
-                        series: 0
-                    },
-                    source: this.id, 
-                    info_type:'data update'
-                });
+                this.workspace.tiles[tile_id].contents.rx_info(update);
             };
         }else if(prop=='name'){
             this.name = info.name;
@@ -198,7 +216,8 @@ Toyz.Workspace.DataSource.prototype.save = function(){
         params: this.params,
         tiles: this.tiles,
         name: this.name,
-        idx: this.idx
+        idx: this.idx,
+        selected: this.selected
     };
     return save_params;
 };
@@ -212,7 +231,30 @@ Toyz.Workspace.DataSource.prototype.rx_info = function(options){
             for(var i=options.info.points.length-1; i>=0; i--){
                 this.data[col].splice(options.info.points[i], 1);
             }
-        }
+        };
+        websocket.send_task({
+            task: {
+                module: 'toyz.web.tasks',
+                task: 'remove_datapoints',
+                parameters: {
+                    src_id: this.id,
+                    points: options.info.points
+                }
+            },
+            callback:function(result){}
+        })
+    }else if(options.info_type=='select datapoints'){
+        console.log('selected', options.info.points);
+        for(var i=0; i<options.info.points.length; i++){
+            this.selected.push(options.info.points[i]);
+        };
+    }else if(options.info_type=='unselect datapoints'){
+        for(var i=0; i<options.info.points.length; i++){
+            var idx = this.selected.indexOf(options.info.points[i]);
+            if(idx>-1){
+                this.selected.splice(idx,1);
+            };
+        };
     };
     // Update tiles with the new information
     options = $.extend(true, options, {
@@ -291,6 +333,36 @@ Toyz.Workspace.SourceDialog = function(workspace, options){
             Remove: function(){
                 this.workspace.remove_src();
             }.bind(this),
+            Save: function(){
+                var source = $("input:radio[ name='"+this.radio_group+"' ]:checked").val();
+                websocket.send_task({
+                    task: {
+                        module: 'toyz.web.tasks',
+                        task: 'save_data_file',
+                        parameters: {
+                            src_id: source,
+                            save_paths: {}
+                        }
+                    },
+                    callback: function(result){
+                        if(result.status=='success'){
+                            console.log('src', this.data_src);
+                            alert('Data file saved successfully');
+                        }
+                    }
+                })
+            }.bind(this),
+            'Save As': function(){
+                var source = $("input:radio[ name='"+this.radio_group+"' ]:checked").val();
+                var src = this.workspace.sources[source];
+                if(!(source===undefined)){
+                    this.workspace.load_src_dialog.gui.set_params({
+                        values: src.params,
+                        set_all: false
+                    });
+                    this.workspace.save_src_dialog.open(src);
+                };
+            }.bind(this),
             Edit: function(){
                 var source = $("input:radio[ name='"+this.radio_group+"' ]:checked").val();
                 var src = this.workspace.sources[source];
@@ -328,6 +400,7 @@ Toyz.Workspace.LoadSrcDialog = function(workspace, options){
         height: '300',
         buttons: {
             Open: function(){
+                console.log('all params', this.gui.get());
                 this.workspace.load_src(undefined, $.extend(this.data_src, {
                     params: this.gui.get()
                 }))
@@ -336,13 +409,88 @@ Toyz.Workspace.LoadSrcDialog = function(workspace, options){
                 this.$div.dialog('close');
             }.bind(this)
         }
-    });
+    }).css("font-size", "12px");
     
     for(var opt in options){
         this[opt] = options[opt];
     };
 };
 Toyz.Workspace.LoadSrcDialog.prototype.open = function(data_src){
+    if(data_src===undefined){
+        this.data_src = {};
+    } else{
+        this.data_src = data_src;
+    };
+    this.$div.dialog('open');
+};
+
+Toyz.Workspace.SaveSrcDialog = function(workspace, options){
+    this.workspace = workspace;
+    this.$div = $('<div/>')
+        .prop('title', 'Save Data File As')
+        .addClass('open-dialog');
+    this.gui = {};
+    this.data_src = {};
+    this.$div.dialog({
+        resizable: true,
+        draggable: true,
+        autoOpen: false,
+        modal: true,
+        width: 'auto',
+        height: '300',
+        buttons: {
+            Save: function(){
+                var gui = this.gui.get();
+                var toyz_module = gui.conditions.toyz_module;
+                var io_module = gui.conditions.io_module;
+                var file_type = gui.conditions.file_type;
+                delete gui.conditions;
+                var save_paths = {
+                    data: {
+                        toyz_module: toyz_module,
+                        io_module: io_module,
+                        file_type: file_type,
+                        file_options: gui
+                    }
+                };
+                console.log('save_paths', save_paths);
+                console.log('src_id', this.data_src.id);
+                websocket.send_task({
+                    task: {
+                        module: 'toyz.web.tasks',
+                        task: 'save_data_file',
+                        parameters: {
+                            save_paths: save_paths,
+                            src_id: this.data_src.id
+                        }
+                    },
+                    callback: function(result){
+                        console.log('result', result);
+                        if(result.status=='success'){
+                            console.log('src', this.data_src);
+                            alert('Data file saved successfully');
+                            var src = this.workspace.sources[this.data_src.id];
+                            var conditions = src.params.conditions;
+                            src.params = result.new_file_options;
+                            src.params.conditions = conditions;
+                            console.log('new sources', this.workspace.sources);
+                        };
+                        
+                    }.bind(this)
+                });
+                this.$div.dialog('close');
+            }.bind(this),
+            Cancel: function(){
+                this.$div.dialog('close');
+            }.bind(this)
+        }
+    }).css("font-size", "12px");
+    
+    for(var opt in options){
+        this[opt] = options[opt];
+    };
+};
+Toyz.Workspace.SaveSrcDialog.prototype.open = function(data_src){
     if(data_src===undefined){
         this.data_src = {};
     } else{
@@ -416,15 +564,21 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
         callback: function(result){
             this.$loader.dialog('close');
             console.log('msg received:', result);
-            var param_div = $.extend(true,{},result.io_info);
-            console.log('param_div', param_div);
             this.load_src_dialog.gui = new Toyz.Gui.Gui({
-                params: param_div,
+                params: $.extend(true,{},result.load_src_info),
                 $parent: this.load_src_dialog.$div,
             });
-            console.log('this.load_src_dialog.gui)',this.load_src_dialog.gui);
+            this.save_src_dialog.gui = new Toyz.Gui.Gui({
+                params: $.extend(true,{},result.save_src_info),
+                $parent: this.save_src_dialog.$div,
+            });
     
             this.load_src_dialog.$div.dialog('widget').position({
+                my: "center",
+                at: "center",
+                of: window
+            });
+            this.save_src_dialog.$div.dialog('widget').position({
                 my: "center",
                 at: "center",
                 of: window
@@ -476,6 +630,7 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
     };
     this.source_dialog = new Toyz.Workspace.SourceDialog(this);
     this.load_src_dialog = new Toyz.Workspace.LoadSrcDialog(this);
+    this.save_src_dialog = new Toyz.Workspace.SaveSrcDialog(this);
     
     // Load workspace dialog
     this.$ws_dropdown_input = $('<select/>');
@@ -611,19 +766,28 @@ Toyz.Workspace.Workspace.prototype.load_src = function(callback, data_src){
     var src_params = $.extend(true, {}, data_src.params);
     
     // Load data from server
+    var toyz_module = src_params['conditions'].toyz_module;
     var io_module = src_params['conditions'].io_module;
     var file_type = src_params['conditions'].file_type;
     delete src_params['conditions']
     console.log('source params', src_params);
     console.log('file_type', file_type);
+    this.$loader.dialog('open');
     websocket.send_task({
         task: {
             module: 'toyz.web.tasks',
             task: 'load_data_file',
             parameters: {
-                io_module: io_module,
-                file_type: file_type,
-                file_options: src_params
+                paths: {
+                    data: {
+                        toyz_module: toyz_module,
+                        io_module: io_module,
+                        file_type: file_type,
+                        file_options: src_params,
+                    }
+                },
+                src_id: data_src.id,
+                src_name: data_src.name
             }
         },
         callback: this.add_src.bind(this, callback, data_src)
@@ -632,6 +796,7 @@ Toyz.Workspace.Workspace.prototype.load_src = function(callback, data_src){
 Toyz.Workspace.Workspace.prototype.add_src = function(callback, data_src, result){
     console.log('added source to workspace', this);
     console.log('data src', data_src);
+    this.$loader.dialog('close');
     delete result.id;
     if(!(this.sources.hasOwnProperty(data_src.id))){
         this.sources[data_src.id] = new Toyz.Workspace.DataSource(

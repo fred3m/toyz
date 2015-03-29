@@ -15,6 +15,7 @@ import multiprocessing
 
 from toyz.utils import db as db_utils
 from toyz.utils.errors import ToyzError, ToyzDbError, ToyzWebError, ToyzJobError, ToyzWarning
+from toyz.web import session_vars
 
 # Path that toyz has been installed in
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),os.pardir))
@@ -509,7 +510,7 @@ def run_job(toyz_settings, pipe, job):
     """
     # TODO: Eventually a job should be added to the jobs dictionary and removed after the response has been sent
     import traceback
-    from toyz.web import session_vars
+    session_vars.toyz_settings = toyz_settings
     session_vars.pipe = pipe
     response={}
     try:
