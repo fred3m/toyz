@@ -384,6 +384,10 @@ Toyz.API.Highcharts.Contents.prototype.contextMenu_items = function(){
         edit: {
             name: "Edit chart",
             callback: function(key, options){
+                this.gui_div.gui.set_params({
+                    values: this.settings,
+                    set_all: false
+                })
                 this.$div.dialog('open');
             }.bind(this)
         },
@@ -402,13 +406,16 @@ Toyz.API.Highcharts.Contents.prototype.update = function(params, param_val){
     }
 };
 Toyz.API.Highcharts.Contents.prototype.rx_info = function(options){
-    console.log('rx_info', options);
+    console.log(this.tile.id, 'rx_info', options);
     var chart = this.$tile_div.highcharts();
     if(options.info_type=='select datapoints' || options.info_type=='unselect datapoints'){
-        for(var s in this.settings.series){
+        for(var s=0; s<this.settings.series.length; s++){
             if(options.hasOwnProperty('source') &&
                 this.settings.series[s].data_source==options.source &&
-                (this.tile.id != options.from.tile || s!= options.from.series)
+                //(this.tile.id != options.from.tile || s!= options.from.series)
+                // Highcharts changes the selected point AFTER these functions run, which
+                // causes points in the same chart to be unselected. 
+                this.tile.id != options.from.tile
             ){
                 var points = options.info.points;
                 if(this.settings.series[s].sorted){
@@ -734,6 +741,27 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
     
     console.log('chart_params', chart_params);
     this.$tile_div.highcharts(chart_params);
+    
+    var chart = this.$tile_div.highcharts();
+    // Select points that have been selected in the data source
+    for(var s=0; s<this.settings.series.length; s++){
+        var ds = this.settings.series[s].data_source;
+        var data_source = this.workspace.sources[ds];
+        var points = data_source.selected;
+        if(this.settings.series[s].sorted){
+            points = points.map(function(v, idx){
+                return this.settings.series[s].argsort.src2series[v];
+            }.bind(this));
+        };
+        for(var p=0;p<points.length;p++){
+            this.current_point = points[p];
+            // If one of the series columns is null or NaN, this point will
+            // be undefined. Only select the point if it is not undefined
+            if(points[p]!==undefined){
+                chart.series[s].data[points[p]].select(true, true);
+            };
+        };
+    };
 };
 Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
     console.log('Highcharts settings', settings);

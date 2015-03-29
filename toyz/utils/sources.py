@@ -174,21 +174,48 @@ class DataSource:
         """
         Save the DataSource and, if applicable, the metadata and log.
         """
+        # Save the data source
         for data_type, file_info in self.paths.items():
-            if (file_info['iomodule']=='' or file_info['file_type']=='' or 
-                    file_info['file_options']==''):
-                # It's ok to not save the log or meta data, but the user must supply file
-                # path info for the data file
-                if data_type == 'data':
-                    raise ToyzDataError(
-                        "You must supply an 'iomodule', 'file_type', and 'file_options' to save")
-            else:
+            # if the user already has load parameters, convert those to save parameters
+            if file_info['io_module']!='':
+                save_path = dict(file_info)
+                save_path['file_options'] = toyz.utils.io.convert_options(
+                    file_info['toyz_module'], 
+                    file_info['io_module'], 
+                    file_info['file_type'], 
+                    file_info['file_options'], 
+                    'load2save'
+                )
+                # If the user specified save parameters, update save_paths with those
                 if data_type in save_paths:
-                    save_info = core.merge_dict(file_info, save_paths[data_type], True)
-                else:
-                    save_info = dict(file_info)
-                toyz.utils.io.save_file_data(save_info['iomodule'], save_info['file_type'],
-                    save_info['file_options'])
+                    core.merge_dict(save_path, save_paths[data_type])
+            # The user must specify a data path to save the data source to
+            elif data_type == 'data':
+                raise ToyzDataError(
+                    "You must supply 'toyz_module', 'io_module', 'file_type',"
+                    " and 'file_options' to save")
+            elif data_type in save_paths:
+                save_path = save_paths[data_type]
+            else:
+                save_path = None
+            # If a path exists for the data type, save the meta/data/log file
+            if save_path is not None:
+                print(data_type, save_path)
+                # Save data and convert the save paths to paths that can be used to load the file
+                # (note: since pandas read and write functions are not symmetric, the same settings
+                # used to load the file might not work when loading it again after a save)
+                self.paths[data_type]['file_options'] = toyz.utils.io.save_data(
+                    self.data,
+                    save_path['toyz_module'],
+                    save_path['io_module'], 
+                    save_path['file_type'],
+                    save_path['file_options']
+                )
+            else:
+                print('No path for data_type', data_type)
+        
+        print('self.path', self.paths)
+        return self.paths['data']['file_options']
     
     def remove_rows(self, points):
         if self.data_type=='pandas.core.frame.DataFrame':

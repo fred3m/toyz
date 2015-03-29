@@ -98,6 +98,11 @@ Toyz.Workspace.DataSource = function(workspace, data, $parent, radio_group, info
     this.params = data.params;
     this.columns = [];
     this.data = {};
+    if(data.hasOwnProperty('selected')){
+        this.selected = data.selected
+    }else{
+        this.selected = [];
+    };
     // Add an entry to a list of data sources
     if(!($parent===undefined)){
         this.$parent = $parent;
@@ -211,7 +216,8 @@ Toyz.Workspace.DataSource.prototype.save = function(){
         params: this.params,
         tiles: this.tiles,
         name: this.name,
-        idx: this.idx
+        idx: this.idx,
+        selected: this.selected
     };
     return save_params;
 };
@@ -237,6 +243,18 @@ Toyz.Workspace.DataSource.prototype.rx_info = function(options){
             },
             callback:function(result){}
         })
+    }else if(options.info_type=='select datapoints'){
+        console.log('selected', options.info.points);
+        for(var i=0; i<options.info.points.length; i++){
+            this.selected.push(options.info.points[i]);
+        };
+    }else if(options.info_type=='unselect datapoints'){
+        for(var i=0; i<options.info.points.length; i++){
+            var idx = this.selected.indexOf(options.info.points[i]);
+            if(idx>-1){
+                this.selected.splice(idx,1);
+            };
+        };
     };
     // Update tiles with the new information
     options = $.extend(true, options, {
@@ -315,6 +333,36 @@ Toyz.Workspace.SourceDialog = function(workspace, options){
             Remove: function(){
                 this.workspace.remove_src();
             }.bind(this),
+            Save: function(){
+                var source = $("input:radio[ name='"+this.radio_group+"' ]:checked").val();
+                websocket.send_task({
+                    task: {
+                        module: 'toyz.web.tasks',
+                        task: 'save_data_file',
+                        parameters: {
+                            src_id: source,
+                            save_paths: {}
+                        }
+                    },
+                    callback: function(result){
+                        if(result.status=='success'){
+                            console.log('src', this.data_src);
+                            alert('Data file saved successfully');
+                        }
+                    }
+                })
+            }.bind(this),
+            'Save As': function(){
+                var source = $("input:radio[ name='"+this.radio_group+"' ]:checked").val();
+                var src = this.workspace.sources[source];
+                if(!(source===undefined)){
+                    this.workspace.load_src_dialog.gui.set_params({
+                        values: src.params,
+                        set_all: false
+                    });
+                    this.workspace.save_src_dialog.open(src);
+                };
+            }.bind(this),
             Edit: function(){
                 var source = $("input:radio[ name='"+this.radio_group+"' ]:checked").val();
                 var src = this.workspace.sources[source];
@@ -392,18 +440,45 @@ Toyz.Workspace.SaveSrcDialog = function(workspace, options){
         height: '300',
         buttons: {
             Save: function(){
+                var gui = this.gui.get();
+                var toyz_module = gui.conditions.toyz_module;
+                var io_module = gui.conditions.io_module;
+                var file_type = gui.conditions.file_type;
+                delete gui.conditions;
+                var save_paths = {
+                    data: {
+                        toyz_module: toyz_module,
+                        io_module: io_module,
+                        file_type: file_type,
+                        file_options: gui
+                    }
+                };
+                console.log('save_paths', save_paths);
+                console.log('src_id', this.data_src.id);
                 websocket.send_task({
                     task: {
                         module: 'toyz.web.tasks',
                         task: 'save_data_file',
-                        parameters: this.gui.get()
+                        parameters: {
+                            save_paths: save_paths,
+                            src_id: this.data_src.id
+                        }
                     },
                     callback: function(result){
+                        console.log('result', result);
                         if(result.status=='success'){
+                            console.log('src', this.data_src);
                             alert('Data file saved successfully');
-                        }
+                            var src = this.workspace.sources[this.data_src.id];
+                            var conditions = src.params.conditions;
+                            src.params = result.new_file_options;
+                            src.params.conditions = conditions;
+                            console.log('new sources', this.workspace.sources);
+                        };
+                        
                     }.bind(this)
-                })
+                });
+                this.$div.dialog('close');
             }.bind(this),
             Cancel: function(){
                 this.$div.dialog('close');
@@ -414,6 +489,14 @@ Toyz.Workspace.SaveSrcDialog = function(workspace, options){
     for(var opt in options){
         this[opt] = options[opt];
     };
+};
+Toyz.Workspace.SaveSrcDialog.prototype.open = function(data_src){
+    if(data_src===undefined){
+        this.data_src = {};
+    } else{
+        this.data_src = data_src;
+    };
+    this.$div.dialog('open');
 };
 
 Toyz.Workspace.Workspace = function(params){

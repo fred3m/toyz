@@ -483,6 +483,52 @@ def load_data_file(toyz_settings, tid, params):
     }
     return response
 
+def save_data_file(toyz_settings, tid ,params):
+    """
+    Save a data source.
+    """
+    src = session_vars.data_sources[params['src_id']]
+    new_file_options = src.save(params['save_paths'])
+    response = {
+        'id': 'save_data_file',
+        'status': 'success',
+        'new_file_options': new_file_options
+    }
+    return response
+    
+def get_src_columns(toyz_settings, tid, params):
+    """
+    Get column information from multiple sources and return to a workspace
+    """
+    sources = {}
+    for src_id, src in params.items():
+        if not hasattr(session_vars, 'data_sources') or src_id not in session_vars.data_sources:
+            print('loading data source')
+            load_data_file(toyz_settings, tid, params['params'])
+        if len(src['columns'])>0:
+            sources[src_id] = {
+                'data_type': 'columns',
+                'data': {}
+            }
+            sources[src_id]['data'] = session_vars.data_sources[src_id].to_dict(src['columns'])
+    response = {
+        'id': 'src_columns',
+        'sources': sources
+    }
+    return response
+
+def remove_datapoints(toyz_settings, tid, params):
+    """
+    Remove a point from a data source
+    """
+    src = session_vars.data_sources[params['src_id']]
+    src.remove_rows(params['points'])
+    response = {
+        'id': 'notification',
+        'msg': 'Successfully removed data points'
+    }
+    return response
+
 def get_workspace_info(toyz_settings, tid, params):
     """
     Get I/O settings for different packages (pure python, numpy, pandas, etc) and
@@ -660,39 +706,6 @@ def update_workspace(toyz_settings, tid, params):
         'id': 'notification',
         'func': 'update_workspace',
         'msg': 'success'
-    }
-    return response
-
-def get_src_columns(toyz_settings, tid, params):
-    """
-    Get column information from multiple sources and return to a workspace
-    """
-    sources = {}
-    for src_id, src in params.items():
-        if not hasattr(session_vars, 'data_sources') or src_id not in session_vars.data_sources:
-            print('loading data source')
-            load_data_file(toyz_settings, tid, params['params'])
-        if len(src['columns'])>0:
-            sources[src_id] = {
-                'data_type': 'columns',
-                'data': {}
-            }
-            sources[src_id]['data'] = session_vars.data_sources[src_id].to_dict(src['columns'])
-    response = {
-        'id': 'src_columns',
-        'sources': sources
-    }
-    return response
-
-def remove_datapoints(toyz_settings, tid, params):
-    """
-    Remove a point from a data source
-    """
-    src = session_vars.data_sources[params['src_id']]
-    src.remove_rows(params['points'])
-    response = {
-        'id': 'notification',
-        'msg': 'Successfully removed data points'
     }
     return response
 

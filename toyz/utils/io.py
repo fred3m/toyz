@@ -150,7 +150,6 @@ io_modules = {
                 },
                 'optional': {
                     'sep': {'lbl':'sep'},
-                    'delimiter': {'lbl':'delimiter'},
                     'delim_whitespace': {
                         'lbl':'delim_whitespace',
                         'prop': {
@@ -288,7 +287,7 @@ io_modules = {
                     'path_or_buf': {
                         'lbl': 'filename',
                         'file_dialog': True
-                    }
+                    },
                 },
                 'optional': {
                     'sep': {'lbl':'sep'},
@@ -297,10 +296,10 @@ io_modules = {
                     'columns':{'lbl': 'columns'},
                     'header':{'lbl': 'header'},
                     'index': {
-                        'lbl': 'index',
+                        'lbl': 'write index to file',
                         'prop': {
                             'type': 'checkbox',
-                            'checked': True
+                            'checked': False
                         }
                     },
                     'index_label': {'lbl': 'index_label'},
@@ -553,10 +552,9 @@ io_modules = {
     }
 }
 
-def convert_options(toyz_module, io_module, file_type, file_options, conversion, warning=True):
+def get_io_module(toyz_module, io_module):
     """
-    Convert a file option parameters from ``conversion='load2save'`` or 
-    ``conversion='save2load'``.
+    Get the file options for a given set of io parameters
     """
     if toyz_module=='toyz':
         module = io_modules[io_module]
@@ -567,14 +565,28 @@ def convert_options(toyz_module, io_module, file_type, file_options, conversion,
         except ImportError:
             raise ToyzIoError("Could not import module '"+toyz_module+"'")
         module = module.config.io_modules[io_module]
+    return module
+
+def convert_options(toyz_module, io_module, file_type, file_options, conversion, warning=True):
+    """
+    Convert a file option parameters from ``conversion='load2save'`` or 
+    ``conversion='save2load'``.
+    """
+    module = get_io_module(toyz_module, io_module)
     remove = module[file_type][conversion]['remove']
     warn = module[file_type][conversion]['warn']
+    convert = module[file_type][conversion]['convert']
     # Check for any warning conditions and notify the user
     if warning and not all([w not in file_options for w in warn]):
         for w in file_options:
             if w in warn:
                 return warn[w]
     file_options = {k:v for k,v in file_options.items() if k not in remove}
+    # Convert any keys that are different
+    for old_key, new_key in convert.items():
+        if old_key in file_options:
+            file_options[new_key] = file_options[old_key]
+            del file_options[old_key]
     return file_options
 
 def load_dict(dict_str, str_ok=False):
@@ -651,6 +663,13 @@ def load_data(toyz_module, io_module, file_type, file_options):
     meta = ''
     # Make a copy of the file_options to use
     file_options = core.merge_dict({}, file_options)
+    # Ignore parameters for other functions like 'save'
+    module = get_io_module(toyz_module, io_module)
+    params = module[file_type]['load']
+    load_options = params['params'].keys()+params['optional'].keys()
+    file_options = {k:v for k,v in file_options.items() if k in load_options}
+    print('keys', module[file_type]['load'].keys())
+    print('file_options', file_options)
     if toyz_module == 'toyz':
         print("in toyz")
         if io_module == 'python':
@@ -670,7 +689,6 @@ def load_data(toyz_module, io_module, file_type, file_options):
         elif io_module == 'numpy':
             import numpy as np
             data = np.load(**file_options)
-            #data = raw_data.astype(object).fillna(fillna)
         elif io_module == 'pandas':
             import pandas as pd
             if file_type == 'csv':
@@ -700,6 +718,7 @@ def load_data(toyz_module, io_module, file_type, file_options):
             elif file_type == 'hdf':
                 if 'columns' in file_options:
                     file_options['columns'] = load_list(file_options['columns'], False)
+                
                 df = pd.read_hdf(**file_options)
             elif file_type == 'sql':
                 from sqlalchemy import create_engine
@@ -710,7 +729,6 @@ def load_data(toyz_module, io_module, file_type, file_options):
                 df = pd.read_sql(sql, engine, **file_options)
             else:
                 raise ToyzIoError("File type is not yet supported")
-            #df = df.astype(object).fillna(fillna)
             data = df
     else:
         import importlib
@@ -729,6 +747,11 @@ def save_data(data, toyz_module, io_module, file_type, file_options):
     """
     Save data to a file
     """
+    # Ignore parameters for other functions like 'load'
+    module = get_io_module(toyz_module, io_module)
+    params = module[file_type]['save']
+    save_options = params['params'].keys()+params['optional'].keys()
+    file_options = {k:v for k,v in file_options.items() if k in save_options}
     if toyz_module == 'toyz':
         if io_module=='python':
             if '+' not in file_options['mode'] and 'w' not in file_options['mode']:
@@ -752,6 +775,10 @@ def save_data(data, toyz_module, io_module, file_type, file_options):
             if file_type=='csv':
                 if 'columns' in file_options:
                     file_options['columns'] = load_list(file_options['columns'], False)
+                print('saving', file_options)
+                print('data', data)
+                if 'index' not in file_options:
+                    file_options['index'] = False
                 data.to_csv(**file_options)
             elif file_type=='hdf':
                 data.to_hdf(**file_options)
@@ -772,6 +799,7 @@ def save_data(data, toyz_module, io_module, file_type, file_options):
             module.config.save_functions[save_fn](data, file_type, **file_options)
         except KeyError:
             raise ToyzIoError("Could not find "+io_module+" in "+toyz_module+" save_functions")
+    return convert_options(toyz_module, io_module, file_type, file_options, 'save2load')
 
 def build_gui(toyz_modules, gui_type):
     gui = {
