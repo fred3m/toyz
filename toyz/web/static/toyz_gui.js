@@ -476,7 +476,7 @@ Toyz.Gui.List.prototype = new Toyz.Gui.Param();
 Toyz.Gui.List.prototype.constructor = Toyz.Gui.List;
 Toyz.Gui.List.prototype.get = function(){
     var params = {conditions:{}};
-    console.log('list', this);
+    //console.log('list', this);
     if(this.format == 'dict'){
         params[this.name] = {};
         for(var i=0; i<this.items.length; i++){

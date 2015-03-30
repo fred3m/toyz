@@ -88,10 +88,7 @@ Toyz.API.Highcharts.Gui = function(params){
                         new_item: {
                             type: 'div',
                             init: function(new_item){
-                                console.log('get', this.gui.get());
-                                console.log('new_item', new_item);
                                 var idx = this.gui.get().series.length-1;
-                                console.log('idx', idx);
                                 var params = this.gui.params.series.items[idx].params;
                                 var data_source = params.data_source.$input.val();
                                 params.data_source.$input[0].item_div = new_item;
@@ -413,7 +410,7 @@ Toyz.API.Highcharts.Contents.prototype.update = function(params, param_val){
     }
 };
 Toyz.API.Highcharts.Contents.prototype.rx_info = function(options){
-    console.log(this.tile.id, 'rx_info', options);
+    //console.log(this.tile.id, 'rx_info', options);
     var chart = this.$tile_div.highcharts();
     if(options.info_type=='select datapoints' || options.info_type=='unselect datapoints'){
         for(var s=0; s<this.settings.series.length; s++){
@@ -447,7 +444,6 @@ Toyz.API.Highcharts.Contents.prototype.rx_info = function(options){
     }else if(options.info_type=='remove datapoints'){
         this.create_chart(this.settings);
     }else if(options.info_type=='data update'){
-        console.log('updating');
         // Check the first series to see if the source is present
         // If it is, the data must have been updated
         // If not, the source is new
@@ -490,7 +486,7 @@ Toyz.API.Highcharts.Contents.prototype.save = function(){
 };
 Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
     this.settings = settings;
-    console.log('chart settings', this.settings);
+    //console.log('chart settings', this.settings);
     this.sorted_series = false;
     var chart_params = {
         title: {text: this.settings.title},
@@ -599,7 +595,6 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
             };
         };
         chart_params.series.push(this_series);
-        console.log('chart_params series', chart_params.series);
         // Change the selection behavior of a point so that it updates other points
         chart_params.plotOptions = {
             series: {
@@ -746,7 +741,7 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
         }
     };
     
-    console.log('chart_params', chart_params);
+    //console.log('chart_params', chart_params);
     this.$tile_div.highcharts(chart_params);
     
     var chart = this.$tile_div.highcharts();
@@ -805,21 +800,15 @@ Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
             };
         };
         if(!data_source.data.hasOwnProperty(settings.series[i].x)){
-            console.log('columns', Object.keys(data_source));
-            console.log('data_source', data_source);
-            console.log('need to load', settings.series[i].x);
             params[ds_name].columns.push(settings.series[i].x)
             load_columns = true;
         };
         if(!data_source.data.hasOwnProperty(settings.series[i].y)){
-            console.log('need to load', settings.series[i].y);
             load_columns = true;
             params[ds_name].columns.push(settings.series[i].y)
         };
     };
-    console.log('load_columns', load_columns);
     if(load_columns){
-        console.log('LOADING COLUMNS');
         this.workspace.$loader.dialog('open');
         websocket.send_task({
             task: {
@@ -836,7 +825,6 @@ Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
             }.bind(this, settings)
         })
     }else{
-        console.log('CREATING CHART');
         this.create_chart(settings);
     };
     
@@ -847,6 +835,7 @@ Toyz.API.Highcharts.Contents.prototype.set_tile = function(settings){
 };
 Toyz.API.Highcharts.Contents.prototype.update_selected = 
         function(series_idx, points, info_type){
+    //console.log('update selected', series_idx, points, info_type);
     var data_source = this.settings.series[series_idx].data_source;
     this.workspace.sources[data_source].rx_info({
         from: {
