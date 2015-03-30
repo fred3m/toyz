@@ -249,24 +249,6 @@ class AuthToyzWorkspaceHandler(AuthHandler, ToyzWorkspaceHandler):
     def get(self, workspace):
         ToyzWorkspaceHandler.get(self, workspace)
 
-class ToyzCoreJsHandler(ToyzHandler, tornado.web.RequestHandler):
-    def initialize(self):
-        self.template_path = os.path.join(core.ROOT_DIR, 'web', 'templates')
-    def get(self):
-        """
-        Load the core javascript files
-        """
-        print('user=', self.get_user_id())
-        self.render('toyz_core.js', user_theme=self.get_user_theme())
-    
-    def get_template_path(self):
-        return self.template_path
-
-class AuthToyzCoreJsHandler(AuthHandler, ToyzCoreJsHandler):
-    @tornado.web.authenticated
-    def get(self):
-        ToyzCoreJsHandler.get(self)
-
 class Toyz3rdPartyHandler(ToyzHandler, tornado.web.StaticFileHandler):
     def get(self, path):
         path = path.split('/')
@@ -435,7 +417,6 @@ class ToyzWebApp(tornado.web.Application):
             toyz_static_handler = AuthToyzStaticFileHandler
             toyz_template_handler = AuthToyzTemplateHandler
             workspace_handler = AuthToyzWorkspaceHandler
-            core_handler = AuthToyzCoreJsHandler
             third_party_handler = AuthToyz3rdPartyHandler
         else:
             main_handler = MainHandler
@@ -443,7 +424,6 @@ class ToyzWebApp(tornado.web.Application):
             toyz_static_handler = ToyzStaticFileHandler
             toyz_template_handler = ToyzTemplateHandler
             workspace_handler = ToyzWorkspaceHandler
-            core_handler = ToyzCoreJsHandler
             third_party_handler = Toyz3rdPartyHandler
         
         self.user_sessions = {}
@@ -465,7 +445,6 @@ class ToyzWebApp(tornado.web.Application):
             (r"/file/(.*)", static_handler, {'path': file_path}),
             (r"/toyz/static/(.*)", toyz_static_handler, {'path': '/'}),
             (r"/toyz/templates/(.*)", toyz_template_handler),
-            (r"/toyz_core.js", core_handler),
             (r"/third_party/(.*)", third_party_handler, {'path':core.ROOT_DIR}),
             (r"/session/(.*)", WebSocketHandler),
         ]

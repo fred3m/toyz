@@ -55,7 +55,7 @@ Toyz.Core.core_js = [
 ];
 
 Toyz.Core.core_css = [
-    "/third_party/jquery_ui_themes/{{user_theme}}/jquery-ui.min.css",
+    "/third_party/jquery_ui_themes/redmond/jquery-ui.min.css",
     "/static/web/static/toyz.css",
     "/third_party/jquery-contextMenu/jquery.contextMenu.css"
 ];
