@@ -54,7 +54,7 @@ Toyz.Viewer.Types = function(tile_contents){
 Toyz.Viewer.Controls = function(options){
     // Image controls
     this.load_img = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-img-load',
+        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn',
         func: {
             click: function(){
                 this.file_dialog.$div.dialog('open');
@@ -63,11 +63,11 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'load image',
-            value: ''
+            src: "/static/web/static/button_icons/newfile.png"
         },
     };
     this.first_frame = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-first',
+        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn',
         func: {
             click: function(){
                 var file_info = this.frames[this.viewer_frame].file_info;
@@ -80,11 +80,11 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'skip to first image frame',
-            value: ''
+            src: '/static/web/static/button_icons/first.png'
         },
     };
     this.previous_frame = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-previous',
+        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn',
         func: {
             click: function(){
                 var file_info = this.frames[this.viewer_frame].file_info;
@@ -99,7 +99,7 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'go back one frame',
-            value: ''
+            src: '/static/web/static/button_icons/previous.png'
         },
     };
     this.input_frame = {
@@ -146,7 +146,7 @@ Toyz.Viewer.Controls = function(options){
         }
     };
     this.next_frame = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-next',
+        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn',
         func: {
             click: function(){
                 var file_info = this.frames[this.viewer_frame].file_info;
@@ -161,11 +161,11 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'go to next frame',
-            value: ''
+            src: '/static/web/static/button_icons/next.png'
         },
     };
     this.last_frame = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn viewer-ctrl-last',
+        input_class: 'viewer-ctrl-button viewer-ctrl-img-btn',
         func: {
             click: function(){
                 var file_info = this.frames[this.viewer_frame].file_info;
@@ -178,7 +178,7 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'skip to last image frame',
-            value: ''
+            src: '/static/web/static/button_icons/last.png'
         },
     };
     // Zoom controls
@@ -219,7 +219,7 @@ Toyz.Viewer.Controls = function(options){
         }
     };
     this.zoom_out = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-out',
+        input_class: 'viewer-ctrl-button viewer-ctrl-zoom-btn',
         func: {
             click: function(event){
                 var zoom_input = this.ctrl_panel.gui.params.zoom_input;
@@ -229,11 +229,11 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'zoom out',
-            value: ''
+            src: '/static/web/static/button_icons/zoom_out.png'
         },
     };
     this.zoom_in = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-in',
+        input_class: 'viewer-ctrl-button viewer-ctrl-zoom-btn',
         func: {
             click: function(event){
                 var zoom_input = this.ctrl_panel.gui.params.zoom_input;
@@ -243,11 +243,11 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'zoom in',
-            value: ''
+            src: '/static/web/static/button_icons/zoom_in.png'
         }
     };
     this.zoom_bestfit = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-bestfit',
+        input_class: 'viewer-ctrl-button viewer-ctrl-zoom-btn',
         func: {
             click: function(){
                 var file_info = this.frames[this.viewer_frame].file_info;
@@ -260,11 +260,11 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'fit entire image in frame',
-            value: ''
+            src: '/static/web/static/button_icons/bestfit.png'
         },
     };
     this.zoom_fullsize = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-zoom-btn viewer-ctrl-zoom-fullsize',
+        input_class: 'viewer-ctrl-button viewer-ctrl-zoom-btn',
         func: {
             click: function(){
                 this.set_scale(this.viewer_frame, 1);
@@ -273,12 +273,12 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'zoom to 100%',
-            value: ''
+            src: '/static/web/static/button_icons/fullsize.png'
         },
     };
     // Viewer controls
     this.add_viewer_frame = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-viewer-add',
+        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn',
         func: {
             click: function(){
                 var ctrl = this.ctrl_panel.gui.params;
@@ -294,11 +294,11 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'add a frame to the viewer',
-            value: ''
+            src: '/static/web/static/button_icons/add_frame.png'
         },
     };
     this.remove_viewer_frame = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-viewer-remove',
+        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn',
         func: {
             click: function(){
                 if(this.frames.length>1){
@@ -318,11 +318,11 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'remove the current frame from the viewer',
-            value: ''
+            src: '/static/web/static/button_icons/delete_frame.png'
         },
     };
     this.first_viewer_frame = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-first',
+        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn',
         func: {
             click: function(){
                 if(this.viewer_frame!=0){
@@ -333,11 +333,11 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'skip to first viewer frame',
-            value: ''
+            src: '/static/web/static/button_icons/first.png'
         },
     };
     this.previous_viewer_frame = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-previous',
+        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn',
         func: {
             click: function(){
                 if(this.viewer_frame>0){
@@ -350,7 +350,7 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'go to previous viewer frame',
-            value: ''
+            src: '/static/web/static/button_icons/previous.png'
         },
     };
     this.input_viewer_frame = {
@@ -374,7 +374,7 @@ Toyz.Viewer.Controls = function(options){
         }
     };
     this.next_viewer_frame = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-next',
+        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn',
         func: {
             click: function(){
                 if(this.viewer_frame<this.frames.length-1){
@@ -387,11 +387,11 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'go to next viewer frame',
-            value: ''
+            src: '/static/web/static/button_icons/next.png'
         },
     };
     this.last_viewer_frame = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn viewer-ctrl-last',
+        input_class: 'viewer-ctrl-button viewer-ctrl-viewer-btn',
         func: {
             click: function(){
                 if(this.viewer_frame != this.frames.length-1){
@@ -402,12 +402,12 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'skip to last viewer frame',
-            value: ''
+            src: '/static/web/static/button_icons/last.png'
         },
     };
     // Tool controls
     this.rect = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-resize',
+        input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn',
         func: {
             click: function(event){
                 this.change_active_tool('rect', event.currentTarget);
@@ -416,7 +416,7 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'select rectangle to zoom',
-            value: ''
+            src: '/static/web/static/button_icons/rectangle.png'
         },
         events: {
             mousedown: function(event){
@@ -466,7 +466,7 @@ Toyz.Viewer.Controls = function(options){
         }
     };
     this.center = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-center',
+        input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn',
         func: {
             click: function(event){
                 this.change_active_tool('center', event.currentTarget);
@@ -475,7 +475,7 @@ Toyz.Viewer.Controls = function(options){
         prop: {
             type: 'image',
             title: 'center image on click',
-            value: ''
+            src: '/static/web/static/button_icons/center.png'
         },
         events: {
             mousedown: function(event){
@@ -491,11 +491,11 @@ Toyz.Viewer.Controls = function(options){
         }
     };
     this.colormap = {
-        input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn viewer-ctrl-tools-colormap',
+        input_class: 'viewer-ctrl-button viewer-ctrl-tools-btn',
         prop:{
             type: 'image',
             title: 'open colormap editor',
-            value: ''
+            src: '/static/web/static/button_icons/colormap.png'
         },
         func:{
             click: function(event) {
