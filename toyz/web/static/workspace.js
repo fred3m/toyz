@@ -900,7 +900,11 @@ Toyz.Workspace.Workspace.prototype.new_tile = function(key, options, my_idx){
             var $div = $(event.originalElement);
             $inner_div.width($div.width());
             $inner_div.height($div.height());
-        }.bind(this, $inner_div));
+        }.bind(this, $inner_div))
+        .mousedown(function(event){
+            // Bring the tile to the front when a user clicks on it
+            $(event.currentTarget).parent().append($(event.currentTarget));
+        }).bind(this);
     $div.append($inner_div);
     this.$div.append($div);
     $inner_div.width($div.width());
@@ -910,6 +914,15 @@ Toyz.Workspace.Workspace.prototype.new_tile = function(key, options, my_idx){
         $div: $div,
         $inner_div: $inner_div,
     });
+    // Make sure the new tile is on top
+    var topZ = 0;
+    this.$div.each(function(){
+      var thisZ = parseInt($(this).css('zIndex'), 10);
+      if (thisZ > topZ){
+        topZ = thisZ;
+      }
+    });
+    $div.css('zIndex', topZ+1);
     return this.tiles[inner_id];
 };
 Toyz.Workspace.Workspace.prototype.remove_tile = function(options){
