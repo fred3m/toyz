@@ -88,7 +88,16 @@ Toyz.API.Highcharts.Gui = function(params){
                         new_item: {
                             type: 'div',
                             init: function(new_item){
-                                this.update_columns();
+                                console.log('get', this.gui.get());
+                                console.log('new_item', new_item);
+                                var idx = this.gui.get().series.length-1;
+                                console.log('idx', idx);
+                                var params = this.gui.params.series.items[idx].params;
+                                var data_source = params.data_source.$input.val();
+                                params.data_source.$input[0].item_div = new_item;
+                                var $x_input = params.x_div.params.x.$input;
+                                var $y_input = params.y_div.params.y.$input;
+                                this.update_columns(data_source, $x_input, $y_input);
                             }.bind(this),
                             params: {
                                 chart_type: {
@@ -107,7 +116,13 @@ Toyz.API.Highcharts.Gui = function(params){
                                     lbl: 'data source',
                                     options: sources,
                                     func: {
-                                        change: this.update_columns.bind(this)
+                                        change: function(event){
+                                            var item_div = event.currentTarget.item_div;
+                                            var ds = item_div.params.data_source.$input.val();
+                                            var $x = item_div.params.x_div.params.x.$input;
+                                            var $y = item_div.params.y_div.params.y.$input;
+                                            this.update_columns(ds, $x, $y)
+                                        }.bind(this)
                                     }
                                 },
                                 x_div: {
@@ -298,19 +313,11 @@ Toyz.API.Highcharts.Gui = function(params){
 };
 // When the selected data source is changed, this updates the possible fields
 // in the x/y columns
-Toyz.API.Highcharts.Gui.prototype.update_columns = function(event){
-    //var data_source = event.currentTarget.value;
-    var idx = $("input:radio[ name='series' ]:checked").val();
-    idx = Number(idx.split('-')[1]);
-    //console.log('idx', idx);
-    var params = this.gui.params.series.items[idx].params;
-    var data_source = params.data_source.$input.val();
-    var $x_input = params.x_div.params.x.$input;
-    var $y_input = params.y_div.params.y.$input;
+Toyz.API.Highcharts.Gui.prototype.update_columns = function(data_source, $x_input, $y_input){
     $x_input.empty();
     $y_input.empty();
-    console.log('data source', data_source);
-    console.log('workspace', this.workspace);
+    //console.log('data source', data_source);
+    //console.log('workspace', this.workspace);
     cols = this.workspace.sources[data_source].columns.sort();
     for(var i=0; i<cols.length; i++){
         var col = cols[i];
