@@ -169,7 +169,12 @@ def get_img_info(file_info, img_info):
                 "open files of this type"
             )
         img = get_file(file_info)
-        img_info['colormap'] = {}
+        img_info['colormap'] = {
+            'name': 'none',
+            'px_min': 0,
+            'px_max': 255,
+            'invert_color': False
+        }
         width, height = img.size
     img_info['width'] = width
     img_info['height'] = height
