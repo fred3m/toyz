@@ -550,6 +550,12 @@ def run_job(toyz_settings, pipe, job):
     return result
 
 def progress_log(msg):
+    """
+    Send a notification to the client to update on the progress of a job
+    
+    Parameters
+        - msg ( *string* ): message to send to client
+    """
     from toyz.web import session_vars
     print(msg)
     if hasattr(session_vars, 'pipe'):

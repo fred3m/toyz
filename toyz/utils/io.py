@@ -644,10 +644,11 @@ def load_unknown(str_in, single_ok=False):
 
 def load_data(toyz_module, io_module, file_type, file_options):
     """
-    Loads a data file using a specified python module and a set of options. Currently
-    only *numpy* and *pandas* are fully supported
+    Loads a data file using a specified python module and a set of options.
     
     Parameters
+        toyz_module ( *string* ):
+            - name of toyz module to use for i/o
         io_module ( *string* ):
             - name of python module to use for i/o
         file_type ( *string* ): 
@@ -655,10 +656,6 @@ def load_data(toyz_module, io_module, file_type, file_options):
             - *Note*: the ``file_type`` must be supported by the given ``io_module``
         file_options ( *dict* ): 
             - dictionary of options as specified in the ``io_module``s documentation
-        io_func ( *string* , optional):
-            - name of custom i/o function
-            - This is used if the io_module is not one of the modules currently supported by Toyz
-              (for example, astropy.table.read)
     """
     meta = ''
     # Make a copy of the file_options to use
@@ -746,6 +743,19 @@ def load_data(toyz_module, io_module, file_type, file_options):
 def save_data(data, toyz_module, io_module, file_type, file_options):
     """
     Save data to a file
+    
+    Parameters
+        data ( *object* ):
+            - data object to save
+        toyz_module ( *string* ):
+            - name of toyz module to use for i/o
+        io_module ( *string* ):
+            - name of python module to use for i/o
+        file_type ( *string* ): 
+            - type of file to open (for example 'hdf', 'csv', 'npy', etc.)
+            - *Note*: the ``file_type`` must be supported by the given ``io_module``
+        file_options ( *dict* ): 
+            - dictionary of options as specified in the ``io_module``s documentation
     """
     # Ignore parameters for other functions like 'load'
     module = get_io_module(toyz_module, io_module)
@@ -802,6 +812,13 @@ def save_data(data, toyz_module, io_module, file_type, file_options):
     return convert_options(toyz_module, io_module, file_type, file_options, 'save2load')
 
 def build_gui(toyz_modules, gui_type):
+    """
+    Build 'load' and 'save' i/o GUI for user to load files
+    
+    Parameters
+        toyz_modules ( *dict* ):
+            - Dictionary of toyz io_modules (see io_modules variable in source code)
+    """
     gui = {
         'type': 'div',
         'params': {
