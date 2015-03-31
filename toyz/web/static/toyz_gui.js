@@ -254,6 +254,8 @@ Toyz.Gui.Div = function(options){
 Toyz.Gui.Div.prototype = new Toyz.Gui.Param();
 Toyz.Gui.Div.prototype.constructor = Toyz.Gui.Div;
 Toyz.Gui.Div.prototype.build_sub_params = function(options){
+    options = $.extend(true,{}, options);
+    delete options.param;
     for(var key in this.params){
         this.params[key] = this.gui.build_gui($.extend({}, options, {
             param: this.params[key],
@@ -262,8 +264,7 @@ Toyz.Gui.Div.prototype.build_sub_params = function(options){
         }));
     };
     for(var key in this.optional){
-        var legend = this.optional[key].lbl;
-        //delete param.optional[key].lbl;
+        //var legend = this.optional[key].lbl;
         var opt_param = {
             type: 'conditional',
             selector: {},
@@ -283,11 +284,12 @@ Toyz.Gui.Div.prototype.build_sub_params = function(options){
             }
         }
         opt_param.param_sets[true].params[key] = this.optional[key];
-        this.params[key] = this.gui.build_gui($.extend(true, {}, options, {
+        opt = $.extend(true, {}, options, {
             param: opt_param,
             $parent: this.$div,
             key: key
-        }));
+        });
+        this.params[key] = this.gui.build_gui(opt);
     }
 };
 Toyz.Gui.Div.prototype.get = function(){
@@ -370,6 +372,23 @@ Toyz.Gui.Conditional.prototype.build_sub_params = function(options){
         }));
         this.param_sets[pSet].display = this.param_sets[pSet].$div.css('display');
         this.param_sets[pSet].$div.css('display','none');
+    };
+    
+    // If the user didn't specify a param_set for any options, assign them a blank param_set
+    var check_opts;
+    if(this.selector.type=='select'){
+        if(!Array.isArray(check_opts)){
+            check_opts = Object.keys(this.selector.options);
+        }else{
+            check_opts = this.selector.options.slice(0);
+        };
+    }else{
+        check_opts = [true, false];
+    };
+    for(var i=0; i<check_opts.length; i++){
+        if(!this.param_sets.hasOwnProperty(check_opts[i])){
+            this.param_sets[check_opts[i]] = {$div:$('<div/>')};
+        }
     };
     
     var keyVal = this.selector.get();
@@ -1002,6 +1021,39 @@ Toyz.Gui.Slider2d.prototype.draw_cursor = function(){
         ctx.strokeStyle=this.cursor.line;
         ctx.stroke();  
     };
+};
+
+// Dialog for a gui parameter set
+Toyz.Gui.Dialog = function(gui, dialog){
+    gui = $.extend(true, {
+        type: 'div',
+        params: {}
+    }, gui);
+    this.$div = $('<div/>');
+    this.gui = new Toyz.Gui.Gui({
+        params: gui,
+        $parent: this.$div
+    });
+    dialog = $.extend(true, {
+        resizable: true,
+        draggable: true,
+        autoOpen: false,
+        modal: false,
+        width: 'auto',
+        title: 'Parameters',
+        maxHeight: $(window).height(),
+        position: {
+            my: "center top",
+            at: "center top",
+            of: window
+        },
+        buttons: {
+            Cancel: function(){
+                this.$div.dialog('close');
+            }.bind(this)
+        }
+    }, dialog);
+    this.$div.dialog(dialog);
 };
 
 console.log('toyz_gui.js loaded');
