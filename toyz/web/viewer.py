@@ -88,7 +88,7 @@ def get_file_info(file_info):
     if 'img_type' not in file_info:
         file_info['img_type'] == 'image'
     
-    if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
+    if file_info['ext'].lower().endswith('.fits') or file_info['ext'].lower().endswith('.fits.fz'):
         file_info['file_type'] = 'img_array'
         hdulist = get_file(file_info)
         file_info['hdulist'] = [hdu.__class__.__name__ for hdu in hdulist]
