@@ -60,8 +60,8 @@ def get_file(file_info):
         img_file = session_vars.img_file
     else:
         print('loading', file_info['filepath'])
-        if (file_info['ext'].lower().endswith('.fits') 
-                or file_info['ext'].lower().endswith('.fits.fz')):
+        if file_info['ext']=='fits':
+            print('Detected fits image type')
             pyfits = import_fits()
             img_file = pyfits.open(file_info['filepath'])
         else:
@@ -80,7 +80,10 @@ def get_file(file_info):
 def get_file_info(file_info):
     file_split = file_info['filepath'].split('.')
     file_info['filename'] = os.path.basename(file_split[0])
-    file_info['ext'] = '.'.join(file_split[1:])
+    if 'fits' in file_split[1:]:
+        file_info['ext'] = 'fits'
+    else:
+        file_info['ext'] = file_split[-1]
     
     if 'tile_width' not in file_info:
         file_info['tile_width'] = 400
@@ -89,7 +92,7 @@ def get_file_info(file_info):
     if 'img_type' not in file_info:
         file_info['img_type'] == 'image'
     
-    if file_info['ext'].lower().endswith('.fits') or file_info['ext'].lower().endswith('.fits.fz'):
+    if file_info['ext']=='fits':
         file_info['file_type'] = 'img_array'
         hdulist = get_file(file_info)
         file_info['hdulist'] = [hdu.__class__.__name__ for hdu in hdulist]
@@ -149,7 +152,7 @@ def get_best_fit(data_width, data_height, img_viewer):
     return img_viewer
 
 def get_img_info(file_info, img_info):
-    if file_info['ext'].lower().endswith('.fits') or file_info['ext'].lower().endswith('.fits.fz'):
+    if file_info['ext']=='fits':
         hdulist = get_file(file_info)
         data = hdulist[int(img_info['frame'])].data
         height, width = data.shape
@@ -345,7 +348,7 @@ def create_tile(file_info, img_info, tile_info):
             "open files of this type"
         )
     
-    if file_info['ext'].lower().endswith('.fits') or file_info['ext'].lower().endswith('.fits.fz'):
+    if file_info['ext']=='fits':
         try:
             from matplotlib import cm as cmap
             from matplotlib.colors import Normalize, LinearSegmentedColormap
@@ -401,7 +404,7 @@ def get_img_data(data_type, file_info, img_info, **kwargs):
     """
     Get data from an image or FITS file
     """
-    if file_info['ext'].lower().endswith('.fits') or file_info['ext'].lower().endswith('.fits.fz'):
+    if file_info['ext']=='fits':
         hdulist = get_file(file_info)
         data = hdulist[int(img_info['frame'])].data
     else:
