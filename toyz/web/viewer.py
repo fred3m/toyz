@@ -60,7 +60,8 @@ def get_file(file_info):
         img_file = session_vars.img_file
     else:
         print('loading', file_info['filepath'])
-        if file_info['ext'].lower() == 'fits' or file_info['ext'].lower() == 'fits.fz':
+        if (file_info['ext'].lower().endswith('.fits') 
+                or file_info['ext'].lower().endswith('.fits.fz')):
             pyfits = import_fits()
             img_file = pyfits.open(file_info['filepath'])
         else:
