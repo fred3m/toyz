@@ -93,9 +93,14 @@ def get_file_info(file_info):
         hdulist = get_file(file_info)
         file_info['hdulist'] = [hdu.__class__.__name__ for hdu in hdulist]
         if 'images' not in file_info:
-            file_info['images'] = OrderedDict(
-                [[str(n), {'frame': str(n)}] for n, hdu in enumerate(hdulist)
-                if 'imagehdu' in hdu.__class__.__name__.lower()])
+            if len(hdulist)>1:
+                file_info['images'] = OrderedDict(
+                    [[str(n), {'frame': str(n)}] for n, hdu in enumerate(hdulist)
+                    if 'imagehdu' in hdu.__class__.__name__.lower()])
+            else:
+                file_info['images'] = {
+                    '0': {'frame': '0'}
+                }
         if len(file_info['images']) == 0:
             raise ToyzJobError("FITS file does not contain any recognized image hdu's")
     else:
