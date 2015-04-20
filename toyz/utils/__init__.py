@@ -4,12 +4,12 @@
 Common non-package specific utility functions
 """
 
-import core
-import db
-import errors
-import file_access
-import io
-import security
-import third_party
-import db_interfaces
-import sources
+from toyz.utils import core
+from toyz.utils import db
+from toyz.utils import errors
+from toyz.utils import file_access
+from toyz.utils import io
+from toyz.utils import security
+from toyz.utils import third_party
+from toyz.utils import db_interfaces
+from toyz.utils import sources

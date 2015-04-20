@@ -4,4 +4,4 @@
 Common non-package specific utility functions
 """
 
-import sqlite_interface
+from toyz.utils.db_interfaces import sqlite_interface
