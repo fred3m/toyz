@@ -49,7 +49,6 @@ Toyz.Core.get_var = function(namespace) {
 Toyz.Core.core_js = [
     "/third_party/jquery_ui/jquery-ui.js",
     "/static/web/static/toyz_gui.js",
-    "/static/web/static/toyz_visual.js",
     "/third_party/jquery-contextMenu/jquery.contextMenu.js",
     "/third_party/jquery-contextMenu/jquery.ui.position.js"
 ];
