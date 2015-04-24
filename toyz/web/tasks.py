@@ -550,6 +550,7 @@ def get_workspace_info(toyz_settings, tid, params):
     modules = db_utils.get_param(toyz_settings.db, 'modules', user_id=tid['user_id'])
     for module in modules:
         try:
+            print("importing", module+'.config')
             config = importlib.import_module(module+'.config')
         except ImportError:
             import_error[module] = 'could not import' + module+'.config'

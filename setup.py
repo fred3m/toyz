@@ -2,7 +2,7 @@
 import os
 import sys
 import glob
-from toyz import version
+import version
 from setuptools import setup
 from setuptools import find_packages
 
@@ -31,10 +31,22 @@ setup(name=PACKAGE_NAME,
     description=DESCRIPTION,
     packages=packages,
     scripts=scripts,
-    requires=[
-        'tornado', # Web server and web application framework
+    extras_require={
+        'all': [
+            'scipy>=0.15',
+            'six',
+            'matplotlib',
+            'pandas>=0.14',
+            'astropy>=0.4',
+            'sqlalchemy',
+            'pillow'
+        ]
+    },
+    install_requires=[
+        'tornado>=4.0.2',
+        'passlib',
+        'numpy>=1.5.1',
     ],
-    #install_requires=[],
     #provides=[PACKAGE_NAME],
     author=AUTHOR,
     author_email=AUTHOR_EMAIL,

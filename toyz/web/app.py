@@ -151,7 +151,7 @@ class AuthStaticFileHandler(AuthHandler, tornado.web.StaticFileHandler):
         """
         Check that the user has permission to view the file
         """
-        print('root:{0}, full_path:{1}\n\n'.format(root, full_path))
+        #print('root:{0}, full_path:{1}\n\n'.format(root, full_path))
         permissions = file_access.get_parent_permissions(
             self.application.toyz_settings.db, full_path, 
             user_id=self.get_current_user().strip('"'))
@@ -160,7 +160,7 @@ class AuthStaticFileHandler(AuthHandler, tornado.web.StaticFileHandler):
                     self, root, full_path)
         else:
             absolute_path = None
-        print('Absoulte path:', absolute_path)
+        #print('Absoulte path:', absolute_path)
         return absolute_path
 
 class AuthLoginHandler(AuthHandler, tornado.web.RequestHandler):
