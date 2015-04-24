@@ -34,7 +34,6 @@ setup(name=PACKAGE_NAME,
     extras_require={
         'all': [
             'scipy>=0.15',
-            'six',
             'matplotlib',
             'pandas>=0.14',
             'astropy>=0.4',
@@ -46,6 +45,7 @@ setup(name=PACKAGE_NAME,
         'tornado>=4.0.2',
         'passlib',
         'numpy>=1.5.1',
+        'six'
     ],
     #provides=[PACKAGE_NAME],
     author=AUTHOR,
