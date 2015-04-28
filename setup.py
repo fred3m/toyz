@@ -45,7 +45,8 @@ setup(name=PACKAGE_NAME,
         'tornado>=4.0.2',
         'passlib',
         'numpy>=1.5.1',
-        'six'
+        'six',
+        'importlib'
     ],
     #provides=[PACKAGE_NAME],
     author=AUTHOR,
