@@ -9,7 +9,10 @@ import importlib
 import imp
 import base64
 import uuid
-import cPickle as pickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 from collections import OrderedDict
 import multiprocessing
 
