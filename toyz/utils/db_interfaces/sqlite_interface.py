@@ -1,5 +1,5 @@
-# Copyright 2014 by Fred Moolekamp
-# License: LGPLv3
+# Copyright 2015 by Fred Moolekamp
+# License: BSD 3-clause
 """
 Database interface to sqlite
 """

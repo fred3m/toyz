@@ -1,10 +1,10 @@
+# Copyright 2015 by Fred Moolekamp
+# License: BSD 3-clause
 """
 Settings for 3rd party web libraries, including jquery, jquery_ui, jquery_ui_themes.
 These are the packages for any third party libraries, containing version information
 and a path to the source code.
 """
-# Copyright 2015 by Fred Moolekamp
-# License: LGPLv3
 
 from __future__ import division, print_function
 from collections import OrderedDict

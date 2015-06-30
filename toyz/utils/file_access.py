@@ -2,7 +2,7 @@
 Utilities to access path and file permissions for the server.
 """
 # Copyright 2015 by Fred Moolekamp
-# License: LGPLv3
+# License: BSD 3-clause
 
 from __future__ import print_function, division
 import os

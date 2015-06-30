@@ -1,4 +1,3 @@
-
 import os
 import sys
 import glob
@@ -12,7 +11,7 @@ DESCRIPTION = "Data reduction and analysis software"
 LONG_DESC = "Interface to run python plots and scripts from a web browser"
 AUTHOR = "Fred Moolekamp"
 AUTHOR_EMAIL = "fred.moolekamp@gmail.com"
-LICENSE = "LGPLv3"
+LICENSE = "BSD 3-clause"
 URL = "http://fred3m.github.io/toyz/"
 
 # VERSION should be PEP386 compatible (http://www.python.org/dev/peps/pep-0386)

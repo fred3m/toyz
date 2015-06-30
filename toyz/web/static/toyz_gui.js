@@ -1,6 +1,6 @@
 // Graphical user interface tools
 // Copyright 2015 by Fred Moolekamp
-// License: LGPLv3
+// License: BSD 3-clause
 
 Toyz.namespace('Toyz.Gui');
 // Add a parameters value(s) to a params list

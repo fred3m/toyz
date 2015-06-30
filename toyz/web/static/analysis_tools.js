@@ -1,6 +1,6 @@
 // Tools for analyzing data
 // Copyright 2015 by Fred Moolekamp
-// License: LGPLv3
+// License: BSD 3-clause
 
 Toyz.namespace('Toyz.Analysis');
 

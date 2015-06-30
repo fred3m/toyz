@@ -1,5 +1,5 @@
 # Copywrite 2015 Fred Moolekamp
-# License: LGPLv3
+# License: BSD 3-clause
 """
 Tools to read/write files
 """

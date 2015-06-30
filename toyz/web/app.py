@@ -1,8 +1,8 @@
+# Copyright 2015 by Fred Moolekamp
+# License: BSD 3-clause
 """
 Runs the webapp for Toyz
 """
-# Copyright 2015 by Fred Moolekamp
-# License: LGPLv3
 
 from __future__ import division,print_function
 import sys

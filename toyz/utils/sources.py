@@ -1,8 +1,8 @@
+# Copyright 2015 by Fred Moolekamp
+# License: BSD 3-clause
 """
 Functions and classes for workspace data sources and image sources
 """
-# Copyright 2015 by Fred Moolekamp
-# License: LGPLv3
 from __future__ import print_function, division
 import numpy as np
 from datetime import datetime

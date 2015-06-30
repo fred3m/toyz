@@ -1,6 +1,6 @@
 # Job tasks sent from web client
 # Copyright 2015 by Fred Moolekamp
-# License: LGPLv3
+# License: BSD 3-clause
 """
 While each toy may contain a large number of functions, only the functions located in the
 ``tasks.py`` file will be callable from the job queue.
