@@ -15,7 +15,8 @@ LICENSE = "BSD 3-clause"
 URL = "http://fred3m.github.io/toyz/"
 
 # VERSION should be PEP386 compatible (http://www.python.org/dev/peps/pep-0386)
-VERSION = '0.0.dev'
+#VERSION = '0.1.dev'
+VERSION = '0.1'
 
 if 'dev' not in VERSION:
     VERSION += version.get_git_devstr(False)
