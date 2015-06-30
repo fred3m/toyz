@@ -23,6 +23,10 @@ Documentation
 See the [documentation](http://fred3m.github.io/toyz/) for information on installing and
 getting started with Toyz.
 
+Video Demo
+----------
+Click [here](https://www.youtube.com/watch?v=aY-11VcqHGs) for a short video demo.
+
 Toyz Sceenshots
 ---------------
 
