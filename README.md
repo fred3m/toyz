@@ -23,9 +23,8 @@ Documentation
 See the [documentation](http://fred3m.github.io/toyz/) for information on installing and
 getting started with Toyz.
 
-Sceenshots
-----------
-### Toyz
+Toyz Sceenshots
+---------------
 
 ![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/colormap.png)
 
@@ -53,3 +52,8 @@ images from different data sources
 ![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/user_settings.png)
 
 User settings in admin console
+
+Acknowledgements
+----------------
+
+Toyz has been partially funded by NSF award AST-1313029.
