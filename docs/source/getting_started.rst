@@ -9,24 +9,17 @@ First Time Setup
 Once you have installed toyz (see :ref:`install` for instructions on installation) 
 you are ready to setup your local toyz application.
 
-.. note::
-
-    You can have more than one instance of a toyz application installed on the same system, and
-    even multiple instances running at the same time on different ports.
-
-From any directory type on the computer hosting the application enter::
+First you need to create a directory that will house the configuration settings, for example
+`~/toyz`. Once you've created this directory navigate to it and type ::
 
     toyz
 
 and you will be promped to setup toyz for the fist time.
 
-.. warning::
+.. note::
 
-    The default directory is in your python library but it is not advised to install toyz there.
-    If you choose to install here you will lose all of your settings and users when you
-    update or re-install toyz.
-    
-    A better installation directory would be ``~/toyz`` .
+    You can have more than one instance of a toyz application installed on the same system, and
+    even multiple instances running at the same time on different ports.
 
 Once the first time setup has been completed the application will notify you::
 
@@ -34,7 +27,7 @@ Once the first time setup has been completed the application will notify you::
 
 where **XXXX** is the port that toyz is using.
 
-To exit the toyz application at any time just type ``CTRL + c`` .
+To exit the toyz application at any time just type ``CTRL + c``.
 
 .. _running_toyz:
 
@@ -43,7 +36,9 @@ Running a Toyz Application
 There are a number of different ways to initialize a Toyz web application, and even more ways
 to connect to a running application. At this time it is recommended that you run Toyz behind a
 firewall because we haven't sufficiently vetted the security of the application. Below are some
-of the possible ways to initialize and connect to a toyz application.
+of the possible ways to initialize and connect to a toyz application (btw, if you are a 
+security expert and would like to help make Toyz more secure please stop by the Toyz
+`Google group <https://groups.google.com/forum/#!forum/toyz-dev>`_).
 
 .. warning::
 
@@ -87,7 +82,7 @@ users can log on to the application by entering in their browser::
 where **hostname** is the name of the server hosting the application and **port** is the port
 specified when the application was lauched. For example enter::
 
-    physics.pas.rochester.edu:8888
+    physics_server.pas.rochester.edu:8888
 
 in the browser address bar.
 

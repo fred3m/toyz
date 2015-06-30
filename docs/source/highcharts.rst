@@ -4,7 +4,7 @@
 Highcharts
 **********
 `Highcharts <http://www.highcharts.com/>`_ is an open source javascript library created by
-Highsoft AS that makes it easy to generate a variety of different interactive charts and plots.
+Highsoft that makes it easy to generate a variety of different interactive charts and plots.
 
 .. warning::
 
@@ -12,8 +12,7 @@ Highsoft AS that makes it easy to generate a variety of different interactive ch
     required for corporate use. Please see `http://shop.highsoft.com/highcharts.html`_ for more
     information about Highcharts licensing.
 
-Currently only a small portion of the Highcharts API is accessible through the GUI although in
-the future that is likely to change.
+Currently only a small portion of the Highcharts API is accessible through the GUI.
 
 Creating a New Chart
 ====================

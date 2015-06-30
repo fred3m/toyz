@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Toyz for Data Reduction and Analysis
-====================================
+Toyz for Data Reduction and Analysis: Version 0.1
+=================================================
 
 Contents:
 
@@ -49,12 +49,18 @@ from Toyz (and Astropyp/Astro pypelines that will soon be converted to Toyz in t
 
 Recent Developements
 ====================
-As of mid-February Toyz is very nearly complete! The GUI, DB, and file access API-s are locked 
-for version 0.0 and the API for custom toyz modules is stable and not likley to change.
+An initial Toyz release paper was submitted to Astronomy and Computing and uploaded to
+arxiv on June 29, 2015.
 
-There are a number of minor bug fixes that should take place over the next few weeks as well
-as improvements to the documentation. Once these are completed I'll push version 0.0 to
-PyPi so toyz can be installed via `pip <https://pypi.python.org/pypi/pip>`_ .
+Most major bug fixes and installation problems have been solved and a small community of
+astronomers has begun to use Toyz. Please feel free to drop me a line if you have been
+using Toyz and let me know how it has been working.
+
+Future Upgrades
+===============
+The next major release will attempt to integrate Toyz as a Jupyter (iPython) notebook 
+extension. This will significantly simply the initial setup of Toyz, which can take some time
+if you are using the same Toyz instance for multiple users.
 
 Affiliated Packages
 ===================
@@ -67,12 +73,6 @@ I'll add it to the list.
     how to use the GUI to build controls and create your own interactive pages or new tiles
     to use on a Toyz workspace
 
-- `Toyz Studio <https://github.com/fred3m/toyz-studio>`_ is going to be an IDE similar to 
-    `R-studio <http://www.rstudio.com/>`_ for R and 
-    `spyder <https://code.google.com/p/spyderlib/>`_ for python, only it will run in a 
-    browser using the Toyz framework. This will allow users to edit code on the server as well as
-    interact with a python command line (similar to iPython).
-
 - `Astro Toyz <https://github.com/fred3m/astro-toyz>`_ is the package I'm currently translating
     from the old `astropyp <https://github.com/fred3m/astropyp>`_ format. Some of its features
     will include:
@@ -81,13 +81,6 @@ I'll add it to the list.
         + Interactive editing of point source catalogs
         + Catalog lookups (using astroquery and vizier)
         + Proper motions using specified catalogs
-    
-- `DECam Tools`_ will be an interactive version of the command line tools I'm currently using
-    to reduce data from the dark energy camera (DECam). Some of its key features are:
-        + Building an index to keep track of raw images and their post-processing counterparts
-        + Source detection and aperture photometry
-        + Color corrections for instrumental magnitudes
-        + Photometric calibration with standard fields using astroquery
 
 Third Party Software
 ====================
@@ -95,7 +88,6 @@ Creating toyz was only possible due to the open source community, including othe
 github.
 
 The third party codes currently used in toyz are:
-    - `loadpng <http://lodev.org/lodepng/>`_
     - `jquery <http://jquery.com/>`_
     - `jquery UI <http://jqueryui.com/>`_
     - `Graph 3d <http://almende.github.io/chap-links-library/js/graph3d/doc/>`_
@@ -107,9 +99,9 @@ The third party codes currently used in toyz are:
 
 Citing Toyz
 ===========
-I'm in the process of writing the paper on Toyz. If you use this code for your research
-please be a good citizen and cite that paper once it's available. It's been a lot of work
-putting this together but I'm hoping it contributes to a lot of good science.
+A Toyz paper has been written and submitted for publication to Astronomy and Computing.
+In the meantime it can be cited at the 
+`Astrophysics Source Code Library <http://ascl.net/code/v/1172>`_.
 
 Indices and tables
 ==================
