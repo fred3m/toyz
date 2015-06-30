@@ -16,11 +16,16 @@ for more), which open up a control panel next to the viewer.
 Image Viewer Controls
 =====================
 By default the image viewer has 5 sets of controls but it is possible for a user to create and
-modify these groups by creating a :ref:`custom_toy`.
+modify these groups by creating a :ref:`custom_toy`. For example, the
+`Astro-Toyz <https://github.com/fred3m/astro-toyz>`_ package adds controls that allow
+the user to view WCS, make surface plots from part of an image, and align images
+based on their WCS.
 
 Image Controls
 --------------
-These green colored controls are used to open and navigate through a single image. 
+These green colored controls are used to open and navigate through a single image. For now
+these only work for FITS images that have multipe frames but eventually this will
+navigate through the directory that holds the current image.
 
 Load Image
 ^^^^^^^^^^
@@ -124,3 +129,10 @@ When a viewer tile is saved, the information to load each viewer frame, its imag
 properties like the scale and location of the viewer window are all saved, but the images itself
 are not (meaning if they are changed, loading the workspace will display the **new** images,
 not the ones originally loaded).
+
+.. warning::
+
+    Browsers will often cache an image that it has loaded already, which can be problematic
+    if you ar updating an images and trying to view changes. In this case opening a 
+    private window in most browsers will prevent it from trying to cache the image and
+    you can be sure that the image you are viewing is the current version.

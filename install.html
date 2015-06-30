@@ -65,7 +65,7 @@
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optional-but-highly-recommended-requirements">Optional (but highly recommended) Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installing-toyz">Installing Toyz</a></li>
 </ul>
 </li>
@@ -81,6 +81,7 @@
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#data-sources">Data Sources</a></li>
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#tiles">Tiles</a></li>
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#sharing-workpsaces">Sharing Workpsaces</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="viewer.html">Image Viewer</a><ul>
@@ -158,16 +159,16 @@
 <span id="id1"></span><h1>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li><a class="reference external" href="https://www.python.org/">Python</a> 2.7 or later</li>
-<li><a class="reference external" href="http://www.tornadoweb.org/en/stable/">Tornado</a> 4.0 or later</li>
-<li><a class="reference external" href="https://pythonhosted.org/passlib/">passlib</a> 1.6.2 or later (eventually this will be optional
-and only required for password protected toyz applications)</li>
-</ul>
-</div>
-<div class="section" id="optional-requirements">
-<h2>Optional Requirements<a class="headerlink" href="#optional-requirements" title="Permalink to this headline">¶</a></h2>
 <ul>
+<li><p class="first"><a class="reference external" href="https://www.python.org/">Python</a> 2.7 or later</p>
+</li>
+<li><p class="first"><a class="reference external" href="http://www.tornadoweb.org/en/stable/">Tornado</a> 4.0 or later</p>
+</li>
+<li><p class="first"><a class="reference external" href="https://pythonhosted.org/passlib/">passlib</a> 1.6.2 or later (eventually this will be optional
+and only required for password protected toyz applications)</p>
+</li>
+<li><p class="first"><a class="reference external" href="https://pypi.python.org/pypi/six">six</a></p>
+</li>
 <li><dl class="first docutils">
 <dt><a class="reference external" href="http://www.numpy.org/">numpy</a> 1.5.1 or later</dt>
 <dd><ul class="first last simple">
@@ -176,6 +177,11 @@ and only required for password protected toyz applications)</li>
 </dd>
 </dl>
 </li>
+</ul>
+</div>
+<div class="section" id="optional-but-highly-recommended-requirements">
+<h2>Optional (but highly recommended) Requirements<a class="headerlink" href="#optional-but-highly-recommended-requirements" title="Permalink to this headline">¶</a></h2>
+<ul>
 <li><p class="first"><a class="reference external" href="http://www.pythonware.com/products/pil/">pil</a> or
 <a class="reference external" href="https://pillow.readthedocs.org/">pillow</a> 2.7.0 or later</p>
 <blockquote>
@@ -189,9 +195,51 @@ and only required for password protected toyz applications)</li>
 <dd><ul class="first last simple">
 <li>Required for interactive plots and charts</li>
 <li>Software contains link to online resource but can also be downloaded from
-<a href="#id2"><span class="problematic" id="id3">`http://www.highcharts.com/download`_</span></a></li>
+<a href="#id3"><span class="problematic" id="id4">`http://www.highcharts.com/download`_</span></a></li>
 <li>is free for personal or non-profit use and
 <a class="reference external" href="http://shop.highsoft.com/highcharts.html">reasonably priced</a> for commercial use</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><a class="reference external" href="http://www.scipy.org/">scipy</a> 0.15 or later</dt>
+<dd><ul class="first last simple">
+<li>Speeds up scaling in image viewer</li>
+<li>Useful for many custom modules and adata analysis</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><a class="reference external" href="http://matplotlib.org/">matplotlib</a></dt>
+<dd><ul class="first last simple">
+<li>Required to view images in workspaces</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><a class="reference external" href="http://pandas.pydata.org/">pandas</a></dt>
+<dd><ul class="first last simple">
+<li>Required to connect to a wide variety of data sources including SQL databases,
+hdf5, specially formated text files, etc.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><a href="#id5"><span class="problematic" id="id6">`sqlalchemy`_</span></a></dt>
+<dd><ul class="first last simple">
+<li>Required to conenct to SQL databases</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><a class="reference external" href="http://www.astropy.org/">astropy</a></dt>
+<dd><ul class="first last simple">
+<li>Required to view FITS images</li>
 </ul>
 </dd>
 </dl>
@@ -203,13 +251,33 @@ and only required for password protected toyz applications)</li>
 <p>The Toyz framework only needs to be installed on the machine acting as the server. This can be
 a local machine, remote server, or even remote super-computer (we are working on testing this
 on a blue-gene super computer at the University of Rochester at this time).</p>
-<div class="section" id="using-pip">
-<h3>Using pip<a class="headerlink" href="#using-pip" title="Permalink to this headline">¶</a></h3>
-<p>Toyz is registered in the <a class="reference external" href="https://pypi.python.org/pypi">Python Package Index (pypi)</a> and
-within the next few weeks version 0.0 will be added.</p>
+<div class="section" id="anaconda-users">
+<h3>Anaconda Users<a class="headerlink" href="#anaconda-users" title="Permalink to this headline">¶</a></h3>
+<p>The easiest way I&#8217;ve found to ensure that all of your scientific python modules cooperate
+with each other is to install <a class="reference external" href="http://docs.continuum.io/anaconda/">Anaconda</a>. Follow the
+anaconda documentation to setup a new conda environment and install all of the required
+and optional packages above. Then follow the instructions below in the <em class="xref std std-ref">using_pip</em>
+section.</p>
 </div>
-<div class="section" id="installing-from-source">
-<h3>Installing from source<a class="headerlink" href="#installing-from-source" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="using-pip-to-install-from-pypi">
+<h3>Using pip to install from PYPI<a class="headerlink" href="#using-pip-to-install-from-pypi" title="Permalink to this headline">¶</a></h3>
+<p>Toyz is registered in the <a class="reference external" href="https://pypi.python.org/pypi">Python Package Index (pypi)</a>
+and can be installed using</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install toyz
+</pre></div>
+</div>
+<p>To install all of the required and optional dependencies use</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install toyz[all]
+</pre></div>
+</div>
+<p>Some packages like numpy, scipy, and astropy might take a while to compile.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">pip can also be used to install the source code (see <em class="xref std std-ref">installing_from_source</em>)</p>
+</div>
+</div>
+<div class="section" id="id2">
+<h3>Installing from source<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="obtaining-the-source-code">
 <h4>Obtaining the source code<a class="headerlink" href="#obtaining-the-source-code" title="Permalink to this headline">¶</a></h4>
 <p>Download the source code <a class="reference external" href="https://github.com/fred3m/toyz">here</a> on github, or by typing:</p>
@@ -219,8 +287,14 @@ within the next few weeks version 0.0 will be added.</p>
 </div>
 <div class="section" id="installing">
 <h4>Installing<a class="headerlink" href="#installing" title="Permalink to this headline">¶</a></h4>
-<p>To install Toyz from the source code navigate to the root directory of the source code and type:</p>
+<p>To install Toyz from the source code if you already have all of the dependencies,
+navigate to the root directory of the source code and type:</p>
 <div class="highlight-python"><div class="highlight"><pre>python setup.py install
+</pre></div>
+</div>
+<p>To install all of the required and optional dependencies navigate to the root directory of the
+source code and type</p>
+<div class="highlight-python"><div class="highlight"><pre>pip install -e .[all]
 </pre></div>
 </div>
 <div class="admonition note">
@@ -234,7 +308,7 @@ within the next few weeks version 0.0 will be added.</p>
 so I can fix them or share steps needed to resolve them with other users. For bugs, please
 create an <a class="reference external" href="https://github.com/fred3m/toyz/issues">issue</a> on github. For other comments or
 suggestions please create a post on our
-<a class="reference external" href="https://groups.google.com/forum/#!forum/toyz-dev">Google group</a></p>
+<a class="reference external" href="https://groups.google.com/forum/#!forum/toyz-dev">Google Group</a></p>
 </div>
 </div>
 </div>

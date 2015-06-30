@@ -4,7 +4,7 @@
 Contributing to Toyz
 ********************
 
-Toyz still has a long way to go and undoubtably numberous bugs that I have yet to discover.
+Toyz still has a long way to go and undoubtably numerous bugs that I have yet to discover.
 I'm open to having as many people work on Toyz as possible but ask that you follow a few
 guidelines.
 

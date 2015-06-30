@@ -65,7 +65,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-but-highly-recommended-requirements">Optional (but highly recommended) Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a></li>
 </ul>
 </li>
@@ -81,6 +81,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#data-sources">Data Sources</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tiles">Tiles</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sharing-workpsaces">Sharing Workpsaces</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="viewer.html">Image Viewer</a><ul>
@@ -165,11 +166,11 @@ visualize large, high-dimensional data sets.</p>
 <p>Workspaces can also be saved so that at a later time the user can reload data sources and tiles
 and pick up right where they left off, or share their current work with a collegue who also has
 access to their toy application.</p>
-<p>Workspaces can be accessed by navigating to <tt class="docutils literal"><span class="pre">host:port/workspaces</span></tt> or from the main menu
+<p>Workspaces can be accessed by navigating to <tt class="docutils literal"><span class="pre">host:port/workspaces/</span></tt> or from the main menu
 at <tt class="docutils literal"><span class="pre">host:port</span></tt>, choosing the <strong>Toyz</strong> tab and clicking <strong>New Workspace</strong>.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Sharing workspaces with other users has not been implemented yet</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Don&#8217;t forget the trailing &#8216;/&#8217; after workspaces</p>
 </div>
 <div class="section" id="data-sources">
 <span id="id1"></span><h2>Data Sources<a class="headerlink" href="#data-sources" title="Permalink to this headline">¶</a></h2>
@@ -205,10 +206,10 @@ settings the same just choose <strong>Open</strong>, otherwise make any changes 
 </div>
 <div class="section" id="tiles">
 <h2>Tiles<a class="headerlink" href="#tiles" title="Permalink to this headline">¶</a></h2>
-<p>Tiles are like mini apps that can be used to display interactive content on the workspace. They
-can be linked to data sources or each other, so they are not independent apps, but they are
-customizable in that users can shoose their location, dimensions, and even add their own
-custom tools.</p>
+<p>Tiles are like mini apps or widgets that can be used to display interactive content on the
+workspace. They can be linked to data sources or each other, so they are not independent apps,
+but they are customizable in that users can shoose their location, dimensions, and even add
+their own custom tools.</p>
 <div class="section" id="adding-and-positioning-a-tile">
 <span id="add-tile"></span><h3>Adding and Positioning a Tile<a class="headerlink" href="#adding-and-positioning-a-tile" title="Permalink to this headline">¶</a></h3>
 <p>To add a new tile right-click on the workspace area and choose <tt class="docutils literal"><span class="pre">new-&gt;tile</span></tt>. The newly
@@ -245,6 +246,28 @@ changed, when you load the workspace it will load the <strong>new data</strong>.
 hitting the reload button in the browser window. This helps prevent memory leaks that may
 exist in the code. Then right-click on the workspace and choose <tt class="docutils literal"><span class="pre">Load</span> <span class="pre">Workspace</span></tt>. A drop
 down menu will appear with all of the available workspaces for the current user id.</p>
+<p>If you already know the name of your workspace you can alos load it by entering a url
+into the web browser in the form:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">hostname</span><span class="o">/</span><span class="n">workspace</span><span class="o">/</span><span class="n">username</span><span class="o">/</span><span class="n">workspace_name</span>
+</pre></div>
+</div>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>localhost:8888/workspace/admin/test_workspace
+</pre></div>
+</div>
+</div>
+<div class="section" id="sharing-workpsaces">
+<h2>Sharing Workpsaces<a class="headerlink" href="#sharing-workpsaces" title="Permalink to this headline">¶</a></h2>
+<p>By default, all of a users workspaces are private. In order to share a workspace with other users
+you must first navigate to the management console <cite>hostname:port</cite>. Scroll down to the
+<tt class="docutils literal"><span class="pre">Workspaces</span></tt> section and choose the workspace you wish to share from the dropdown menu.
+Next add any users and/or groups that you want to be able to have access to the workspace.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Even if you share a workspace with other users, if the workspace connects to any files
+that the other users cannot see, the workspace will not load correctly. Make sure that
+you also share the file diretories with those users.</p>
+</div>
 </div>
 </div>
 

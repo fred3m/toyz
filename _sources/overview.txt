@@ -8,7 +8,7 @@ Toyz was initially created as a way to view and interact with FITS images stored
 server, as well as perform data reduction needed for my PhD. I couldn't find any easy to use
 and well documented astronomy tools for this task so I set out to create my own application.
 
-In a nutshell Toyz is a web application framework designed to meet the needs of "Big Data"
+In a nutshell Toyz is a web application framework designed to meet the needs of data
 scientists by allowing them to interact with their data via a web browser and run
 scripts on a remote server that stores their data (and perhaps a gpu cluster).
 There are a few simple ideas that have been (and will continue to be) essential to the

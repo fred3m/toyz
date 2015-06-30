@@ -65,7 +65,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-but-highly-recommended-requirements">Optional (but highly recommended) Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a></li>
 </ul>
 </li>
@@ -81,6 +81,7 @@
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#data-sources">Data Sources</a></li>
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#tiles">Tiles</a></li>
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#sharing-workpsaces">Sharing Workpsaces</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="viewer.html">Image Viewer</a><ul>
@@ -160,36 +161,32 @@
 <span id="id1"></span><h2>First Time Setup<a class="headerlink" href="#first-time-setup" title="Permalink to this headline">¶</a></h2>
 <p>Once you have installed toyz (see <a class="reference internal" href="install.html#install"><em>Install</em></a> for instructions on installation)
 you are ready to setup your local toyz application.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">You can have more than one instance of a toyz application installed on the same system, and
-even multiple instances running at the same time on different ports.</p>
-</div>
-<p>From any directory type on the computer hosting the application enter:</p>
+<p>First you need to create a directory that will house the configuration settings, for example
+<cite>~/toyz</cite>. Once you&#8217;ve created this directory navigate to it and type</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">toyz</span>
 </pre></div>
 </div>
 <p>and you will be promped to setup toyz for the fist time.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p>The default directory is in your python library but it is not advised to install toyz there.
-If you choose to install here you will lose all of your settings and users when you
-update or re-install toyz.</p>
-<p class="last">A better installation directory would be <tt class="docutils literal"><span class="pre">~/toyz</span></tt> .</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can have more than one instance of a toyz application installed on the same system, and
+even multiple instances running at the same time on different ports.</p>
 </div>
 <p>Once the first time setup has been completed the application will notify you:</p>
 <div class="highlight-python"><div class="highlight"><pre>Server is running on port XXXX
 </pre></div>
 </div>
 <p>where <strong>XXXX</strong> is the port that toyz is using.</p>
-<p>To exit the toyz application at any time just type <tt class="docutils literal"><span class="pre">CTRL</span> <span class="pre">+</span> <span class="pre">c</span></tt> .</p>
+<p>To exit the toyz application at any time just type <tt class="docutils literal"><span class="pre">CTRL</span> <span class="pre">+</span> <span class="pre">c</span></tt>.</p>
 </div>
 <div class="section" id="running-a-toyz-application">
 <span id="running-toyz"></span><h2>Running a Toyz Application<a class="headerlink" href="#running-a-toyz-application" title="Permalink to this headline">¶</a></h2>
 <p>There are a number of different ways to initialize a Toyz web application, and even more ways
 to connect to a running application. At this time it is recommended that you run Toyz behind a
 firewall because we haven&#8217;t sufficiently vetted the security of the application. Below are some
-of the possible ways to initialize and connect to a toyz application.</p>
+of the possible ways to initialize and connect to a toyz application (btw, if you are a
+security expert and would like to help make Toyz more secure please stop by the Toyz
+<a class="reference external" href="https://groups.google.com/forum/#!forum/toyz-dev">Google group</a>).</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">Unless you are running toyz from the default path, you must always run toyz from the
@@ -231,7 +228,7 @@ users can log on to the application by entering in their browser:</p>
 </div>
 <p>where <strong>hostname</strong> is the name of the server hosting the application and <strong>port</strong> is the port
 specified when the application was lauched. For example enter:</p>
-<div class="highlight-python"><div class="highlight"><pre>physics.pas.rochester.edu:8888
+<div class="highlight-python"><div class="highlight"><pre>physics_server.pas.rochester.edu:8888
 </pre></div>
 </div>
 <p>in the browser address bar.</p>

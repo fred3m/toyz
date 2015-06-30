@@ -65,7 +65,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-but-highly-recommended-requirements">Optional (but highly recommended) Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a></li>
 </ul>
 </li>
@@ -81,6 +81,7 @@
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#data-sources">Data Sources</a></li>
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#tiles">Tiles</a></li>
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#sharing-workpsaces">Sharing Workpsaces</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Image Viewer</a><ul>
@@ -168,10 +169,15 @@ for more), which open up a control panel next to the viewer.</p>
 <div class="section" id="image-viewer-controls">
 <h2>Image Viewer Controls<a class="headerlink" href="#image-viewer-controls" title="Permalink to this headline">¶</a></h2>
 <p>By default the image viewer has 5 sets of controls but it is possible for a user to create and
-modify these groups by creating a <em class="xref std std-ref">custom_toy</em>.</p>
+modify these groups by creating a <em class="xref std std-ref">custom_toy</em>. For example, the
+<a class="reference external" href="https://github.com/fred3m/astro-toyz">Astro-Toyz</a> package adds controls that allow
+the user to view WCS, make surface plots from part of an image, and align images
+based on their WCS.</p>
 <div class="section" id="image-controls">
 <h3>Image Controls<a class="headerlink" href="#image-controls" title="Permalink to this headline">¶</a></h3>
-<p>These green colored controls are used to open and navigate through a single image.</p>
+<p>These green colored controls are used to open and navigate through a single image. For now
+these only work for FITS images that have multipe frames but eventually this will
+navigate through the directory that holds the current image.</p>
 <div class="section" id="load-image">
 <h4>Load Image<a class="headerlink" href="#load-image" title="Permalink to this headline">¶</a></h4>
 <p>Loads an image from the server. Clicking the <strong>load image</strong> button open up a dialog that allows
@@ -270,6 +276,13 @@ files), and the value of the pixel under the cursor.</p>
 properties like the scale and location of the viewer window are all saved, but the images itself
 are not (meaning if they are changed, loading the workspace will display the <strong>new</strong> images,
 not the ones originally loaded).</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Browsers will often cache an image that it has loaded already, which can be problematic
+if you ar updating an images and trying to view changes. In this case opening a
+private window in most browsers will prevent it from trying to cache the image and
+you can be sure that the image you are viewing is the current version.</p>
+</div>
 </div>
 </div>
 

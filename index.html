@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Toyz for Data Reduction and Analysis &mdash; Toyz 0.0.0 documentation</title>
+  <title>Toyz for Data Reduction and Analysis: Version 0.1 &mdash; Toyz 0.0.0 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-but-highly-recommended-requirements">Optional (but highly recommended) Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a></li>
 </ul>
 </li>
@@ -80,6 +80,7 @@
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#data-sources">Data Sources</a></li>
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#tiles">Tiles</a></li>
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#sharing-workpsaces">Sharing Workpsaces</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="viewer.html">Image Viewer</a><ul>
@@ -142,7 +143,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="#">Docs</a> &raquo;</li>
       
-    <li>Toyz for Data Reduction and Analysis</li>
+    <li>Toyz for Data Reduction and Analysis: Version 0.1</li>
       <li class="wy-breadcrumbs-aside">
         
           <a href="_sources/index.txt" rel="nofollow"> View page source</a>
@@ -153,8 +154,8 @@
 </div>
           <div role="main">
             
-  <div class="section" id="toyz-for-data-reduction-and-analysis">
-<h1>Toyz for Data Reduction and Analysis<a class="headerlink" href="#toyz-for-data-reduction-and-analysis" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="toyz-for-data-reduction-and-analysis-version-0-1">
+<h1>Toyz for Data Reduction and Analysis: Version 0.1<a class="headerlink" href="#toyz-for-data-reduction-and-analysis-version-0-1" title="Permalink to this headline">¶</a></h1>
 <p>Contents:</p>
 <p><strong>Introduction to Toyz</strong></p>
 <div class="toctree-wrapper compound">
@@ -166,10 +167,11 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#requirements">Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#optional-requirements">Optional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#optional-but-highly-recommended-requirements">Optional (but highly recommended) Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#installing-toyz">Installing Toyz</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="install.html#using-pip">Using pip</a></li>
-<li class="toctree-l3"><a class="reference internal" href="install.html#installing-from-source">Installing from source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#anaconda-users">Anaconda Users</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#using-pip-to-install-from-pypi">Using pip to install from PYPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#id2">Installing from source</a></li>
 </ul>
 </li>
 </ul>
@@ -208,6 +210,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="workspaces.html#loading-and-saving-a-workspace">Loading and Saving a Workspace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workspaces.html#sharing-workpsaces">Sharing Workpsaces</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="viewer.html">Image Viewer</a><ul>
@@ -301,11 +304,17 @@ from Toyz (and Astropyp/Astro pypelines that will soon be converted to Toyz in t
 </div>
 <div class="section" id="recent-developements">
 <h1>Recent Developements<a class="headerlink" href="#recent-developements" title="Permalink to this headline">¶</a></h1>
-<p>As of mid-February Toyz is very nearly complete! The GUI, DB, and file access API-s are locked
-for version 0.0 and the API for custom toyz modules is stable and not likley to change.</p>
-<p>There are a number of minor bug fixes that should take place over the next few weeks as well
-as improvements to the documentation. Once these are completed I&#8217;ll push version 0.0 to
-PyPi so toyz can be installed via <a class="reference external" href="https://pypi.python.org/pypi/pip">pip</a> .</p>
+<p>An initial Toyz release paper was submitted to Astronomy and Computing and uploaded to
+arxiv on June 29, 2015.</p>
+<p>Most major bug fixes and installation problems have been solved and a small community of
+astronomers has begun to use Toyz. Please feel free to drop me a line if you have been
+using Toyz and let me know how it has been working.</p>
+</div>
+<div class="section" id="future-upgrades">
+<h1>Future Upgrades<a class="headerlink" href="#future-upgrades" title="Permalink to this headline">¶</a></h1>
+<p>The next major release will attempt to integrate Toyz as a Jupyter (iPython) notebook
+extension. This will significantly simply the initial setup of Toyz, which can take some time
+if you are using the same Toyz instance for multiple users.</p>
 </div>
 <div class="section" id="affiliated-packages">
 <h1>Affiliated Packages<a class="headerlink" href="#affiliated-packages" title="Permalink to this headline">¶</a></h1>
@@ -318,15 +327,6 @@ I&#8217;ll add it to the list.</p>
 <dd><p class="first last">toyz modules compatible with the current framework. It contains simple examples illustrating
 how to use the GUI to build controls and create your own interactive pages or new tiles
 to use on a Toyz workspace</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt><a class="reference external" href="https://github.com/fred3m/toyz-studio">Toyz Studio</a> is going to be an IDE similar to</dt>
-<dd><p class="first last"><a class="reference external" href="http://www.rstudio.com/">R-studio</a> for R and
-<a class="reference external" href="https://code.google.com/p/spyderlib/">spyder</a> for python, only it will run in a
-browser using the Toyz framework. This will allow users to edit code on the server as well as
-interact with a python command line (similar to iPython).</p>
 </dd>
 </dl>
 </li>
@@ -346,21 +346,6 @@ will include:</p>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt><a href="#id1"><span class="problematic" id="id2">`DECam Tools`_</span></a> will be an interactive version of the command line tools I&#8217;m currently using</dt>
-<dd><dl class="first last docutils">
-<dt>to reduce data from the dark energy camera (DECam). Some of its key features are:</dt>
-<dd><ul class="first last simple">
-<li>Building an index to keep track of raw images and their post-processing counterparts</li>
-<li>Source detection and aperture photometry</li>
-<li>Color corrections for instrumental magnitudes</li>
-<li>Photometric calibration with standard fields using astroquery</li>
-</ul>
-</dd>
-</dl>
-</dd>
-</dl>
-</li>
 </ul>
 </div>
 <div class="section" id="third-party-software">
@@ -370,7 +355,6 @@ github.</p>
 <dl class="docutils">
 <dt>The third party codes currently used in toyz are:</dt>
 <dd><ul class="first last simple">
-<li><a class="reference external" href="http://lodev.org/lodepng/">loadpng</a></li>
 <li><a class="reference external" href="http://jquery.com/">jquery</a></li>
 <li><a class="reference external" href="http://jqueryui.com/">jquery UI</a></li>
 <li><a class="reference external" href="http://almende.github.io/chap-links-library/js/graph3d/doc/">Graph 3d</a></li>
@@ -385,9 +369,9 @@ github.</p>
 </div>
 <div class="section" id="citing-toyz">
 <h1>Citing Toyz<a class="headerlink" href="#citing-toyz" title="Permalink to this headline">¶</a></h1>
-<p>I&#8217;m in the process of writing the paper on Toyz. If you use this code for your research
-please be a good citizen and cite that paper once it&#8217;s available. It&#8217;s been a lot of work
-putting this together but I&#8217;m hoping it contributes to a lot of good science.</p>
+<p>A Toyz paper has been written and submitted for publication to Astronomy and Computing.
+In the meantime it can be cited at the
+<a class="reference external" href="http://ascl.net/code/v/1172">Astrophysics Source Code Library</a>.</p>
 </div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>

@@ -13,12 +13,12 @@ Workspaces can also be saved so that at a later time the user can reload data so
 and pick up right where they left off, or share their current work with a collegue who also has
 access to their toy application.
 
-Workspaces can be accessed by navigating to ``host:port/workspaces`` or from the main menu
+Workspaces can be accessed by navigating to ``host:port/workspaces/`` or from the main menu
 at ``host:port``, choosing the **Toyz** tab and clicking **New Workspace**.
 
-.. note::  
+.. warning::
 
-    Sharing workspaces with other users has not been implemented yet
+    Don't forget the trailing '/' after workspaces
 
 .. _data_sources:
 
@@ -61,10 +61,10 @@ settings the same just choose **Open**, otherwise make any changes to the input 
 
 Tiles
 =====
-Tiles are like mini apps that can be used to display interactive content on the workspace. They
-can be linked to data sources or each other, so they are not independent apps, but they are
-customizable in that users can shoose their location, dimensions, and even add their own
-custom tools.
+Tiles are like mini apps or widgets that can be used to display interactive content on the 
+workspace. They can be linked to data sources or each other, so they are not independent apps, 
+but they are customizable in that users can shoose their location, dimensions, and even add 
+their own custom tools.
 
 .. _add_tile:
 
@@ -105,3 +105,25 @@ To load a previously saved workspace, first make sure that you have a clean, new
 hitting the reload button in the browser window. This helps prevent memory leaks that may
 exist in the code. Then right-click on the workspace and choose ``Load Workspace``. A drop
 down menu will appear with all of the available workspaces for the current user id.
+
+If you already know the name of your workspace you can alos load it by entering a url
+into the web browser in the form::
+
+    hostname/workspace/username/workspace_name
+
+For example::
+
+    localhost:8888/workspace/admin/test_workspace
+
+Sharing Workpsaces
+==================
+By default, all of a users workspaces are private. In order to share a workspace with other users
+you must first navigate to the management console `hostname:port`. Scroll down to the
+``Workspaces`` section and choose the workspace you wish to share from the dropdown menu.
+Next add any users and/or groups that you want to be able to have access to the workspace.
+
+.. warning::
+
+    Even if you share a workspace with other users, if the workspace connects to any files
+    that the other users cannot see, the workspace will not load correctly. Make sure that
+    you also share the file diretories with those users.

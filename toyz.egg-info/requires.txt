@@ -1,0 +1,13 @@
+tornado>=4.0.2
+passlib
+numpy>=1.5.1
+six
+importlib
+
+[all]
+scipy>=0.15
+matplotlib
+pandas>=0.14
+astropy>=0.4
+sqlalchemy
+pillow
