@@ -26,13 +26,11 @@ getting started with Toyz.
 Sceenshots
 ----------
 ### Toyz
-![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/user_settings.png)
 
-User settings in admin console
+![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/colormap.png)
 
-![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/group_settings.png)
+Change the color mapping for FITS images
 
-Group settings in admin console
 
 ![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/open_file.png)
 
@@ -42,32 +40,16 @@ Open a data file from the server using python, numpy, or pandas (astropy in the 
 
 Interactive plots using Highcharts (custom js plot libraries can also be used)
 
-### Astropyp/ Astro pypelines
-There are a number of feature from astopyp and astropypelines that will be added in the next few 
-weeks. Here is a sneak preview of some of those features.
+![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/surface_plot.png)
 
-![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/fitsviewer1.png)
-
-Detecting stars with the fits image viewer
-
-![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/fitsviewer2.png)
-
-Setting the contrast and bias with the fits image viewer
+With the [Astro-Toyz](https://github.com/fred3m/astro-toyz) package you can
+view surface plots, pixel distribution histograms, and WCS.
 
 ![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/color_mag.png)
 
-Viewing interactive plots, surface plots, and image arrays that are all connected
+Custom web pages can be written to connect interactive plots to surface plots and
+images from different data sources
 
-More Coming Soon
-----------------
-This package is being converted from [astropyp](https://github.com/fred3m/astropyp) and 
-[astro_pypelines](https://github.com/fred3m/astro_pypelines) into a more complete 
-(and less specialized) data analysis package. This is an ongoing process and many
-of the features haven't been transfered yet, however if you install 
-[astropyp](https://github.com/fred3m/astropyp) 
-and [astro_pypelines](https://github.com/fred3m/astro_pypelines) 
-you will be able to use a preview of the package 
-as applied to astronomy.
+![alt text](https://github.com/fred3m/toyz/blob/master/screenshots/user_settings.png)
 
-The goal is for the main interface to be completed by mid January (2015) while the astronomy 
-tools should be ready sometime in February.
+User settings in admin console
