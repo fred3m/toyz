@@ -140,9 +140,8 @@ class DataSource:
             if self.data_type is None:
                 raise ToyzDataError(
                     "Could not find data type {0} in users approved modules".format(dt))
-        else:
-            # Set the column names based on the data type
-            self.name_columns()
+        # Set the column names based on the data type
+        self.name_columns()
     
     def to_dict(self, columns=None):
         """
