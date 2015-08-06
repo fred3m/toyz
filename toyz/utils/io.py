@@ -4,6 +4,8 @@
 Tools to read/write files
 """
 from __future__ import print_function, division
+from collections import OrderedDict
+
 from toyz.utils import core
 from toyz.utils.errors import ToyzIoError
 
@@ -663,7 +665,10 @@ def load_data(toyz_module, io_module, file_type, file_options):
     # Ignore parameters for other functions like 'save'
     module = get_io_module(toyz_module, io_module)
     params = module[file_type]['load']
-    load_options = params['params'].keys()+params['optional'].keys()
+    if 'optional' in params:
+        load_options = params['params'].keys()+params['optional'].keys()
+    else:
+        load_options = params['params'].keys()
     file_options = {k:v for k,v in file_options.items() if k in load_options}
     print('keys', module[file_type]['load'].keys())
     print('file_options', file_options)
@@ -811,14 +816,19 @@ def save_data(data, toyz_module, io_module, file_type, file_options):
             raise ToyzIoError("Could not find "+io_module+" in "+toyz_module+" save_functions")
     return convert_options(toyz_module, io_module, file_type, file_options, 'save2load')
 
-def build_gui(toyz_modules, gui_type):
+def build_gui(module_info, gui_type):
     """
     Build 'load' and 'save' i/o GUI for user to load files
     
     Parameters
-        toyz_modules ( *dict* ):
-            - Dictionary of toyz io_modules (see io_modules variable in source code)
+        module_info ( *dict* ):
+            - Dictionary of information about toyz modules available to the user
     """
+    from toyz.utils import sources
+    import importlib
+    
+    data_sources = module_info['data_sources']
+    toyz_modules = module_info['toyz_modules']
     gui = {
         'type': 'div',
         'params': {
@@ -844,18 +854,28 @@ def build_gui(toyz_modules, gui_type):
                         },
                         'param_sets': {
                             io_module: {
-                                'type': 'conditional',
-                                'selector': {
-                                    'file_type': {
-                                        'lbl': 'file type',
+                                'type': 'div',
+                                'params': OrderedDict([
+                                    ['src_type', {
+                                        'lbl': 'Data Source',
                                         'type': 'select',
-                                        'options': sorted(io_dict.keys())
-                                    }
-                                },
-                                'param_sets': {
-                                    file_type: ft_dict[gui_type]
-                                    for file_type, ft_dict in io_dict.items()
-                                }
+                                        'options': data_sources[toy].keys()
+                                    }],
+                                    ['info', {
+                                        'type': 'conditional',
+                                        'selector': {
+                                            'file_type': {
+                                                'lbl': 'file type',
+                                                'type': 'select',
+                                                'options': sorted(io_dict.keys())
+                                            }
+                                        },
+                                        'param_sets': {
+                                            file_type: ft_dict[gui_type]
+                                            for file_type, ft_dict in io_dict.items()
+                                        }
+                                    }]
+                                ])
                             }
                             for io_module, io_dict in toy_dict.items()
                         }

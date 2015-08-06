@@ -437,7 +437,7 @@ def create_paths(toyz_settings, tid, params):
     }
     return response
 
-def load_data_file(toyz_settings, tid, params):
+def old_load_data_file(toyz_settings, tid, params):
     """
     Load a data file given a set of parameters from the browser, initialized by
     ``get_io_info``.
@@ -471,9 +471,39 @@ def load_data_file(toyz_settings, tid, params):
         data_type = params['data_type']
     else:
         data_type = None
-    
+    print('PARAMS:',params,"\n\n")
     session_vars.data_sources[src_id] = src_types[src_type](
         user_id=tid['user_id'], data_type=data_type, paths=params['paths'])
+    session_vars.data_sources[src_id].src_id = src_id
+    session_vars.data_sources[src_id].name = src_id
+    
+    response = {
+        'id': 'data_file',
+        'columns': session_vars.data_sources[src_id].columns,
+    }
+    return response
+
+def load_data_file(toyz_settings, tid, params):
+    """
+    Load a data file given a set of parameters from the browser, initialized by
+    ``get_io_info``.
+    """
+    import toyz.utils.io as io
+    import toyz.utils.sources as sources
+    
+    # If this is the first data source, define variable to keep track of data sources
+    if not hasattr(session_vars, 'data_sources'):
+        session_vars.data_sources = {}
+    
+    # Load the data into the specified data object
+    src_id = params['src_id']
+    src_name = params['src_name']
+    src_type = params['paths']['data']['file_options']['src_type']
+    toyz_module = params['paths']['data']['toyz_module']
+    
+    module_info = core.get_module_info(toyz_settings, tid, params)
+    session_vars.data_sources[src_id] = module_info['data_sources'][toyz_module][src_type](
+        module_info, user_id=tid['user_id'], paths=params['paths'])
     session_vars.data_sources[src_id].src_id = src_id
     session_vars.data_sources[src_id].name = src_id
     
@@ -537,65 +567,16 @@ def get_workspace_info(toyz_settings, tid, params):
     import toyz.utils.io as io
     import toyz.utils.sources as sources
     
-    src_types = sources.src_types.keys()
-    data_types = sources.data_types
-    image_types = sources.image_types
-    toyz_modules = {
-        'toyz': dict(io.io_modules)
-    }
-    
-    # Get workspace info from other Toyz modules
-    tiles = {}
-    import_error = {}
-    modules = db_utils.get_param(toyz_settings.db, 'modules', user_id=tid['user_id'])
-    for module in modules:
-        try:
-            print("importing", module+'.config')
-            config = importlib.import_module(module+'.config')
-        except ImportError:
-            import_error[module] = 'could not import' + module+'.config'
-        if hasattr(config, 'workspace_tiles'):
-            tiles.update(config.workspace_tiles)
-        if hasattr(config, 'data_types'):
-            data_types += config.data_types
-        if hasattr(config, 'image_types'):
-            image_types += config.image_types
-        if hasattr(config, 'io_modules'):
-            toyz_modules.update({
-                module: config.io_modules
-            })
-        if hasattr(config, 'src_types'):
-            src_types += config.src_types.keys()
-    
-    load_src = io.build_gui(toyz_modules, 'load')
-    load_src.update({
-        'optional': {
-            'src_type': {
-                'lbl': 'Data Source Type',
-                'type': 'select',
-                'options': sorted(src_types),
-                'default_val': 'DataSource'
-            },
-            'data_type': {
-                'lbl': 'data type',
-                'type': 'select',
-                'options': sorted(data_types)
-            },
-            'image_type': {
-                'lbl': 'image_type',
-                'type': 'select',
-                'options': sorted(image_types)
-            }
-        }
-    })
-    save_src = io.build_gui(toyz_modules, 'save')
+    module_info = core.get_module_info(toyz_settings, tid, params)
+    load_src = io.build_gui(module_info, 'load')
+    save_src = io.build_gui(module_info, 'save')
     
     response = {
         'id': 'workspace_info',
         'load_src_info': load_src,
         'save_src_info': save_src,
-        'tiles': tiles,
-        'import_error': import_error
+        'tiles': module_info['tiles'],
+        'import_error': module_info['import_errors']
     }
     
     return response

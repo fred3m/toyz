@@ -15,6 +15,8 @@ except ImportError:
     import pickle
 from collections import OrderedDict
 import multiprocessing
+import logging
+logger = logging.getLogger("toyz.core")
 
 from toyz.utils import db as db_utils
 from toyz.utils.errors import ToyzError, ToyzDbError, ToyzWebError, ToyzJobError, ToyzWarning
@@ -726,6 +728,43 @@ def get_workspace_permissions(toyz_settings, tid, params):
                     for p in permissions:
                         permissions[p] = permissions[p] or shared_user[p]
     return permissions
+
+def get_module_info(toyz_settings, tid, params):
+    """
+    Get information about modules accessible by the current user
+    """
+    from toyz.utils import io
+    from toyz.utils import sources
+    
+    toyz_modules = {
+        'toyz': dict(io.io_modules)
+    }
+    data_sources = {
+        'toyz': sources.src_types
+    }
+    tiles = {}
+    import_error = {}
+    modules = db_utils.get_param(toyz_settings.db, 'modules', user_id=tid['user_id'])
+    for module in modules:
+        try:
+            logger.info("importing {0}.config".format(module))
+            config = importlib.import_module(module+'.config')
+            if hasattr(config, 'workspace_tiles'):
+                tiles.update(config.workspace_tiles)
+            if hasattr(config, 'io_modules'):
+                toyz_modules.update({
+                    module: config.io_modules
+                })
+            if hasattr(config, 'src_types'):
+                data_sources[module] = config.src_types
+        except ImportError:
+            import_error[module] = 'could not import' + module+'.config'
+    return {
+        'data_sources': data_sources,
+        'tiles': tiles,
+        'import_errors': import_error,
+        'toyz_modules': toyz_modules
+    }
 
 class Toy:
     """

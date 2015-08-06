@@ -6,6 +6,8 @@ Functions and classes for workspace data sources and image sources
 from __future__ import print_function, division
 import numpy as np
 from datetime import datetime
+import warnings
+from collections import OrderedDict
 
 import toyz.utils.io
 from toyz.utils import core
@@ -13,7 +15,7 @@ from toyz.utils.errors import ToyzDataError
 from toyz.web import session_vars    
 
 class DataSource:
-    def __init__(self, data=None, data_type=None, data_kwargs={}, paths={}, 
+    def __init__(self, module_info, data=None, data_type=None, data_kwargs={}, paths={}, 
         user_id='', **kwargs):
         # default settings
         if not all([k in ['data', 'meta', 'log'] for k in paths]):
@@ -29,6 +31,14 @@ class DataSource:
         default_paths = {f: dict(path_options) for f in ['data', 'meta', 'log']}
         self.user_id = user_id
         self.paths = core.merge_dict(default_paths, paths)
+        # Set the module used to specify the data type (usually toyz unless the user has
+        # created a custom data type, like astropy tables)
+        if self.paths['data']['toyz_module']=='toyz':
+            self.data_module = toyz.utils.sources
+        else:
+            import importlib
+            self.data_module = importlib.import_module(self.paths['data']['toyz_module'])
+        # import all of the functions 
         self.set_data(data, data_type, data_kwargs)
         default_options = {
             'selected': [],
@@ -47,34 +57,50 @@ class DataSource:
             setattr(self, k, v)
     
     def name_columns(self, columns=None):
+        self.columns = None
         if columns is not None:
             self.columns = columns
-        elif self.data_type=='pandas.core.frame.DataFrame':
+            if self.data_type == 'pandas.core.frame.DataFrame':
+                self.data.columns = columns
+        if self.data_type=='pandas.core.frame.DataFrame':
             self.columns = self.data.columns.values.tolist()
         elif self.data_type=='numpy.ndarray':
             if len(self.data.dtype) == 0:
-                columns = ['col-'+str(n) for n in range(self.data.shape[1])]
+                self.columns = ['col-'+str(n) for n in range(self.data.shape[1])]
             else:
-                columns = list(self.data.dtype.names)
-        elif 'set_columns' in self.paths['data']['io_module']:
-            module = core.get_toyz_module(
-                session_vars.toyz_settings,
-                self.user_id,
-                self.paths['data']['set_columns']['module'])
-            self.columns = getattr(module, self.paths['data']['set_columns']['fn'])(self.data)
-        elif self.data_type!='list':
-            raise ToyzDataError(
-                'Could not recognize set_columns function for data type {0}'.format(
-                    self.data_type))
+                self.columns = list(self.data.dtype.names)
+        if self.columns is None:
+            warnings.warn("Unable to load column names for the given data type")
+            self.columns = ['col{0}'.format(n) for n in range(len(self.data[0]))]
         return self.columns
+    
+    def check_instance(self, data, data_kwargs={}):
+        if isinstance(data, np.ndarray):
+            self.data = np.ndaray(data, **data_kwargs)
+            self.data_type = 'numpy.ndarray'
+        elif isinstance(data, list):
+            self.data = data
+            self.data_type = 'list'
+        else:
+            # Check optional installed modules to see if data type matches
+            try:
+                from pandas import DataFrame
+                if isinstance(data, DataFrame):
+                    self.data = DataFrame(data, **data_kwargs)
+                    self.data_type = 'pandas.core.frame.DataFrame'
+            except ImportError:
+                pass
+        return self.data_type is None
     
     def set_data(self, data=None, data_type=None, data_kwargs={}):
         """
         Set the data for the given source based on the data type or a user specified type
         """
         import toyz.utils.io
-        self.data_type = None
+        # If the user didn't specify a dataset to initialize the DataSource,
+        # use the specified parameters to load the data from a file
         if data is None:
+            print('DATA IS NONE')
             if self.paths['data']['io_module']=='':
                 raise ToyzDataError(
                     'You must supply a data object or file info to initialize a DataSource')
@@ -85,24 +111,12 @@ class DataSource:
                 else:
                     self.data_type = data_type
         else:
+            # If the user didn't provide a data type try to detect it
             if data_type is None:
-                # Attempt to detect the data_type
-                if isinstance(data, np.ndarray):
-                    self.data = np.ndaray(data, **data_kwargs)
-                    self.data_type = 'numpy.ndarray'
-                elif isinstance(data, list):
-                    self.data = data
-                    self.data_type = 'list'
-                else:
-                    # Check optional installed modules to see if data type matches
-                    try:
-                        from pandas import DataFrame
-                        pandas_installed=True
-                    except ImportError:
-                        pandas_installed=False
-                    if pandas_installed and isinstance(data, DataFrame):
-                        self.data = DataFrame(data, **data_kwargs)
-                        self.data_type = 'pandas.core.frame.DataFrame'
+                module_info = core.get_module_info(toyz_settings, tid, params)
+                for data_source in module_info['data_sources']:
+                    if data_source.check_instance(data, data_kwargs):
+                        break
             else:
                 self.data_type = data_type
                 if data_type == 'pandas.core.frame.DataFrame':
@@ -117,29 +131,12 @@ class DataSource:
                     else:
                         self.columns = ['col-'+n for n in range(len(self.data))]
                 else:
-                    self.data_type = None
+                    # For now we assume that this is an affiliated data type
+                    # In the future we may want to check for this explicitly
+                    self.data = data
+                    self.data_type = data_type
         # If the data_type was not found in the Toyz standard data types look in 
-        # user defined toyz
-        if self.data_type is None:
-            import toyz.utils.core
-            user_modules = toyz.utils.core.get_all_user_modules(
-                session_vars.toyz_settings, self.user_id)
-            data_types = {}
-            for module in user_modules:
-                toy = toyz.utils.core.get_user_toyz(
-                    session_vars.toyz_settings, self.user_id, module)
-                if hasattr(toy.config.data_types):
-                    for k,v in toy.config.data_types.items():
-                        data_types[k] = v
-            for dt, obj in data_types.items():
-                if (data_type is None and obj.check_instance(data) or
-                        data_type is not None and dt==data_type):
-                    obj.set_data(data, data_type, data_kwargs)
-                    self.data_type = dt
-                    break
-            if self.data_type is None:
-                raise ToyzDataError(
-                    "Could not find data type {0} in users approved modules".format(dt))
+        
         # Set the column names based on the data type
         self.name_columns()
     
@@ -237,7 +234,7 @@ class ImageSource:
 data_types = ['pandas.core.frame.DataFrame', 'numpy.ndarray', 'list']
 image_types = ['fits', 'hdf', 'other']
 
-src_types = {
-    'DataSource': DataSource,
-    'ImageSource': ImageSource
-}
+src_types = OrderedDict([
+    ['DataSource', DataSource],
+    ['ImageSource', ImageSource]
+])
