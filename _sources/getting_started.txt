@@ -4,10 +4,17 @@ Getting Started
 
 For a video demonstration of a first time setup, including installing a 3rd party
 module (like astrotoyz) see the video below.
+
 .. raw:: html
 
-    <iframe width="420" height="315" src="https://www.youtube.com/embed/v5vYTosb4_U" 
-    frameborder="0" allowfullscreen></iframe>
+    <object width="480" height="385"><param name="movie"
+            value="http://www.youtube.com/v/SBqYZ3KdAUc&hl=en_US&fs=1&rel=0"></param><param
+            name="allowFullScreen" value="true"></param><param
+            name="allowscriptaccess" value="always"></param><embed
+            src="http://www.youtube.com/v/SBqYZ3KdAUc&hl=en_US&fs=1&rel=0"
+            type="application/x-shockwave-flash" allowscriptaccess="always"
+            allowfullscreen="true" width="480"
+            height="385"></embed></object>
 
 
 .. _first_time_setup:
