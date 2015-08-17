@@ -8,10 +8,10 @@ module (like astrotoyz) see the video below.
 .. raw:: html
 
     <object width="480" height="385"><param name="movie"
-            value="https://www.youtube.com/v5vYTosb4_U"></param><param
+            value="https://youtu.be/v5vYTosb4_U"></param><param
             name="allowFullScreen" value="true"></param><param
             name="allowscriptaccess" value="always"></param><embed
-            src="https://www.youtube.com/v5vYTosb4_U"
+            src="https://youtu.be/v5vYTosb4_U"
             type="application/x-shockwave-flash" allowscriptaccess="always"
             allowfullscreen="true" width="480"
             height="385"></embed></object>
