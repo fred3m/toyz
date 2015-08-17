@@ -259,8 +259,62 @@ anaconda documentation to setup a new conda environment and install all of the r
 and optional packages above. Then follow the instructions below in the <em class="xref std std-ref">using_pip</em>
 section.</p>
 </div>
+<div class="section" id="using-virtualenv-to-install-from-pypi">
+<h3>Using virtualenv to install from PYPI<a class="headerlink" href="#using-virtualenv-to-install-from-pypi" title="Permalink to this headline">¶</a></h3>
+<p>If you are not using anaconda, the next best option is to use virtualenv.
+For those new to python you will soon discover that while the language is
+fairly OS agnostic one of its biggest advantages and issues is its modular
+layout. Most packages depend on other 3rd party packages not distributed
+with the main python standard library. Because many of these packages are
+under constant development there can be instances where a 3rd party
+library might have a conflict with a different third party library and
+cause certain feature of toyz to malfunction.</p>
+<p><a class="reference external" href="https://virtualenv.pypa.io/en/latest/">virtualenv</a> is a package that
+allows you to setup virtual python environments that allow a single
+machine to have multiple versions of the same package installed. Below
+are tips in creating a virtual environment that you can use to install toyz.</p>
+<p>To install virtualenv</p>
+<blockquote>
+<div>$ pip install virtualenv</div></blockquote>
+<p>Now navigate to a folder that will become the parent of your virtual environment,
+for example:</p>
+<blockquote>
+<div>$ cd ~</div></blockquote>
+<p>Now you can create a virtual environment</p>
+<blockquote>
+<div>$ virtualenv toyzenv</div></blockquote>
+<p>This creates a virtual environment but now you must activate it using</p>
+<blockquote>
+<div>$ source toyzenv/bin/activate</div></blockquote>
+<p>For the rest of your terminal session you will see your prompt preceeded by
+<tt class="docutils literal"><span class="pre">(toyzenv)</span></tt>. Now any packages you install via pip or from source using
+<tt class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></tt> will be installed to the virtual environment,
+not your system wide python installation. You will have to run
+<tt class="docutils literal"><span class="pre">source</span> <span class="pre">toyzenv/bin/activate</span></tt> every time you open a new terminal unless
+you add it to your <tt class="docutils literal"><span class="pre">.bash_profile</span></tt>. To exit the virtual environment at
+any time simply type</p>
+<blockquote>
+<div>(toyzenv) $ deactivate</div></blockquote>
+<p>and you will return to your system wide python environment.
+Once you have activated your new virtual environment proceed to
+<em class="xref std std-ref">using_pip</em>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">One of the advantages to using anaconda instead of virtualenv is that
+anaconda already contains multiple pre-compiled versions of almost all of the
+packages toyz is dependent on, meaning it is much faster to install. If you are
+installing a new virtual environment it can take a long time to download
+and compile numpy, scipy, and astropy (if you are using astrotoyz).</p>
+</div>
+</div>
 <div class="section" id="using-pip-to-install-from-pypi">
 <h3>Using pip to install from PYPI<a class="headerlink" href="#using-pip-to-install-from-pypi" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If you are not using anaconda or virtualenv proceed with caution, some of the
+dependencies of Toyz may have conflicts with other packages and we are still
+tracing the origin of these errors (see <em class="xref std std-ref">using_virtualenv</em> for more).</p>
+</div>
 <p>Toyz is registered in the <a class="reference external" href="https://pypi.python.org/pypi">Python Package Index (pypi)</a>
 and can be installed using</p>
 <div class="highlight-python"><div class="highlight"><pre>pip install toyz

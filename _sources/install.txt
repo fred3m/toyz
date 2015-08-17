@@ -52,9 +52,71 @@ anaconda documentation to setup a new conda environment and install all of the r
 and optional packages above. Then follow the instructions below in the :ref:`using_pip`
 section.
 
+.. _using_virtualenv:
+Using virtualenv to install from PYPI
+-------------------------------------
+If you are not using anaconda, the next best option is to use virtualenv.
+For those new to python you will soon discover that while the language is
+fairly OS agnostic one of its biggest advantages and issues is its modular
+layout. Most packages depend on other 3rd party packages not distributed
+with the main python standard library. Because many of these packages are
+under constant development there can be instances where a 3rd party
+library might have a conflict with a different third party library and
+cause certain feature of toyz to malfunction.
+
+`virtualenv <https://virtualenv.pypa.io/en/latest/>`_ is a package that 
+allows you to setup virtual python environments that allow a single
+machine to have multiple versions of the same package installed. Below
+are tips in creating a virtual environment that you can use to install toyz.
+
+To install virtualenv
+
+    $ pip install virtualenv
+
+Now navigate to a folder that will become the parent of your virtual environment,
+for example:
+
+    $ cd ~
+
+Now you can create a virtual environment
+
+    $ virtualenv toyzenv
+
+This creates a virtual environment but now you must activate it using
+
+    $ source toyzenv/bin/activate
+
+For the rest of your terminal session you will see your prompt preceeded by
+``(toyzenv)``. Now any packages you install via pip or from source using
+``python setup.py install`` will be installed to the virtual environment,
+not your system wide python installation. You will have to run
+``source toyzenv/bin/activate`` every time you open a new terminal unless
+you add it to your ``.bash_profile``. To exit the virtual environment at
+any time simply type
+
+    (toyzenv) $ deactivate
+
+and you will return to your system wide python environment.
+Once you have activated your new virtual environment proceed to
+:ref:`using_pip`.
+
+.. note::
+
+    One of the advantages to using anaconda instead of virtualenv is that
+    anaconda already contains multiple pre-compiled versions of almost all of the 
+    packages toyz is dependent on, meaning it is much faster to install. If you are
+    installing a new virtual environment it can take a long time to download
+    and compile numpy, scipy, and astropy (if you are using astrotoyz).
+
 .. _using_pip:
 Using pip to install from PYPI
 ------------------------------
+.. warning::
+
+    If you are not using anaconda or virtualenv proceed with caution, some of the 
+    dependencies of Toyz may have conflicts with other packages and we are still
+    tracing the origin of these errors (see :ref:`using_virtualenv` for more). 
+
 Toyz is registered in the `Python Package Index (pypi) <https://pypi.python.org/pypi>`_ 
 and can be installed using ::
 

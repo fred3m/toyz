@@ -163,27 +163,27 @@
 <li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="toyz.utils.db_interfaces.html">toyz.utils.db_interfaces package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="toyz.utils.db_interfaces.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.db_interfaces.html#toyz-utils-db-interfaces-sqlite-interface-module">toyz.utils.db_interfaces.sqlite_interface module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="toyz.utils.db_interfaces.html#module-contents">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="toyz.utils.db_interfaces.html#module-toyz.utils.db_interfaces.sqlite_interface">toyz.utils.db_interfaces.sqlite_interface module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="toyz.utils.db_interfaces.html#module-toyz.utils.db_interfaces">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#toyz-utils-core-module">toyz.utils.core module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#toyz-utils-db-module">toyz.utils.db module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#toyz-utils-errors-module">toyz.utils.errors module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#toyz-utils-file-access-module">toyz.utils.file_access module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#toyz-utils-security-module">toyz.utils.security module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.core">toyz.utils.core module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.db">toyz.utils.db module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.errors">toyz.utils.errors module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.file_access">toyz.utils.file_access module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#module-toyz.utils.security">toyz.utils.security module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#toyz-utils-third-party-settings-module">toyz.utils.third_party_settings module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#module-contents">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz.utils.html#module-toyz.utils">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="toyz.web.html">toyz.web package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="toyz.web.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.web.html#toyz-web-app-module">toyz.web.app module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.web.html#toyz-web-tasks-module">toyz.web.tasks module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="toyz.web.html#module-contents">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz.web.html#module-toyz.web.app">toyz.web.app module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz.web.html#module-toyz.web.tasks">toyz.web.tasks module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toyz.web.html#module-toyz.web">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -192,11 +192,59 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="toyz-version-module">
-<h2>toyz.version module<a class="headerlink" href="#toyz-version-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-toyz.version">
+<span id="toyz-version-module"></span><h2>toyz.version module<a class="headerlink" href="#module-toyz.version" title="Permalink to this headline">¶</a></h2>
+<dl class="data">
+<dt id="toyz.version.debug">
+<tt class="descclassname">toyz.version.</tt><tt class="descname">debug</tt><em class="property"> = False</em><a class="headerlink" href="#toyz.version.debug" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>try:</dt>
+<dd>from ._compiler import compiler</dd>
+<dt>except ImportError:</dt>
+<dd>compiler = &#8220;unknown&#8221;</dd>
+<dt>try:</dt>
+<dd>from .cython_version import cython_version</dd>
+<dt>except ImportError:</dt>
+<dd>cython_version = &#8220;unknown&#8221;</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.version.get_git_devstr">
+<tt class="descclassname">toyz.version.</tt><tt class="descname">get_git_devstr</tt><big>(</big><em>sha=False</em>, <em>show_warning=True</em>, <em>path=None</em><big>)</big><a class="headerlink" href="#toyz.version.get_git_devstr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the number of revisions in this repository.</p>
+<dl class="docutils">
+<dt>sha <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>If True, the full SHA1 hash will be returned. Otherwise, the total
+count of commits in the repository will be used as a &#8220;revision
+number&#8221;.</dd>
+<dt>show_warning <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>If True, issue a warning if git returns an error code, otherwise errors
+pass silently.</dd>
+<dt>path <span class="classifier-delimiter">:</span> <span class="classifier">str or None</span></dt>
+<dd>If a string, specifies the directory to look in to find the git
+repository.  If <cite>None</cite>, the current working directory is used.
+If given a filename it uses the directory containing that file.</dd>
+</dl>
+<dl class="docutils">
+<dt>devversion <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Either a string with the revsion number (if <cite>sha</cite> is False), the
+SHA1 hash of the current commit (if <cite>sha</cite> is True), or an empty string
+if git version info could not be identified.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="toyz.version.update_git_devstr">
+<tt class="descclassname">toyz.version.</tt><tt class="descname">update_git_devstr</tt><big>(</big><em>version</em>, <em>path=None</em><big>)</big><a class="headerlink" href="#toyz.version.update_git_devstr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the git revision string if and only if the path is being imported
+directly from a git working copy.  This ensures that the revision number in
+the version string is accurate.</p>
+</dd></dl>
+
 </div>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-toyz">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-toyz" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 
