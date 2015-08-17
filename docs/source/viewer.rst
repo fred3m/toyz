@@ -3,6 +3,13 @@
 ************
 Image Viewer
 ************
+For a video demonstration of the image viewer see
+
+.. raw:: html
+
+    <iframe width="420" height="315" src="https://www.youtube.com/embed/alP0T5oZuBc" 
+    frameborder="0" allowfullscreen></iframe>
+
 Toyz also comes with an image viewer that allows the user to view images stored on the server.
 Because it's often cumbersome and time consuming to load and view very large images, the image
 viewer also allows users to view images using mosaic tiles that only load parts of the image that

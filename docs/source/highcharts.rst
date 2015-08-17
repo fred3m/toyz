@@ -14,6 +14,14 @@ Highsoft that makes it easy to generate a variety of different interactive chart
 
 Currently only a small portion of the Highcharts API is accessible through the GUI.
 
+For a video demo of conencting data sources in toyz and creating interactive plots
+using Highcharts see
+
+.. raw:: html
+
+    <iframe width="420" height="315" src="https://www.youtube.com/embed/tDBf5AsXDlc" 
+    frameborder="0" allowfullscreen></iframe>
+
 Creating a New Chart
 ====================
 To create a new Highchart first add a data source (see :ref:`add_data_source` for more).
