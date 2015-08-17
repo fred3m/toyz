@@ -2,6 +2,14 @@
 Getting Started
 ***************
 
+For a video demonstration of a first time setup, including installing a 3rd party
+module (like astrotoyz) see the video below.
+.. raw:: html
+
+    <iframe width="420" height="315" src="https://www.youtube.com/embed/v5vYTosb4_U" 
+    frameborder="0" allowfullscreen></iframe>
+
+
 .. _first_time_setup:
 
 First Time Setup
