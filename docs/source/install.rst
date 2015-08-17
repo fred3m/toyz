@@ -53,6 +53,7 @@ and optional packages above. Then follow the instructions below in the :ref:`usi
 section.
 
 .. _using_virtualenv:
+
 Using virtualenv to install from PYPI
 -------------------------------------
 If you are not using anaconda, the next best option is to use virtualenv.
@@ -109,6 +110,7 @@ Once you have activated your new virtual environment proceed to
     and compile numpy, scipy, and astropy (if you are using astrotoyz).
 
 .. _using_pip:
+
 Using pip to install from PYPI
 ------------------------------
 .. warning::
@@ -133,6 +135,7 @@ Some packages like numpy, scipy, and astropy might take a while to compile.
     pip can also be used to install the source code (see :ref:`installing_from_source`)
 
 .. _installing_from_source:
+
 Installing from source
 ----------------------
 
