@@ -54,8 +54,8 @@ section.
 
 .. _using_virtualenv:
 
-Using virtualenv to install from PYPI
--------------------------------------
+Using a virtualenv
+------------------
 If you are not using anaconda, the next best option is to use virtualenv.
 For those new to python you will soon discover that while the language is
 fairly OS agnostic one of its biggest advantages and issues is its modular
