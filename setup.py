@@ -42,7 +42,7 @@ setup(name=PACKAGE_NAME,
         ]
     },
     install_requires=[
-        'tornado>=4.0.2',
+        'tornado>=4.0.2,<4.2',
         'passlib',
         'numpy>=1.5.1',
         'six',
