@@ -115,6 +115,11 @@ Using pip to install from PYPI
 ------------------------------
 .. warning::
 
+    The current version of toyz on pypi is not working correctly! For the time
+    being toyz must be installed from source. This should change by September 2015
+
+.. warning::
+
     If you are not using anaconda or virtualenv proceed with caution, some of the 
     dependencies of Toyz may have conflicts with other packages and we are still
     tracing the origin of these errors (see :ref:`using_virtualenv` for more). 
