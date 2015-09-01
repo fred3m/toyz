@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title>Toyz Benchmarking</title>
+        <script src="/third_party/jquery/jquery.min.js" type="text/javascript"></script>
+        <script src="/third_party/jquery_ui/jquery-ui.js" type="text/javascript"></script>
+        <link rel="stylesheet" type="text/css" 
+            href="/third_party/jquery_ui_themes/redmond/jquery-ui.min.css">
+        <script src="/static/web/static/toyz_core.js" type="text/javascript"></script>
+        <script src="/static/web/static/viewer.js" type="text/javascript"></script>
+        <script src="/static/web/static/workspace.js" type="text/javascript"></script>
+        <script src="/static/web/static/toyz_core.js" type="text/javascript"></script>
+        <script src="/static/web/static/toyz_gui.js" type="text/javascript"></script>
+        <script src="/static/web/static/benchmark.js" type="text/javascript"></script>
+        <script src="https://code.highcharts.com/highcharts.js" type="text/javascript"></script>
+        <script src="/static/web/static/api/highcharts.js" type="text/javascript"></script>
+            
+    </head>
+    <body>
+        <div id='ws-div'></div>
+        <script>
+        Array.prototype.max = function() {
+          return Math.max.apply(null, this);
+        };
+
+        Array.prototype.min = function() {
+          return Math.min.apply(null, this);
+        };
+        var $workspace_div = $('#ws-div');
+        var workspace;
+        var user_id = "";
+        var work_id = "";
+        var $submit = $('<button>Benchmark Source</button>');
+        var benchmark_gui;
+        window.onload = function(){
+            $workspace_div.height(window.innerHeight);
+            $workspace_div.width(window.innerWidth);
+            $(window).resize(function(){
+                $workspace_div.height(window.innerHeight);
+                $workspace_div.width(window.innerWidth);
+            });
+            var ws_options = {
+                $parent: $workspace_div,
+                custom_onload: workspace_loaded
+            };
+            if(user_id!=''){
+                ws_options.user_id = user_id;
+                ws_options.work_id = work_id;
+            }
+            workspace = new Toyz.Workspace.Workspace(ws_options);
+            
+            console.log('workspace-div SIZE:', $workspace_div.height(), $workspace_div.width());
+        }
+        var workspace_loaded = function(ws){
+            benchmark_gui = new Toyz.Benchmark.Gui({
+                '$parent': workspace.$div,
+                'workspace': workspace,
+                
+            })
+            workspace.$div.append($submit);
+            //console.log('gui', benchmark_gui.gui);
+            $submit.click(function(){
+                loops = benchmark_gui.gui.get().loops;
+                workspace.load_src_dialog.$div.dialog('option', 'buttons', {
+                    'Benchmark': load_data.bind(null, loops, []),
+                    'Cancel': function(){
+                        workspace.load_src_dialog.$div.dialog('close');
+                    }.bind(workspace)
+                });
+                workspace.load_src_dialog.open();
+            });
+        };
+        
+        var data_loaded = function(loops, results, data_src, new_result){
+            loops -= 1;
+            results.push(new_result.benchmark.load_time);
+            if(loops>0){
+                load_data(loops, results);
+            }else{
+                console.log('results', results);
+                var columns = workspace.sources[data_src.id].columns;
+                var sum = results.reduce(function(a,b){return a+b});
+                var benchmark_info = benchmark_gui.gui.get()
+                benchmark_info['server_results'] = {
+                    'min': results.min(),
+                    'max': results.max(),
+                    'mean': sum/results.length,
+                };
+                
+                params = {}
+                params[data_src.id] = {
+                    columns: [columns[0], columns[1]],
+                }
+                
+                var settings = {
+                    benchmark: true,
+                    title: 'benchmark',
+                    subtitle: '',
+                    selection: 'select points',
+                    series: [
+                        {
+                            data_source: data_src.id,
+                            x: columns[0],
+                            y: columns[1],
+                            x_reverse: false,
+                            y_reverse: false,
+                            conditions: {}
+                        }
+                    ],
+                    conditions: {
+                        use_marker_div: false,
+                        use_grid: false,
+                        use_legend: false,
+                    },
+                    log_x: false,
+                    log_y: false,
+                };
+                
+                websocket.send_task({
+                    task: {
+                        module: 'toyz.web.tasks',
+                        task: 'get_src_columns',
+                        parameters: params
+                    },
+                    callback: function(settings, result_log, result){
+                        for(var src in result.sources){
+                            workspace.sources[src].update(result.sources[src]);
+                        };
+                        create_chart(settings, result_log);
+                    }.bind(null, settings, benchmark_info)
+                })
+            };
+        };
+        
+        var load_data = function(loops, results){
+            workspace.load_src(data_loaded.bind(null, loops, results), 
+                $.extend(workspace.load_src_dialog.data_src, {
+                    params: workspace.load_src_dialog.gui.get()
+            }))
+        }
+        
+        var create_chart = function(settings, result_log){
+            var cc = Toyz.API.Highcharts.Contents.prototype.create_chart;
+            Toyz.API.Highcharts.Contents = function(){
+                this.workspace=workspace;
+            };
+            Toyz.API.Highcharts.Contents.prototype.create_chart = cc;
+            var plot_times = [];
+            for(var i=0; i<result_log.loops; i++){
+                var dummy_contents = new Toyz.API.Highcharts.Contents();
+                plot_times.push(dummy_contents.create_chart(settings));
+            };
+            
+            var sum = plot_times.reduce(function(a,b){return a+b});
+            result_log['plot_results'] = {
+                'min': plot_times.min(),
+                'max': plot_times.max(),
+                'mean': sum/plot_times.length,
+            };
+            console.log('all results', result_log);
+            
+            var log_filename = benchmark_gui.gui.get().log_filename;
+            if(log_filename != ""){
+                websocket.send_task({
+                    task: {
+                        module: 'toyz.web.tasks',
+                        task: 'log_benchmark',
+                        parameters: {
+                            log: [
+                                result_log['server'],
+                                result_log['client'],
+                                result_log['loops'],
+                                result_log['server_results']['min'],
+                                result_log['server_results']['max'],
+                                result_log['server_results']['mean'],
+                                result_log['plot_results']['min'],
+                                result_log['plot_results']['max'],
+                                result_log['plot_results']['mean']
+                            ],
+                            columns: ['server', 'client', 'loops', 'server_min',
+                                'server_max', 'server_mean', 'plot_min', 'plot_max', 'plot_mean'],
+                            filename: result_log['log_filename']
+                        }
+                    },
+                    callback: function(result){
+                        if(result.status=='success'){
+                            alert(result.log_status);
+                        }
+                    }
+                })
+            };
+        };
+        
+        </script>
+    </body>
+</html>

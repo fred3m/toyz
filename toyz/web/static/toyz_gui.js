@@ -9,7 +9,7 @@ Toyz.Gui.get_param = function(param){
     if(param.type=='div' || param.type=='conditional' || param.type=='list'){
         params = param.get();
     }else if(param.type=='input' || param.type=='select' || param.type=='slider' ||
-        param.type=='slider2d'
+        param.type=='slider2d' || param.type=='textarea'
     ){
         params[param.name] = param.get();
     }else{
