@@ -69,6 +69,11 @@ Toyz.Workspace.tile_contextMenu_items = function(options){
             name:'Image viewer',
             namespace: 'Toyz.Viewer',
             url: '/static/web/static/viewer.js'
+        },
+        benchmark: {
+            name:"Benchmark",
+            namespace: 'Toyz.Benchmark',
+            url: '/static/web/static/benchmark.js'
         }
     }, options.custom_tiles);
     
@@ -625,6 +630,10 @@ Toyz.Workspace.Workspace.prototype.dependencies_onload = function(){
                     callback: this.update_workspace.bind(this)
                 });
             };
+            // Run any user defined callback
+            if(this.hasOwnProperty('custom_onload')){
+                this.custom_onload(this);
+            }
         }.bind(this)
     });
     
@@ -814,7 +823,7 @@ Toyz.Workspace.Workspace.prototype.add_src = function(callback, data_src, result
     this.sources[data_src.id].update(result)
     this.load_src_dialog.$div.dialog('close');
     if(!(callback===undefined)){
-        callback();
+        callback(data_src, result);
     };
 };
 Toyz.Workspace.Workspace.prototype.remove_src = function(source){

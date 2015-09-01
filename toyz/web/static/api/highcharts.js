@@ -485,6 +485,7 @@ Toyz.API.Highcharts.Contents.prototype.save = function(){
     return tile;
 };
 Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
+    var time1 = new Date().getTime();
     this.settings = settings;
     //console.log('chart settings', this.settings);
     this.sorted_series = false;
@@ -508,6 +509,8 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
     for(var i=0; i<this.settings.series.length; i++){
         var data_source = this.settings.series[i].data_source;
         var data = this.workspace.sources[data_source].data;
+        
+        //console.log('data', data);
         
         // Add data points to chart
         var x = this.settings.series[i].x;
@@ -741,9 +744,15 @@ Toyz.API.Highcharts.Contents.prototype.create_chart = function(settings){
         }
     };
     
+    if(settings.hasOwnProperty('benchmark')){
+        var $div = $('<div/>');
+        $div.highcharts(chart_params);
+        var time2 = new Date().getTime();
+        return (time2-time1)/1000.0;
+    };
     //console.log('chart_params', chart_params);
     this.$tile_div.highcharts(chart_params);
-    
+
     var chart = this.$tile_div.highcharts();
     // Select points that have been selected in the data source
     for(var s=0; s<this.settings.series.length; s++){

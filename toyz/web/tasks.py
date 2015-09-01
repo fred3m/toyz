@@ -490,6 +490,9 @@ def load_data_file(toyz_settings, tid, params):
     """
     import toyz.utils.io as io
     import toyz.utils.sources as sources
+    import time
+    
+    time1 = time.time()
     
     # If this is the first data source, define variable to keep track of data sources
     if not hasattr(session_vars, 'data_sources'):
@@ -507,9 +510,14 @@ def load_data_file(toyz_settings, tid, params):
     session_vars.data_sources[src_id].src_id = src_id
     session_vars.data_sources[src_id].name = src_id
     
+    time2 = time.time()
+    
     response = {
         'id': 'data_file',
         'columns': session_vars.data_sources[src_id].columns,
+        'benchmark': {
+            'load_time': time2-time1
+        }
     }
     return response
 
@@ -530,6 +538,10 @@ def get_src_columns(toyz_settings, tid, params):
     """
     Get column information from multiple sources and return to a workspace
     """
+    import time
+    
+    time1 = time.time()
+    
     sources = {}
     for src_id, src in params.items():
         if not hasattr(session_vars, 'data_sources') or src_id not in session_vars.data_sources:
@@ -541,9 +553,15 @@ def get_src_columns(toyz_settings, tid, params):
                 'data': {}
             }
             sources[src_id]['data'] = session_vars.data_sources[src_id].to_dict(src['columns'])
+    
+    time2 = time.time()
+    
     response = {
         'id': 'src_columns',
-        'sources': sources
+        'sources': sources,
+        'benchmark': {
+            'load time': time2-time1
+        }
     }
     return response
 
@@ -815,3 +833,28 @@ def get_img_data(toyz_settings, tid, params):
     response = viewer.get_img_data(**params)
     #print('response:', response)
     return response
+
+def log_benchmark(toyz_settings, tid, params):
+    """
+    Log benchmark information
+    """
+    import pandas
+    from collections import OrderedDict
+    import os
+    
+    data = OrderedDict([(k,[v]) for k,v in zip(params['columns'], params['log'])])
+    new_df = pandas.DataFrame(data)
+    
+    if os.path.isfile(params['filename']):
+        df = pandas.read_csv(params['filename'])
+        df = df.append(new_df, ignore_index=True)
+        df.to_csv(params['filename'], index=False)
+        log_status = 'appended to existing log'
+    else:
+        new_df.to_csv(params['filename'], index=False)
+        log_status = 'created new log'
+    return {
+        'id': 'log_benchmark',
+        'status': 'success',
+        'log_status': log_status
+    }
