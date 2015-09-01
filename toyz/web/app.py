@@ -249,6 +249,23 @@ class AuthToyzWorkspaceHandler(AuthHandler, ToyzWorkspaceHandler):
     def get(self, workspace):
         ToyzWorkspaceHandler.get(self, workspace)
 
+class ToyzBenchmarkHandler(ToyzHandler, tornado.web.RequestHandler):
+    def initialize(self, ):
+        self.template_path = os.path.join(core.ROOT_DIR, 'web', 'templates')
+    def get(self, path):
+        """
+        Load the benchmark workspace
+        """
+        self.render('benchmark.html')
+    
+    def get_template_path(self):
+        return self.template_path
+
+class AuthToyzBenchmarkHandler(AuthHandler, ToyzBenchmarkHandler):
+    @tornado.web.authenticated
+    def get(self, workspace):
+        ToyzBenchmarkHandler.get(self, workspace)
+
 class Toyz3rdPartyHandler(ToyzHandler, tornado.web.StaticFileHandler):
     def get(self, path):
         path = path.split('/')
@@ -418,6 +435,7 @@ class ToyzWebApp(tornado.web.Application):
             toyz_template_handler = AuthToyzTemplateHandler
             workspace_handler = AuthToyzWorkspaceHandler
             third_party_handler = AuthToyz3rdPartyHandler
+            benchmark_handler = AuthToyzBenchmarkHandler
         else:
             main_handler = MainHandler
             static_handler = tornado.web.StaticFileHandler
@@ -425,6 +443,7 @@ class ToyzWebApp(tornado.web.Application):
             toyz_template_handler = ToyzTemplateHandler
             workspace_handler = ToyzWorkspaceHandler
             third_party_handler = Toyz3rdPartyHandler
+            benchmark_handler = ToyzBenchmarkHandler
         
         self.user_sessions = {}
         
@@ -447,6 +466,7 @@ class ToyzWebApp(tornado.web.Application):
             (r"/toyz/templates/(.*)", toyz_template_handler),
             (r"/third_party/(.*)", third_party_handler, {'path':core.ROOT_DIR}),
             (r"/session/(.*)", WebSocketHandler),
+            (r"/benchmark/(.*)", benchmark_handler)
         ]
         
         settings={
