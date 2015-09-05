@@ -466,7 +466,9 @@ class ToyzWebApp(tornado.web.Application):
             (r"/toyz/templates/(.*)", toyz_template_handler),
             (r"/third_party/(.*)", third_party_handler, {'path':core.ROOT_DIR}),
             (r"/session/(.*)", WebSocketHandler),
-            (r"/benchmark/(.*)", benchmark_handler)
+            (r"/benchmark/(.*)", benchmark_handler),
+            (r"/(favicon.ico)", static_handler, 
+                {'path': os.path.join(core.ROOT_DIR,'web','static')})
         ]
         
         settings={

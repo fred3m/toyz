@@ -724,6 +724,7 @@ def load_data(toyz_module, io_module, file_type, file_options):
                 df = pd.read_hdf(**file_options)
             elif file_type == 'sql':
                 from sqlalchemy import create_engine
+                print('file options', file_options)
                 engine = create_engine(file_options['connection'])
                 sql = file_options['sql']
                 del file_options['connection']

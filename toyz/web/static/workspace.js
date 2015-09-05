@@ -70,11 +70,6 @@ Toyz.Workspace.tile_contextMenu_items = function(options){
             namespace: 'Toyz.Viewer',
             url: '/static/web/static/viewer.js'
         },
-        benchmark: {
-            name:"Benchmark",
-            namespace: 'Toyz.Benchmark',
-            url: '/static/web/static/benchmark.js'
-        }
     }, options.custom_tiles);
     
     for(var tile in tile_types){

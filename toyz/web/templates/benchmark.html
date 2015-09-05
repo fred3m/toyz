@@ -63,7 +63,10 @@
             $submit.click(function(){
                 loops = benchmark_gui.gui.get().loops;
                 workspace.load_src_dialog.$div.dialog('option', 'buttons', {
-                    'Benchmark': load_data.bind(null, loops, []),
+                    'Benchmark': load_data.bind(null, loops, {
+                        'rx_time': [],
+                        'server_time': []
+                    }),
                     'Cancel': function(){
                         workspace.load_src_dialog.$div.dialog('close');
                     }.bind(workspace)
@@ -74,18 +77,19 @@
         
         var data_loaded = function(loops, results, data_src, new_result){
             loops -= 1;
-            results.push(new_result.benchmark.load_time);
+            results['server_time'].push(new_result.benchmark.load_time);
             if(loops>0){
                 load_data(loops, results);
             }else{
                 console.log('results', results);
                 var columns = workspace.sources[data_src.id].columns;
-                var sum = results.reduce(function(a,b){return a+b});
-                var benchmark_info = benchmark_gui.gui.get()
+                var server_sum = results['server_time'].reduce(function(a,b){return a+b});
+                var benchmark_info = benchmark_gui.gui.get();
+                
                 benchmark_info['server_results'] = {
-                    'min': results.min(),
-                    'max': results.max(),
-                    'mean': sum/results.length,
+                    'min': results['server_time'].min(),
+                    'max': results['server_time'].max(),
+                    'mean': server_sum/results['server_time'].length,
                 };
                 
                 params = {}
@@ -117,6 +121,7 @@
                     log_y: false,
                 };
                 
+                var start_time = new Date().getTime();
                 websocket.send_task({
                     task: {
                         module: 'toyz.web.tasks',
@@ -127,7 +132,7 @@
                         for(var src in result.sources){
                             workspace.sources[src].update(result.sources[src]);
                         };
-                        create_chart(settings, result_log);
+                        create_chart(settings, result_log, start_time);
                     }.bind(null, settings, benchmark_info)
                 })
             };
@@ -140,7 +145,11 @@
             }))
         }
         
-        var create_chart = function(settings, result_log){
+        var create_chart = function(settings, result_log, start_time){
+            var end_time = new Date().getTime();
+            result_log['rx_time'] = 
+                (end_time-start_time)/1000.0-result_log['server_results']['mean'];
+            console.log('rx_time', result_log['rx_time'])
             var cc = Toyz.API.Highcharts.Contents.prototype.create_chart;
             Toyz.API.Highcharts.Contents = function(){
                 this.workspace=workspace;
@@ -158,7 +167,22 @@
                 'max': plot_times.max(),
                 'mean': sum/plot_times.length,
             };
+            result_log['total_time'] = result_log['server_results']['mean'] + 
+                result_log['rx_time'] + result_log['plot_results']['mean']
+            
+            var src_info = workspace.load_src_dialog.gui.get();
+            result_log['file_type'] = src_info.conditions.file_type
+            if(result_log['file_type'] == 'sql'){
+                result_log['filename'] = src_info['con']
+            }else if(result_log['file_type'] == 'csv'){
+                result_log['filename'] = src_info['filepath_or_buffer']
+            }else if(result_log['file_type'] == 'fits'){
+                result_log['filename'] = src_info['filename']
+            }
+            console.log('diggity', src_info)
             console.log('all results', result_log);
+            console.log('info name', src_info['filepath_or_buffer'])
+            console.log('filename',result_log['filename'])
             
             var log_filename = benchmark_gui.gui.get().log_filename;
             if(log_filename != ""){
@@ -176,10 +200,16 @@
                                 result_log['server_results']['mean'],
                                 result_log['plot_results']['min'],
                                 result_log['plot_results']['max'],
-                                result_log['plot_results']['mean']
+                                result_log['plot_results']['mean'],
+                                result_log['rx_time'],
+                                result_log['total_time'],
+                                result_log['file_type'],
+                                result_log['filename']
                             ],
-                            columns: ['server', 'client', 'loops', 'server_min',
-                                'server_max', 'server_mean', 'plot_min', 'plot_max', 'plot_mean'],
+                            columns: ['server', 'client', 'loops', 
+                                'server_min', 'server_max', 'server_mean', 
+                                'plot_min', 'plot_max', 'plot_mean', 
+                                'rx_time','total_time', 'file_type', 'filename'],
                             filename: result_log['log_filename']
                         }
                     },
