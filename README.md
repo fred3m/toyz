@@ -1,4 +1,4 @@
-![alt text](https://github.com/fred3m/toyz/blob/master/docs/toyz_logo.pn_)
+![alt text](https://github.com/fred3m/toyz/blob/master/docs/toyz_logo.png)
 
 Toyz for Data Analysis
 ======================
